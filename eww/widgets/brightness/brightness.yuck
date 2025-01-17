@@ -1,0 +1,20 @@
+(defpoll brightness_icon :interval "500000s" "bash $HOME/.config/eww/widgets/brightness/scripts/get-brightness-icon.sh")
+(defwidget brightness_button []
+  (box
+    :class "brightness_button"
+    :orientation "h"
+    :width "20"
+    :height "20"
+    (eventbox
+      :class "brightness_eventbox"
+      ; Limit bottom brightness to > 0 ideally 5
+      :onscroll "if [ '{}' = 'up' ]; then brightnessctl set +5%; else [ \$(brightnessctl -m | awk -F, '{print \$4}' | tr -d '%') -gt 5 ] && brightnessctl set 5%-; fi && bash $HOME/.config/eww/widgets/brightness/scripts/eww-bar-update-brightness.sh && bash $HOME/.config/eww/widgets/brightness/scripts/open-brightness-popup.sh --auto-toggle --position onBottomCenter"
+      :onclick "hyprctl cursorpos | awk -F',' '{print $1}' | xargs -I{} bash $HOME/.config/eww/widgets/brightness/scripts/open-brightness-popup.sh --position onMouse --x-pos {} --toggle --show-ctrl-buttons --close-on-hover-lost"
+      :cursor "pointer"
+      
+      (label :text brightness_icon :class "brightness-icon")
+    )
+  )
+)
+
+

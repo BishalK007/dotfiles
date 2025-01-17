@@ -1,0 +1,26 @@
+* { all: unset; }
+
+
+/* New styles for hello_box */
+.hello_box {
+    background-color: rgba(201, 125, 251, 0.326);
+    border: 2px solid white;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.label {
+    // color: wheat;
+    font-size: 20px; 
+}
+
+.systray * {
+    all: unset;
+    padding: 3 2;
+    background: rgb(201, 125, 251);
+    border-radius: 8px;
+}
+
+.rec-selected-icon{
+    font-size: 20Px; 
+}

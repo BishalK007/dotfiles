@@ -1,0 +1,38 @@
+* {
+    all: unset;
+}
+
+
+/* New styles for hello_box */
+.hello_box {
+    background-color: rgba(78, 48, 98, 0.728);
+    border: 2px solid white;
+    border-radius: 8px;
+    padding: 20px 12px 20px 12px;
+}
+
+.label {
+    color: wheat;
+    font-size: 16px;
+}
+
+.hello_box progress {
+    background-color: rgb(255, 255, 255);
+    border-radius: 5px;
+}
+
+.brightness-button {
+    font-size: 18px;
+    border: 2px white solid;
+    border-radius: 8px;
+}
+
+.brightness-button:hover {
+    background-color: white;
+    color: black;
+}
+
+.brightness_progress {
+    border: 1px white solid;
+    border-radius: 8px;
+}

@@ -1,0 +1,28 @@
+(defpoll prev_workspace :interval "200s" `bash $HOME/.config/eww/widgets/workspaces/scripts/workspaces.sh --prev`)
+(defpoll curr_workspace :interval "200s" `bash $HOME/.config/eww/widgets/workspaces/scripts/workspaces.sh --curr`)
+(defpoll next_workspace :interval "200s" `bash $HOME/.config/eww/widgets/workspaces/scripts/workspaces.sh --next`)
+
+(defwidget workspace_widget []
+  (box
+    :orientation "horizontal"
+    :spacing "5"
+    :space-evenly false
+    :class "workspaces"
+    (button
+      :height 10
+      :width 10
+      :class "workspaces-button"
+      :onclick "hyprctl dispatch workspace -1"
+      prev_workspace
+    )
+    (button
+      :class "workspaces-button"
+      curr_workspace
+    )
+    (button
+      :class "workspaces-button"
+      :onclick "hyprctl dispatch workspace +1"
+      next_workspace
+    )
+  )
+)

@@ -1,0 +1,11 @@
+(defwidget time_date []
+    (box
+      :orientation "vertical"
+      :spacing 1
+      :space-evenly false
+      :class "time-date"
+      :width 10
+      (label :text {formattime(EWW_TIME, "%a %H:%M")} :class "time")
+      (label :text {formattime(EWW_TIME, "%d/%b/%y")} :class "date")
+    )
+)

@@ -1,0 +1,28 @@
+(defwindow systray_dropdown [x_pos widget_width]
+  :monitor 0
+  :exclusive false
+  :stacking "overlay"
+  :geometry (geometry
+    :anchor "top left"
+    :x x_pos  ; REPLACED
+    :y "5"
+    :width widget_width ; REPLACED
+    :height 25
+  )
+  (hello_box)  ; Added hello_box widget here
+)
+
+(
+  defwidget hello_box []
+  (box
+    :orientation "vertical"
+    :spacing "2"
+    :space-evenly false
+    :class "hello_box"
+    :width 10
+    (eventbox
+      :cursor "pointer"
+      (systray :class "systray" :spacing 5)
+    )
+  )
+)

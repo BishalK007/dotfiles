@@ -1,0 +1,40 @@
+@import "./widgets/workspaces/workspaces.scss";
+@import "./widgets/time-date/time-date.scss";
+@import "./widgets/network/network.scss";
+@import "./widgets/systray/systray.scss";
+@import "./widgets/brightness/brightness.scss";
+@import "./widgets/audio/audio.scss";
+@import "./widgets/system-buttons/system-button.scss";
+@import "./widgets/capture/capture-button.scss";
+
+* {
+  font-family: "monospace";
+  color: white;
+}
+
+.eww-bar {
+  background-color: rgba(201, 125, 251, 0.326);
+  /* Example background color */
+  border-radius: 24px;
+  /* Adjust the value as needed */
+}
+
+.bar {
+  border: 1px solid white;
+}
+
+.cpu-mem {
+  margin: 1px 0 0 10px;
+  padding: 1px 0 0 3px;
+}
+
+.restart-eww {
+  margin: 0 10px 0 10px;
+  padding: 0 10px 0 10px;
+  font-size: 20px;
+}
+
+.bt-icon{
+  font-size: 18px;
+  padding: 0 10px 0 0 ;
+}

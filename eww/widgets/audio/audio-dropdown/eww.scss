@@ -1,0 +1,68 @@
+* {
+    all: unset;
+}
+
+
+/* New styles for hello_box */
+.hello_box {
+    background-color: rgba(78, 48, 98, 0.728);
+    border: 2px solid white;
+    border-radius: 8px;
+    padding: 20px 10px 28px 10px;
+}
+
+.volume-box {
+    margin: 0 10px 0 10px;
+}
+
+.boost-box {
+    margin: 0 10px 0 10px;
+
+}
+
+.vol-progress {
+    border: 1px white solid;
+    border-radius: 8px;
+}
+
+.boost-progress {
+    border: 1px white solid;
+    border-radius: 8px;
+}
+
+.label {
+    color: wheat;
+    font-size: 16px;
+}
+
+.hello_box progress {
+    background-color: rgb(255, 255, 255);
+    border-radius: 5px;
+    margin: 20px 0 20px 0;
+}
+
+.ctrl-buttons {
+    margin: 10px 10px 0 10px;
+}
+
+.vol-buttons * {
+    font-size: 18px;
+    border: 2px white solid;
+    border-radius: 8px;
+}
+
+.vol-buttons *:hover {
+    background-color: white;
+    color: black;
+}
+
+.mute-button {
+    border: 2px white solid;
+    border-radius: 8px;
+    padding: 2px 0 2px 0;
+}
+
+.mute-button:hover {
+    background-color: white;
+    color: black;
+}
