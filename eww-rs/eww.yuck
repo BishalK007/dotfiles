@@ -1,0 +1,66 @@
+(include "./widgets/workspaces/workspaces.yuck")  ;; Include the workspace widget definitions
+(include "./widgets/time-date/time-date.yuck")  ;; Include the date-time widget definitions
+(include "./widgets/network/network.yuck")  ;; Include the network dropdown widget definitions
+(include "./widgets/systray/systray.yuck")  ;; Include the systray widget definitions
+(include "./widgets/brightness/brightness.yuck")  ;; Include the brightness widget definitions
+(include "./widgets/audio/audio.yuck")  ;; Include the audio-volume widget definitions
+(include "./widgets/system-buttons/system-button.yuck")  ;; Include the audio-volume widget definitions
+(include "./widgets/capture/capture-button.yuck")  ;; Include the audio-volume widget definitions
+
+(defwidget greeter [?text name]
+  (box :orientation "horizontal"
+    :halign "center"
+    text
+    (button :onclick "notify-send 'Hello' 'Hello, ${name}'"
+    "Greet")))
+
+(defwindow eww-bar
+  :monitor 0
+  :geometry (geometry :x "0%"
+    :y "5px"
+    :width "166%"
+    :height "20px"
+    :anchor "top center"
+  )
+  ; :focusable true
+  :stacking "fg"
+  :reserve (struts :distance "40px" :side "top")
+  :wm-ignore false
+  :exclusive true
+  (box
+    :orientation "horizontal"
+    :space-evenly false
+    :class "bar"
+    (workspace_widget)
+    (label :text "" :hexpand true)
+    (box
+      :class "left-items"
+      :spacing "2"
+      :space-evenly false
+      :orientation "h"
+      (eventbox :class "restart-eww" :tooltip "Restart EWW bar On Mouse Right Click" :cursor "pointer" :onrightclick "pgrep eww | xargs kill && bash $HOME/.config/eww/run_eww.sh" "  ")
+      (capture_button)
+      (audio_button)
+      (brightness_button)
+      (eventbox 
+        :onclick "blueman-manager &"
+        :cursor "pointer"
+        (label 
+          :text "󰂯" 
+          :class "bt-icon"
+        )
+      )
+      (network_button)
+      (box
+        :orientation "v"
+        :class "cpu-mem"
+        :spacing 0
+        (label :text "  ${EWW_CPU.avg}" :limit-width "7" :show-truncated false :class "cpu")
+        (label :text "  ${EWW_RAM.used_mem_perc}" :limit-width "7" :show-truncated false :class "mem")
+      )
+      (time_date)
+      (systray_button)
+      (system_button)
+    )
+  )
+)
