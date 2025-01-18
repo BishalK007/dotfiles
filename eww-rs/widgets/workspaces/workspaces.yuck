@@ -1,0 +1,28 @@
+(defvar prev_workspace 0)
+(defvar curr_workspace 1)
+(defvar next_workspace 2)
+
+(defwidget workspace_widget []
+  (box
+    :orientation "horizontal"
+    :spacing "5"
+    :space-evenly false
+    :class "workspaces"
+    (button
+      :height 10
+      :width 10
+      :class "workspaces-button"
+      :onclick "hyprctl dispatch workspace -1"
+      prev_workspace
+    )
+    (button
+      :class "workspaces-button"
+      curr_workspace
+    )
+    (button
+      :class "workspaces-button"
+      :onclick "hyprctl dispatch workspace +1"
+      next_workspace
+    )
+  )
+)

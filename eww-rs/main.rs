@@ -1,3 +1,9 @@
+pub mod widgets {
+    pub mod workspaces {
+        pub mod functions;
+    }
+}
+
 use std::{
     fs,
     io::{Read, Write},
@@ -13,6 +19,9 @@ use std::{
 };
 use dotenvy::dotenv;
 
+use widgets::workspaces::functions::start_workspace_updater_thread;
+use widgets::workspaces::functions::initialize_workspace_numbers;
+
 // This function handles a single client connection.
 fn handle_client(mut socket: UnixStream, shutdown_flag: Arc<AtomicBool>, eww_config_loc: &str) -> std::io::Result<()> {
     let mut buffer = [0; 1024];
@@ -25,6 +34,9 @@ fn handle_client(mut socket: UnixStream, shutdown_flag: Arc<AtomicBool>, eww_con
 
         let message = String::from_utf8_lossy(&buffer[..n]);
         println!("Received: {}", message);
+        if message.trim() == "test" {
+            start_workspace_updater_thread(&eww_config_loc.to_string());
+        }
         if message.trim() == "start-eww" {
             // Start the eww daemon and open the eww-bar
             let start_daemon = Command::new("eww")
@@ -45,6 +57,10 @@ fn handle_client(mut socket: UnixStream, shutdown_flag: Arc<AtomicBool>, eww_con
                 (Err(e), _) => eprintln!("Failed to start eww daemon: {}", e),
                 (_, Err(e)) => eprintln!("Failed to open eww-bar: {}", e),
             }
+            
+            // This functions initialise the workspace numbers then runs a thread that updates them on socket update
+            initialize_workspace_numbers(&eww_config_loc.to_string());
+            start_workspace_updater_thread(&eww_config_loc.to_string());
         }
         if message.trim() == "stop-eww" {
             let close_bar = Command::new("eww")
