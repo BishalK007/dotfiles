@@ -1,0 +1,64 @@
+; generate to a dir that wont affect eww to reload everytime u generate
+(defwindow brightness_dropdown [x_pos y_pos widget_width close_on_hover_lost show_ctrl_buttons]
+    :monitor 0
+    :exclusive false
+    :stacking "overlay"
+    :geometry (geometry
+      :anchor "top left"
+      :x x_pos  ; REPLACED
+      :y y_pos
+      :width widget_width ; REPLACED
+      ; :height 200
+    )
+    (hello_box :show_ctrl_buttons show_ctrl_buttons :close_on_hover_lost close_on_hover_lost :widget_width widget_width)  ; Added hello_box widget here
+  )
+  
+  (defpoll brightness_slider_val :interval "0s" "brightnessctl -m | awk -F, \'{print $4}\' | tr -d \'%\'")
+
+  (defwidget hello_box [close_on_hover_lost show_ctrl_buttons widget_width]
+    (
+      eventbox
+      :onhoverlost "bash $HOME/.config/eww/widgets/brightness/scripts/open-brightness-popup.sh --close-bool $close_on_hover_lost"
+      (box
+        :orientation "vertical"
+        :spacing "22"
+        :space-evenly false
+        :class "hello_box"
+        :width widget_width
+        ; :width 400
+        ; :height 600
+        (box
+          :orientation "horizontal"
+          :class "top-container"
+          :spacing 20
+          :width 200
+          (eventbox
+            :onclick "[ \$(brightnessctl -m | awk -F, '{print \$4}' | tr -d '%') -gt 5 ] && brightnessctl set 5%- && bash $HOME/.config/eww/widgets/brightness/scripts/eww-bar-update-brightness.sh "
+            :cursor "pointer"
+            :visible show_ctrl_buttons
+            :class "plus-button brightness-button"
+            "-"
+          )
+          (label 
+            :hexapnd true 
+            :text "BRIGHTNESS" 
+            ; :width 200
+          )
+          (eventbox
+            :onclick "brightnessctl set +5% && bash $HOME/.config/eww/widgets/brightness/scripts/eww-bar-update-brightness.sh"
+            :cursor "pointer"
+            :visible show_ctrl_buttons
+            :class "minus-button brightness-button"
+            "+"
+          )
+        )
+        (progress
+          :value brightness_slider_val
+          :class "brightness_progress"
+          :orientation "horizontal"
+        )
+      )
+    )
+  )
+  
+  

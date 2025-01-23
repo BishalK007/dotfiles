@@ -1,0 +1,72 @@
+(defwindow audio_dropdown [x_pos y_pos widget_width show_ctrl_buttons close_on_hover_lost]
+  :monitor 0
+  :exclusive false
+  :stacking "overlay"
+  :geometry (geometry
+    :anchor "top left"
+    :x x_pos
+    :y y_pos
+    :width widget_width
+  )
+  (hello_box :show_ctrl_buttons show_ctrl_buttons :close_on_hover_lost close_on_hover_lost)
+)
+
+(defpoll audio_slider_val :interval "0s" "bash $HOME/.config/eww/widgets/audio/scripts/volume-ctrl.sh --get-volume")
+(defpoll audio_booster_val :interval "0s" "bash $HOME/.config/eww/widgets/audio/scripts/volume-ctrl.sh --get-boost-percentage")
+
+(defwidget hello_box [show_ctrl_buttons close_on_hover_lost]
+  (
+    eventbox
+    :onhoverlost "bash $HOME/.config/eww/widgets/audio/scripts/open-audio-popup.sh --close-bool $close_on_hover_lost"
+    (box
+      :orientation "vertical"
+      :spacing "2"
+      :space-evenly false
+      :class "hello_box"
+      (box
+        :orientation "horizontal"
+        :class "volume-box"
+        :valign "start"
+        (label :halign "start" :text "VOLUME")
+        (progress :value audio_slider_val :class "vol-progress" :valign "center")
+      )
+      (box
+        :orientation "horizontal"
+        :class "boost-box"
+        (label :halign "start" :text "BOOST")
+        (progress :value audio_booster_val :class "boost-progress" :valign "center")
+      )
+      (box
+        :orientation "v"
+        :class "ctrl-buttons"
+        :spacing 8
+        :visible show_ctrl_buttons
+        (box
+          :orientation "horizontal"
+          :class "vol-buttons"
+          :spacing 8
+          (eventbox
+            :onclick "bash $HOME/.config/eww/widgets/audio/scripts/eww-vol-ctrl.sh --decrease-volume --update-eww"
+            :cursor "pointer"
+            :class "minus-button"
+            "-"
+          )
+          (eventbox
+            :onclick "bash $HOME/.config/eww/widgets/audio/scripts/eww-vol-ctrl.sh --increase-volume --update-eww"
+            :cursor "pointer"
+            :class "plus-button"
+            "+"
+          )
+        )
+        
+        (eventbox
+          :onclick "bash $HOME/.config/eww/widgets/audio/scripts/eww-vol-ctrl.sh --mute-toggle --update-eww"
+          :cursor "pointer"
+          :class "mute-button"
+          "MUTE"
+        )
+        
+      )
+    )
+  )
+)

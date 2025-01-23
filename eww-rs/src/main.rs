@@ -1,9 +1,12 @@
-pub mod widgets {
-    pub mod workspaces {
-        pub mod functions;
-    }
-}
+mod models;
+mod widgets;
 
+use widgets::capture::functions::start_capture_widget;
+use widgets::capture::functions::Action;
+use widgets::workspaces::functions::initialize_workspace_numbers;
+use widgets::workspaces::functions::start_workspace_updater_thread;
+
+use dotenvy::dotenv;
 use std::{
     fs,
     io::{Read, Write},
@@ -17,13 +20,13 @@ use std::{
     thread,
     time::Duration,
 };
-use dotenvy::dotenv;
-
-use widgets::workspaces::functions::start_workspace_updater_thread;
-use widgets::workspaces::functions::initialize_workspace_numbers;
 
 // This function handles a single client connection.
-fn handle_client(mut socket: UnixStream, shutdown_flag: Arc<AtomicBool>, eww_config_loc: &str) -> std::io::Result<()> {
+fn handle_client(
+    mut socket: UnixStream,
+    shutdown_flag: Arc<AtomicBool>,
+    eww_config_loc: &str,
+) -> std::io::Result<()> {
     let mut buffer = [0; 1024];
     loop {
         let n = socket.read(&mut buffer)?;
@@ -33,49 +36,80 @@ fn handle_client(mut socket: UnixStream, shutdown_flag: Arc<AtomicBool>, eww_con
         }
 
         let message = String::from_utf8_lossy(&buffer[..n]);
-        println!("Received: {}", message);
-        if message.trim() == "test" {
-            start_workspace_updater_thread(&eww_config_loc.to_string());
-        }
-        if message.trim() == "start-eww" {
-            // Start the eww daemon and open the eww-bar
-            let start_daemon = Command::new("eww")
-                .arg("daemon")
-                .arg("-c")
-                .arg(&eww_config_loc)
-                .status();
+        // println!("Received: {}", message);
+        let message_vec: Vec<&str> = message.trim_end().split(':').collect();
+        // println!("vec: {:?}", message_vec[1]);
 
-            let open_bar = Command::new("eww")
-                .arg("open")
-                .arg("eww-bar")
-                .arg("-c")
-                .arg(&eww_config_loc)
-                .status();
+        if message_vec[0] == "capture" {
+            // capture:<Action>:<x_pos>:<widget_width>
+            let state = message_vec[1].parse::<Action>().unwrap();
 
-            match (start_daemon, open_bar) {
-                (Ok(_), Ok(_)) => println!("eww daemon and bar started successfully."),
-                (Err(e), _) => eprintln!("Failed to start eww daemon: {}", e),
-                (_, Err(e)) => eprintln!("Failed to open eww-bar: {}", e),
-            }
-            
-            // This functions initialise the workspace numbers then runs a thread that updates them on socket update
-            initialize_workspace_numbers(&eww_config_loc.to_string());
-            start_workspace_updater_thread(&eww_config_loc.to_string());
+            // Get the third element (index 2) and parse it to i32
+            let x_pos: Option<i32> = message_vec
+                .get(2) // Check if index 2 exists
+                .and_then(|s| {
+                    // If it exists...
+                    if s.is_empty() {
+                        // Check if string is empty
+                        None
+                    } else {
+                        s.parse().ok() // Parse to i32, convert Result to Option
+                    }
+                });
+
+            start_capture_widget(x_pos, None, state, &eww_config_loc);
         }
-        if message.trim() == "stop-eww" {
-            let close_bar = Command::new("eww")
-                .arg("close")
-                .arg("eww-bar")
-                .arg("-c")
-                .arg(&eww_config_loc)
-                .status();
-            match close_bar {
-                Ok(_) => println!("eww daemon stopped successfully."),
-                Err(e) => eprintln!("Failed to stop eww daemon: {}", e),
+        if message_vec[0] == "eww" {
+            if message_vec[1] == "start" {
+                // Start the eww daemon and open the eww-bar
+                let start_daemon = Command::new("eww")
+                    .arg("daemon")
+                    .arg("-c")
+                    .arg(&eww_config_loc)
+                    .status();
+
+                let open_bar = Command::new("eww")
+                    .arg("open")
+                    .arg("eww-bar")
+                    .arg("-c")
+                    .arg(&eww_config_loc)
+                    .status();
+
+                match (start_daemon, open_bar) {
+                    (Ok(_), Ok(_)) => println!("eww daemon and bar started successfully."),
+                    (Err(e), _) => eprintln!("Failed to start eww daemon: {}", e),
+                    (_, Err(e)) => eprintln!("Failed to open eww-bar: {}", e),
+                }
+
+                // This functions initialise the workspace numbers then runs a thread that updates them on socket update
+                initialize_workspace_numbers(&eww_config_loc.to_string());
+                start_workspace_updater_thread(&eww_config_loc.to_string());
+
+                // This loads all other widget daemons
+                // Load capture widget to daemon
+                let message = "capture:load";
+                if let Ok(mut stream) = UnixStream::connect("/tmp/eww_main_socket.sock") {
+                    if let Err(e) = stream.write_all(message.as_bytes()) {
+                        eprintln!("Failed to send message: {}", e);
+                    }
+                }
+            }
+            if message_vec[1] == "stop" {
+                let close_bar = Command::new("eww")
+                    .arg("close")
+                    .arg("eww-bar")
+                    .arg("-c")
+                    .arg(&eww_config_loc)
+                    .status();
+                match close_bar {
+                    Ok(_) => println!("eww daemon stopped successfully."),
+                    Err(e) => eprintln!("Failed to stop eww daemon: {}", e),
+                }
             }
         }
+
         // If the message is "exit", set the shutdown flag.
-        if message.trim() == "exit" {
+        if message_vec[0] == "exit" {
             println!("'exit' command received — requesting server shutdown...");
             shutdown_flag.store(true, Ordering::SeqCst);
             return Ok(());
@@ -143,7 +177,7 @@ fn main() -> std::io::Result<()> {
 
     let eww_config_loc = std::env::var("EWW_CONFIG_LOC").expect("EWW_CONFIG_LOC must be set.");
 
-    let socket_path = "/tmp/multi_unix_socket.sock";
+    let socket_path = "/tmp/eww_main_socket.sock";
 
     // Remove the socket file if it already exists.
     if Path::new(socket_path).exists() {

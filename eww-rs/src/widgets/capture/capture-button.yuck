@@ -1,0 +1,29 @@
+; (defvar show_stop_button true)
+(defvar show_stop_button false)
+(defvar stop_icon_with_duration " 0:00")
+(defvar capture_button_css_class "capture_icon_withmargin")
+
+(defwidget capture_button []
+  (box
+    :orientation "h"
+    (box :visible show_stop_button
+      (revealer
+        :transition "slideup"
+        :reveal show_stop_button
+        (eventbox
+          :cursor "pointer"
+          :onclick "(bash \"$HOME/.config/eww/widgets/capture/scripts/capture-eww-helper.sh\" --rec-stop &) && eww update show_stop_button=false -c \"$HOME/.config/eww/\" &"
+          (label :text stop_icon_with_duration :class "stop-label")
+        )
+      )
+    )
+    (eventbox
+      :class "capture_icon_eventbox"
+      :cursor "pointer"
+      :tooltip "Open capture options"
+      :onclick "hyprctl cursorpos | awk -F',' '{print $1}' | xargs -I{} echo \"capture:toggle:{}\" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock"
+      (label :text "" :class {show_stop_button == true ? "capture_icon" : "capture_icon_withmargin"})
+    )
+  )
+)
+

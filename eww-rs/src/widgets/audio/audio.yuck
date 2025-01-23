@@ -1,0 +1,17 @@
+(defpoll audio_icon :interval "0s" "bash $HOME/.config/eww/widgets/audio/scripts/volume-ctrl.sh --get-volume-icon")
+(defwidget audio_button []
+  (eventbox
+    :class "audio_control_eventbox"
+    :width 30
+    ; Limit bottom brightness to > 0 ideally 5
+    ; :onclick "bash $HOME/.config/eww/widgets/audio/scripts/volume-ctrl.sh --mute-toggle && bash $HOME/.config/eww/widgets/audio/scripts/eww-bar-update-audio.sh"
+    :onscroll "if [ '{}' = 'up' ]; then bash $HOME/.config/eww/widgets/audio/scripts/open-audio-popup.sh --position onBottomCenter --auto-toggle && bash $HOME/.config/eww/widgets/audio/scripts/eww-vol-ctrl.sh --increase-volume --update-eww; else bash $HOME/.config/eww/widgets/audio/scripts/open-audio-popup.sh --position onBottomCenter --auto-toggle && bash $HOME/.config/eww/widgets/audio/scripts/eww-vol-ctrl.sh --decrease-volume --update-eww; fi"
+    :onclick "hyprctl cursorpos | awk -F',' '{print $1}' | xargs -I{} bash $HOME/.config/eww/widgets/audio/scripts/open-audio-popup.sh --x-pos {} --toggle --show-ctrl-buttons --close-on-hover-lost"
+    :onrightclick "bash $HOME/.config/eww/widgets/audio/scripts/eww-vol-ctrl.sh --mute-toggle --update-eww"
+    :cursor "pointer"
+    :tooltip "SCROLL :: vol-ctrl | RIGHT-CLICK :: Mute | LEFT-CLICK :: open panel"
+    (literal :content audio_icon)
+  )
+)
+
+

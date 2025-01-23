@@ -1,0 +1,80 @@
+(defwindow capture_dropdown [x_pos widget_width]
+  :monitor 0
+  :exclusive false
+  :stacking "overlay"
+  :geometry (geometry
+    :anchor "top left"
+    :x x_pos  ; REPLACED
+    :y "5"
+    :width widget_width ; REPLACED
+    :height 25
+  )
+  (hello_box)  ; Added hello_box widget here
+)
+
+(
+  defwidget hello_box []
+  (box
+    :orientation "vertical"
+    :spacing "2"
+    :space-evenly false
+    :class "hello_box"
+    :width 10
+    (eventbox
+      ; (label :text "HELLO")
+      (box
+        :orientation "v"
+        :spacing 10
+        (box
+          :orientation "h"
+          (box
+            :orientation "v"
+            :class "capture-fullscreen"
+            (eventbox
+              :cursor "pointer"
+              :onclick "bash \"$HOME/.config/eww/widgets/capture/scripts/capture-eww-helper.sh\" --capture --fullscreen &"
+              (label :text " " :class "icon")
+            )
+            (label :text "FULLSCREEN")
+          )
+          (box
+            :orientation "v"
+            :class "capture-selected"
+            (eventbox
+              :cursor "pointer"
+              :onclick "bash \"$HOME/.config/eww/widgets/capture/scripts/capture-eww-helper.sh\" --capture --region &"
+              (label :text " " :class "icon")
+            )
+            (label :text "SELECTED")
+          )
+          
+        )
+        (box
+          :orientation "h"
+          (box
+            :orientation "v"
+            :class "rec-fullscreen"
+            (eventbox
+              :cursor "pointer"
+              :onclick "(bash \"$HOME/.config/eww/widgets/capture/scripts/capture-eww-helper.sh\" --rec-start --fullscreen & ) && eww update show_stop_button=true -c \"$HOME/.config/eww/\" &"
+              (label :text " " :class "icon")
+            )
+            (label :text "FULLSCREEN")
+          )
+          (box
+            :orientation "v"
+            :class "rec-selected"
+            (eventbox
+              :cursor "pointer"
+              :onclick "(bash \"$HOME/.config/eww/widgets/capture/scripts/capture-eww-helper.sh\" --rec-start --region & ) && eww update show_stop_button=true -c \"$HOME/.config/eww/\" &"
+              (label :text "󰞡 " :class "rec-selected-icon")
+            )
+            (label :text "SELECTED")
+          )
+          
+          
+        )
+      )
+    )
+  )
+)

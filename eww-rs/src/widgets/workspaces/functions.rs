@@ -1,29 +1,14 @@
 // This public function listens on "$XDG_RUNTIME_DIR"/hypr/"$HYPRLAND_INSTANCE_SIGNATURE"/.socket2.sock
 // and updates the workspace number
+use crate::models::Monitor;
+
 use std::env;
 use std::thread;
 use std::os::unix::net::UnixStream;
 use std::io::{BufRead, BufReader}; // <-- Note the import of BufRead here
 use std::process::Command;
-use serde::Deserialize;
 
 
-/// This struct must match the fields from `hyprctl monitors -j`.
-#[derive(Deserialize, Debug)]
-struct Monitor {
-    focused: bool,
-
-    #[serde(rename = "activeWorkspace")]
-    active_workspace: Workspace,
-
-    // Didnt include other fields
-}
-
-#[derive(Deserialize, Debug)]
-struct Workspace {
-    id: u32,
-    // name: String, // Didnt include other fields
-}
 
 /// Initializes EWW workspace variables by querying the current workspace
 /// from Hyprland (using `hyprctl monitors -j`) and updating EWW widgets.
