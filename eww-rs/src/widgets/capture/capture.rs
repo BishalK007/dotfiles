@@ -382,8 +382,8 @@ fn convert_mp4_to_gif(
     screenshot_loc: &str,
     fps: i32,
     scale: i32,
-    palette_gen: bool, 
-    scaling_algo: &str, 
+    palette_gen: bool,
+    scaling_algo: &str,
     is_scale_fixed_on_width: bool,
 ) {
     let mut command_args: Vec<String> = vec!["ffmpeg".to_string()];
@@ -391,7 +391,7 @@ fn convert_mp4_to_gif(
     let vid_file = format!("{}/screencast_{}.mp4", screencast_loc, file_id);
     let gif_file = format!("{}/screencast_{}.gif", screenshot_loc, file_id);
 
-    // Determine scaling algo : 
+    // Determine scaling algo :
     let s_algo;
     if scaling_algo == "bilinear" || scaling_algo == "bicubic" || scaling_algo == "nearest" {
         s_algo = format!("flags={}", scaling_algo);
@@ -410,7 +410,7 @@ fn convert_mp4_to_gif(
     } else {
         println!(" FPS for gif must be > 0 and <= 60")
     }
-    
+
     if scale > 0 && scale <= 800 {
         if is_scale_fixed_on_width {
             filter_components.push(format!("scale=-1:{}:{}", scale, s_algo));
@@ -542,9 +542,26 @@ fn start_rec_thread(
 
                                 // if started using PhotoGIF need to conv mp4 into gif
                                 if action == CaptureAction::PhotoGIF {
+                                    // show the eww button as converting
+                                    // Optionally hide or reset any eww widgets
+                                    let _ = Command::new("eww")
+                                        .arg("update")
+                                        .arg("show_stop_button=true")
+                                        .arg("-c")
+                                        .arg(&eww_config)
+                                        .output();
+
+                                    let _ = Command::new("eww")
+                                        .arg("update")
+                                        .arg("stop_icon_with_duration=...")
+                                        .arg("-c")
+                                        .arg(&eww_config)
+                                        .output();
+
+                                    // start conversion of mp4 into gif
                                     convert_mp4_to_gif(
-                                        &screencast_loc, 
-                                        &file_id, 
+                                        &screencast_loc,
+                                        &file_id,
                                         &screenshot_loc,
                                         10,
                                         800,
@@ -552,6 +569,19 @@ fn start_rec_thread(
                                         "default",
                                         false,
                                     );
+                                    // after conversion  
+                                    let _ = Command::new("eww")
+                                        .arg("update")
+                                        .arg("show_stop_button=false")
+                                        .arg("-c")
+                                        .arg(&eww_config)
+                                        .output();
+                                    let _ = Command::new("eww")
+                                        .arg("update")
+                                        .arg("stop_icon_with_duration= 0s")
+                                        .arg("-c")
+                                        .arg(&eww_config)
+                                        .output();
                                 }
                             }
                             _ => {}
