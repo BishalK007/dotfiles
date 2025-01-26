@@ -32,7 +32,8 @@
             :class "capture-fullscreen"
             (eventbox
               :cursor "pointer"
-              :onclick "bash \"$HOME/.config/eww/widgets/capture/scripts/capture-eww-helper.sh\" --capture --fullscreen &"
+              ; :onclick "bash \"$HOME/.config/eww/widgets/capture/scripts/capture-eww-helper.sh\" --capture --fullscreen &"
+              :onclick "echo \"capture:util:photopng:fullscreen:wl-copy:open-edit\" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock"
               (label :text " " :class "icon")
             )
             (label :text "FULLSCREEN")
@@ -42,7 +43,8 @@
             :class "capture-selected"
             (eventbox
               :cursor "pointer"
-              :onclick "bash \"$HOME/.config/eww/widgets/capture/scripts/capture-eww-helper.sh\" --capture --region &"
+              ; :onclick "bash \"$HOME/.config/eww/widgets/capture/scripts/capture-eww-helper.sh\" --capture --region &"
+              :onclick "echo \"capture:util:photo-png:slurp:wl-copy:open-edit\" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock"
               (label :text " " :class "icon")
             )
             (label :text "SELECTED")
@@ -56,7 +58,8 @@
             :class "rec-fullscreen"
             (eventbox
               :cursor "pointer"
-              :onclick "(bash \"$HOME/.config/eww/widgets/capture/scripts/capture-eww-helper.sh\" --rec-start --fullscreen & ) && eww update show_stop_button=true -c \"$HOME/.config/eww/\" &"
+              ; :onclick "(bash \"$HOME/.config/eww/widgets/capture/scripts/capture-eww-helper.sh\" --rec-start --fullscreen & ) && eww update show_stop_button=true -c \"$HOME/.config/eww/\" &"
+              :onclick "echo \"capture:util:video-mp4:fullscreen:no-copy:no-edit\" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock"
               (label :text " " :class "icon")
             )
             (label :text "FULLSCREEN")
@@ -66,7 +69,8 @@
             :class "rec-selected"
             (eventbox
               :cursor "pointer"
-              :onclick "(bash \"$HOME/.config/eww/widgets/capture/scripts/capture-eww-helper.sh\" --rec-start --region & ) && eww update show_stop_button=true -c \"$HOME/.config/eww/\" &"
+              ; :onclick "(bash \"$HOME/.config/eww/widgets/capture/scripts/capture-eww-helper.sh\" --rec-start --region & ) && eww update show_stop_button=true -c \"$HOME/.config/eww/\" &"
+              :onclick "echo \"capture:util:video-mp4:slurp:no-copy:no-edit\" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock"
               (label :text "󰞡 " :class "rec-selected-icon")
             )
             (label :text "SELECTED")

@@ -1,0 +1,22 @@
+# For Doc and testing dont use inside widgets
+
+.PHONY: tvs test-video-start tvst test-video-stop tpj test-photo-jpeg tpp test-photo-png es eww-start est eww-stop
+
+tvs test-video-start:
+	@echo "capture:util:video-mp4:fullscreen:no-copy:no-edit" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock
+
+tvst test-video-stop:
+	@echo "capture:util:recstop" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock
+
+tpj test-photo-jpeg:
+	@echo "capture:util:photojpeg:fullscreen:no-copy:no-edit" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock
+
+tpp test-photo-png:
+	@echo "capture:util:photopng:fullscreen:no-copy:no-edit" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock
+
+
+es eww-start:
+	@echo "eww:start" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock
+
+est eww-stop:
+	@echo "eww:stop" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock

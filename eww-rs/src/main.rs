@@ -1,6 +1,9 @@
 mod models;
 mod widgets;
 
+use widgets::capture::capture::capture;
+use widgets::capture::capture::CaptureAction;
+use widgets::capture::capture::CaptureCanvas;
 use widgets::capture::functions::start_capture_widget;
 use widgets::capture::functions::Action;
 use widgets::workspaces::functions::initialize_workspace_numbers;
@@ -40,24 +43,47 @@ fn handle_client(
         let message_vec: Vec<&str> = message.trim_end().split(':').collect();
         // println!("vec: {:?}", message_vec[1]);
 
-        if message_vec[0] == "capture" {
-            // capture:<Action>:<x_pos>:<widget_width>
-            let state = message_vec[1].parse::<Action>().unwrap();
+        if message_vec[0].to_lowercase() == "capture" { // capture:<widget/util>:..
 
-            // Get the third element (index 2) and parse it to i32
-            let x_pos: Option<i32> = message_vec
-                .get(2) // Check if index 2 exists
-                .and_then(|s| {
-                    // If it exists...
-                    if s.is_empty() {
-                        // Check if string is empty
-                        None
-                    } else {
-                        s.parse().ok() // Parse to i32, convert Result to Option
-                    }
-                });
+            if message_vec[1].to_lowercase() == "widget" { // capture:widget:<Action>:<x_pos>:<widget_width>
+                let state = message_vec[2].to_lowercase().parse::<Action>().unwrap();
 
-            start_capture_widget(x_pos, None, state, &eww_config_loc);
+                // Get the fourh element (index 3) and parse it to i32
+                let x_pos: Option<i32> = message_vec
+                    .get(3) // Check if index 2 exists
+                    .and_then(|s| {
+                        // If it exists...
+                        if s.is_empty() {
+                            // Check if string is empty
+                            None
+                        } else {
+                            s.parse().ok() // Parse to i32, convert Result to Option
+                        }
+                    });
+
+                start_capture_widget(x_pos, None, state, &eww_config_loc);
+            }
+            if message_vec[1].to_lowercase() == "util" { // capture:util:<CaptureAction>:<CaptureCanvas>:wl-copy|<anything else>:open-edit|<anything else>
+                let state = message_vec.get(2)
+                    .ok_or_else(|| std::io::Error::new(
+                        std::io::ErrorKind::InvalidInput,
+                        "CaptureAction is required"
+                    ))?
+                    .to_lowercase()
+                    .parse::<CaptureAction>()
+                    .map_err(|_| std::io::Error::new(
+                        std::io::ErrorKind::InvalidInput,
+                        "Invalid CaptureAction"
+                    ))?;
+                let canvas_state = match message_vec.get(3) {
+                    Some(s) if !s.is_empty() => s.to_lowercase().parse::<CaptureCanvas>().unwrap(),
+                    _ => CaptureCanvas::Fullscreen,
+                };
+                let wl_copy = message_vec.get(4).map_or(false, |s| s.to_lowercase() == "wl-copy");
+                let open_edit = message_vec.get(5).map_or(false, |s| s.to_lowercase() == "open-edit");
+
+                capture(state, canvas_state, wl_copy, open_edit, &eww_config_loc );
+            }
         }
         if message_vec[0] == "eww" {
             if message_vec[1] == "start" {
@@ -87,7 +113,7 @@ fn handle_client(
 
                 // This loads all other widget daemons
                 // Load capture widget to daemon
-                let message = "capture:load";
+                let message = "capture:widget:load";
                 if let Ok(mut stream) = UnixStream::connect("/tmp/eww_main_socket.sock") {
                     if let Err(e) = stream.write_all(message.as_bytes()) {
                         eprintln!("Failed to send message: {}", e);
