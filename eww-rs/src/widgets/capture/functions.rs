@@ -32,10 +32,10 @@ impl FromStr for Action {
 pub fn start_capture_widget(x_pos: Option<i32>, widget_width: Option<i32>, action: Action, eww_config_loc: &str) {
     let mut x_pos = x_pos.unwrap_or(100); // Default value is 100
     let widget_width = widget_width.unwrap_or(300); // Default value is 300
-    println!("capture Options ::");
-    println!("\tx_pos: {}", x_pos);
-    println!("\twidget_width: {}",widget_width);
-    println!("\taction: {:?}", action);
+    // println!("capture Options ::");
+    // println!("\tx_pos: {}", x_pos);
+    // println!("\twidget_width: {}",widget_width);
+    // println!("\taction: {:?}", action);
     
     // Get monitor details
     let output = Command::new("hyprctl")
@@ -52,7 +52,7 @@ pub fn start_capture_widget(x_pos: Option<i32>, widget_width: Option<i32>, actio
         }
     };
     let focused_monitor = monitors.iter().find(|m| m.focused).unwrap_or(&monitors[0]);
-    println!("\tfocused_monitor {:?}", focused_monitor);
+    // println!("\tfocused_monitor {:?}", focused_monitor);
     let scale_adjusted_width = (focused_monitor.width as f64 / focused_monitor.scale).floor() as i32;
 
     let adjusted_x_pos= x_pos - widget_width / 2;
@@ -66,7 +66,7 @@ pub fn start_capture_widget(x_pos: Option<i32>, widget_width: Option<i32>, actio
     } else {
         x_pos = adjusted_x_pos;
     }
-    println!("\t new x_pos: {:?}", x_pos);
+    // println!("\t new x_pos: {:?}", x_pos);
 
     match action {
         Action::Open => {
