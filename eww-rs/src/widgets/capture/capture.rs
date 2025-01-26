@@ -25,11 +25,11 @@ pub enum CaptureAction {
     VideoMP4,
     VideoMKV,
     PhotoGIF,
-    RecSTOP, //Stops recording
+    RecSTOP, // Stops recording (fixed comment capitalization)
 }
 
 impl FromStr for CaptureAction {
-    type Err = String; // Custom error type for invalid strings
+    type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
@@ -40,10 +40,11 @@ impl FromStr for CaptureAction {
             "video_mkv" | "videomkv" | "video-mkv" => Ok(CaptureAction::VideoMKV),
             "photo_gif" | "photogif" | "photo-gif" => Ok(CaptureAction::PhotoGIF),
             "rec_stop" | "recstop" | "rec-stop" => Ok(CaptureAction::RecSTOP),
-            _ => Err(format!("Invalid widget state: {}", s)),
+            _ => Err(format!("Invalid capture action: {}", s)), // Fixed error message
         }
     }
 }
+
 #[derive(PartialEq, Clone, Copy)]
 pub enum CaptureCanvas {
     Fullscreen,
@@ -51,14 +52,14 @@ pub enum CaptureCanvas {
 }
 
 impl FromStr for CaptureCanvas {
-    type Err = String; // Custom error type for invalid strings
+    type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
             "fullscreen" => Ok(CaptureCanvas::Fullscreen),
             "slurp" => Ok(CaptureCanvas::Slurp),
             "region" => Ok(CaptureCanvas::Slurp),
-            _ => Err(format!("Invalid widget state: {}", s)),
+            _ => Err(format!("Invalid canvas type: {}", s)), // Fixed error message
         }
     }
 }
@@ -82,24 +83,20 @@ fn get_slurp_output() -> String {
 }
 
 fn copy_file_to_clipboard(file_path: &str) -> io::Result<()> {
-    // Read the entire screenshot file into memory
     let mut file = File::open(file_path)?;
     let mut buffer = Vec::new();
     file.read_to_end(&mut buffer)?;
 
-    // Start wl-copy with MIME type image/png
     let mut child = Command::new("wl-copy")
         .arg("--type")
         .arg("image/png")
         .stdin(Stdio::piped())
         .spawn()?;
 
-    // Write the screenshot data to wl-copy's stdin
     if let Some(mut stdin) = child.stdin.take() {
         stdin.write_all(&buffer)?;
     }
 
-    // Wait for wl-copy to finish
     let status = child.wait()?;
     if status.success() {
         Ok(())
@@ -144,110 +141,108 @@ fn handle_capture(
     file_id: &str,
     close_popup_first: bool,
 ) {
-    println!("Hit Happened");
+    println!("Capture initiated");
     let curr_time = Instant::now();
-    // close the popup before taking the screenshot ans wait just before cmd start below ↓
+    
     if close_popup_first {
         let mut socket = std::os::unix::net::UnixStream::connect("/tmp/eww_main_socket.sock")
-            .expect("Failed to connect to socket for toggle_popup_first");
+            .expect("Failed to connect to socket for popup toggle");
         socket
             .write_all(b"capture:widget:close\n")
-            .expect("Failed to toggle_popup_first");
+            .expect("Failed to toggle popup");
     }
 
     if action != CaptureAction::PhotoJPEG && action != CaptureAction::PhotoPNG {
         return;
     }
-    let mut command_args: Vec<String> = vec!["grim".to_string()];
+
+    let mut command_args = vec!["grim".to_string()];
     if canvas == CaptureCanvas::Slurp {
         command_args.push("-g".to_string());
         command_args.push(get_slurp_output());
     }
 
-    let capture_format = if action == CaptureAction::PhotoJPEG {
-        "jpeg"
-    } else {
-        "png"
+    let capture_format = match action {
+        CaptureAction::PhotoJPEG => "jpeg",
+        _ => "png",
     };
 
     let file_path = format!(
         "{}/screenshot_{}.{}",
         screenshot_location, file_id, capture_format
     );
-    println!("jpg path {}", file_path);
 
     command_args.push("-t".to_string());
     command_args.push(capture_format.to_string());
-    command_args.push(file_path.to_string());
+    command_args.push(file_path.clone());
 
-    println!("cmd :: {:?}", command_args);
-
-    // wait a bit(for animation)
-    // dont wait in slurp coz there user selects a screen-geometry so takes time anyway
+    // Wait for animation (except when using region selection)
     if close_popup_first && canvas != CaptureCanvas::Slurp {
         thread::sleep(Duration::from_millis(1100) - curr_time.elapsed());
     }
 
-    let _ = std::process::Command::new(command_args[0].clone())
+    let _ = Command::new(&command_args[0])
         .args(&command_args[1..])
         .output()
-        .expect("Failed to execute command");
+        .expect("Failed to execute capture command");
 
     if wl_copy {
         let _ = copy_file_to_clipboard(&file_path);
     }
     if open_edit {
-        let _ = std::process::Command::new("pinta")
+        let _ = Command::new("pinta")
             .arg(&file_path)
             .output()
-            .expect("Failed to open edit");
+            .expect("Failed to open image editor");
     }
 }
 
 fn handle_recording_start(
-    _action: CaptureAction,
-    _canvas: CaptureCanvas,
+    action: CaptureAction,  // Fixed parameter name
+    canvas: CaptureCanvas,  // Fixed parameter name
     screencast_location: &str,
     file_id: &str,
     close_popup_first: bool,
     start_time: Arc<Mutex<Instant>>,
-) -> Result<std::process::Child, std::io::Error> {
-    if _action != CaptureAction::VideoMKV && _action != CaptureAction::VideoMP4 {
+) -> Result<Child, std::io::Error> {
+    if action != CaptureAction::VideoMKV && action != CaptureAction::VideoMP4 {
         return Err(std::io::Error::new(
             std::io::ErrorKind::InvalidInput,
             "Invalid capture action for recording",
         ));
     }
+
     let curr_time = Instant::now();
-    // close the popup before taking the screenshot ans wait just before cmd start below ↓
     if close_popup_first {
         let mut socket = std::os::unix::net::UnixStream::connect("/tmp/eww_main_socket.sock")
-            .expect("Failed to connect to socket for toggle_popup_first");
+            .expect("Failed to connect to socket for popup toggle");
         socket
             .write_all(b"capture:widget:close\n")
-            .expect("Failed to toggle_popup_first");
+            .expect("Failed to toggle popup");
     }
 
-    let vid_extention;
-    if _action == CaptureAction::VideoMKV {
-        vid_extention = "mkv";
+    let vid_extension = if action == CaptureAction::VideoMKV {
+        "mkv"
     } else {
-        vid_extention = "mp4";
-    }
-    let encoder = std::env::var("CAPTURE_WIDGET_VIDEO_ENCODER").map_err(|_| {
+        "mp4"
+    };
+
+    let encoder = env::var("CAPTURE_WIDGET_VIDEO_ENCODER").map_err(|_| {
         std::io::Error::new(
             std::io::ErrorKind::NotFound,
             "CAPTURE_WIDGET_VIDEO_ENCODER must be set",
         )
     })?;
 
-    let mut command_args: Vec<String> = vec!["wf-recorder".to_string()];
-    command_args.push("-c".to_string());
-    command_args.push(encoder.to_string());
-    command_args.push("-p".to_string());
-    command_args.push("preset=medium".to_string());
+    let mut command_args = vec![
+        "wf-recorder".to_string(),
+        "-c".to_string(),
+        encoder,
+        "-p".to_string(),
+        "preset=medium".to_string(),
+    ];
 
-    if _canvas == CaptureCanvas::Slurp {
+    if canvas == CaptureCanvas::Slurp {
         command_args.push("-g".to_string());
         command_args.push(get_slurp_output());
     }
@@ -255,18 +250,16 @@ fn handle_recording_start(
     command_args.push("-f".to_string());
     command_args.push(format!(
         "{}/screencast_{}.{}",
-        screencast_location, file_id, vid_extention
+        screencast_location, file_id, vid_extension
     ));
-    command_args.push("-c".to_string());
 
-    // wait a bit(for animation)
-    // dont wait in slurp coz there user selects a screen-geometry so takes time anyway
-    if close_popup_first && _canvas != CaptureCanvas::Slurp {
+    // Wait for animation (except when using region selection)
+    if close_popup_first && canvas != CaptureCanvas::Slurp {
         thread::sleep(Duration::from_millis(1100) - curr_time.elapsed());
     }
-    // for eww_updater_thread to start proper timer
-    *start_time.lock().unwrap() = std::time::Instant::now();
-    Command::new(command_args[0].clone())
+
+    *start_time.lock().unwrap() = Instant::now();
+    Command::new(&command_args[0])
         .args(&command_args[1..])
         .stdin(Stdio::null())
         .stdout(Stdio::null())
@@ -279,77 +272,58 @@ lazy_static! {
 }
 
 fn eww_updater_thread(
-    _action: &str,
+    action: &str,  // Fixed parameter name
     eww_config_loc: &str,
     start_time: Arc<Mutex<Instant>>,
 ) -> bool {
     //UGLY BUT FOR FUTURE USE MAYBE SO LETS KEEP IT SHALL WE??
-    // let capture_dropdown_rel_loc = std::env::var("CAPTURE_DROPDOWN_WIDGET_RELATIVE_LOCATION")
-    //     .unwrap_or_else(|_| String::from("/capture/capture-dropdown"));
+    //UGLY let capture_dropdown_rel_loc = std::env::var("CAPTURE_DROPDOWN_WIDGET_RELATIVE_LOCATION")
+    //UGLY     .unwrap_or_else(|_| String::from("/capture/capture-dropdown"));
+    //UGLY let eww_capture_dropdown_real_loc =
+    //UGLY     Arc::new(format!("{}{}", _eww_config_loc, capture_dropdown_rel_loc));
+    //UGLY let loc_clone = Arc::clone(&eww_capture_dropdown_real_loc);
 
-    // let eww_capture_dropdown_real_loc =
-    //     Arc::new(format!("{}{}", _eww_config_loc, capture_dropdown_rel_loc));
-    // let loc_clone = Arc::clone(&eww_capture_dropdown_real_loc);
-
-    match _action {
+    match action {
         "start" => {
-            // Create a new stop flag for this thread
             let stop_flag = Arc::new(AtomicBool::new(false));
             let stop_flag_clone = Arc::clone(&stop_flag);
-
-            // Store the flag in the global Mutex so we can access it in "stop"
             *STOP_FLAG.lock().unwrap() = Some(stop_flag);
 
-            println!("Dropdown Loc :: {}", eww_config_loc);
+            let config_loc = eww_config_loc.to_string();
+            let config_loc_clone = config_loc.clone();
 
-            let eww_config_loc_cpy_one = eww_config_loc.to_string();
-            let eww_config_loc_cpy_two = eww_config_loc.to_string();
-
-            // Spawn the background thread
             thread::spawn(move || {
-                loop {
-                    // Check if we should stop
-                    if stop_flag_clone.load(Ordering::Relaxed) {
-                        println!("Stop flag set, ending thread loop.");
-                        break;
-                    }
-                    let time = start_time.lock().unwrap();
-                    let duration = time.elapsed().as_secs();
+                while !stop_flag_clone.load(Ordering::Relaxed) {
+                    let duration = start_time.lock().unwrap().elapsed().as_secs();
                     let formatted_time = format_time(duration);
-                    println!("elapsed time :: {}", formatted_time);
 
-                    // Update eww widget every second with new time
                     let _ = Command::new("eww")
                         .arg("update")
                         .arg(format!("stop_icon_with_duration= {}", formatted_time))
                         .arg("-c")
-                        .arg(&eww_config_loc_cpy_one)
+                        .arg(&config_loc)
                         .output();
 
                     thread::sleep(Duration::from_secs(1));
                 }
             });
-            // For illustration, show a button or indicator
+
             let _ = Command::new("eww")
                 .arg("update")
                 .arg("show_stop_button=true")
                 .arg("-c")
-                .arg(&eww_config_loc_cpy_two)
+                .arg(config_loc_clone)
                 .output();
 
-            return true;
+            true
         }
 
         "stop" => {
-            // Signal the thread to stop by setting the atomic boolean
             if let Some(flag) = STOP_FLAG.lock().unwrap().as_ref() {
                 flag.store(true, Ordering::Relaxed);
             }
-
-            // Clear out our global reference (optional, but prevents reuse)
             *STOP_FLAG.lock().unwrap() = None;
 
-            // Optionally hide or reset any eww widgets
             let _ = Command::new("eww")
                 .arg("update")
                 .arg("show_stop_button=false")
@@ -364,14 +338,12 @@ fn eww_updater_thread(
                 .arg(eww_config_loc)
                 .output();
 
-            println!("Stop command processed; thread will exit on next loop check.");
-
-            return false;
+            false
         }
 
         _ => {
-            println!("Provide a proper action: 'start' or 'stop'.");
-            return false;
+            eprintln!("Invalid action: must be 'start' or 'stop'");
+            false
         }
     }
 }
@@ -383,68 +355,61 @@ fn convert_mp4_to_gif(
     fps: i32,
     scale: i32,
     palette_gen: bool,
-    scaling_algo: &str,
-    is_scale_fixed_on_width: bool,
+    scaling_algorithm: &str,
+    fixed_width_scaling: bool,
 ) {
-    let mut command_args: Vec<String> = vec!["ffmpeg".to_string()];
+    let mut command_args = vec!["ffmpeg".to_string()];
+    let video_path = format!("{}/screencast_{}.mp4", screencast_loc, file_id);
+    let gif_path = format!("{}/screencast_{}.gif", screenshot_loc, file_id);
 
-    let vid_file = format!("{}/screencast_{}.mp4", screencast_loc, file_id);
-    let gif_file = format!("{}/screencast_{}.gif", screenshot_loc, file_id);
+    // Configure scaling algorithm
+    let scale_filter = match scaling_algorithm {
+        "bilinear" | "bicubic" | "nearest" => scaling_algorithm,
+        _ => "lanczos",
+    };
 
-    // Determine scaling algo :
-    let s_algo;
-    if scaling_algo == "bilinear" || scaling_algo == "bicubic" || scaling_algo == "nearest" {
-        s_algo = format!("flags={}", scaling_algo);
-    } else {
-        s_algo = format!("flags={}", "lanczos");
-    }
-    command_args.push("-i".to_string());
-    command_args.push(vid_file);
+    command_args.extend(["-i".to_string(), video_path.clone()]);
 
-    // Build the filter chain
     let mut filter_components = Vec::new();
-
-    // Handle FPS filter
+    
+    // FPS configuration
     if fps > 0 && fps <= 60 {
         filter_components.push(format!("fps={}", fps));
     } else {
-        println!(" FPS for gif must be > 0 and <= 60")
+        println!("FPS for GIF must be between 1 and 60");
     }
 
+    // Scaling configuration
     if scale > 0 && scale <= 800 {
-        if is_scale_fixed_on_width {
-            filter_components.push(format!("scale=-1:{}:{}", scale, s_algo));
+        let scale_param = if fixed_width_scaling {
+            format!("scale={}:-1:flags={}", scale, scale_filter)
         } else {
-            filter_components.push(format!("scale={}:-1:{}", scale, s_algo));
-        }
+            format!("scale=-1:{}:flags={}", scale, scale_filter)
+        };
+        filter_components.push(scale_param);
     } else {
-        println!(" scale for gif must be > 0 and <= 800")
+        println!("Scale value must be between 1 and 800");
     }
 
-    // Handle palette generation if requested
+    // Palette generation
     if palette_gen {
         filter_components.push("split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse".to_string());
     }
 
-    // Assemble the full filtergraph
     if !filter_components.is_empty() {
-        command_args.push("-vf".to_string());
-        command_args.push(filter_components.join(","));
+        command_args.extend(["-vf".to_string(), filter_components.join(",")]);
     }
 
-    // Add output files
-    command_args.push(gif_file);
+    command_args.push(gif_path.clone());
 
-    // Execute FFmpeg command
-    let output = std::process::Command::new(&command_args[0])
+    let output = Command::new(&command_args[0])
         .args(&command_args[1..])
         .output()
-        .expect("Failed to execute FFmpeg command");
+        .expect("Failed to execute FFmpeg conversion");
 
-    // Check for errors
     if !output.status.success() {
         eprintln!(
-            "FFmpeg conversion failed with error: {}",
+            "GIF conversion failed: {}",
             String::from_utf8_lossy(&output.stderr)
         );
     }
@@ -455,54 +420,54 @@ fn start_rec_thread(
     canvas: CaptureCanvas,
     _wl_copy: bool,
     _open_edit: bool,
-    screencast_location: &str,
-    screenshot_location: &str,
+    screencast_loc: &str,
+    screenshot_loc: &str,
     file_id: &str,
     eww_config_loc: &str,
     close_popup_first: bool,
 ) {
-    if action != CaptureAction::VideoMKV
-        && action != CaptureAction::VideoMP4
-        && action != CaptureAction::RecSTOP
-        && action != CaptureAction::PhotoGIF
-    {
+    if !matches!(
+        action,
+        CaptureAction::VideoMKV | CaptureAction::VideoMP4 | CaptureAction::PhotoGIF | CaptureAction::RecSTOP
+    ) {
         return;
     }
+
     let socket_path = Path::new("/tmp/eww_capture.sock");
     if socket_path.exists() {
-        fs::remove_file(socket_path).expect("Failed to remove existing socket");
+        fs::remove_file(socket_path).expect("Failed to clean up existing socket");
     }
 
-    let listener = UnixListener::bind(socket_path).expect("Failed to bind to socket");
+    let listener = UnixListener::bind(socket_path).expect("Failed to create socket listener");
     let mut recorder: Option<Child> = None;
-    let mut is_eww_updater_running: bool = false;
+    let mut updater_active = false;
 
-    let screencast_loc = screencast_location.to_string();
-    let screenshot_loc = screenshot_location.to_string();
+    let screencast_loc = screencast_loc.to_string();
+    let screenshot_loc = screenshot_loc.to_string();
     let eww_config = eww_config_loc.to_string();
-
     let file_id = file_id.to_string();
+
     thread::spawn(move || {
         for stream in listener.incoming() {
             match stream {
                 Ok(stream) => {
                     let mut reader = BufReader::new(stream);
                     let mut command = String::new();
+                    
                     if reader.read_line(&mut command).is_ok() {
                         match command.trim() {
                             "start" => {
-                                // let start_time = std::time::Instant::now();
-                                let start_time = Arc::new(Mutex::new(std::time::Instant::now()));
+                                let start_time = Arc::new(Mutex::new(Instant::now()));
                                 let start_time_clone = Arc::clone(&start_time);
 
-                                // when startting it either can be videomkv or videomp4(defaults)
-                                let mut action = action;
-                                if action != CaptureAction::VideoMKV {
-                                    action = CaptureAction::VideoMP4
-                                }
+                                let recording_action = match action {
+                                    CaptureAction::PhotoGIF => CaptureAction::VideoMP4,
+                                    _ => action,
+                                };
+
                                 if recorder.is_none() {
                                     match handle_recording_start(
-                                        action,
+                                        recording_action,
                                         canvas,
                                         &screencast_loc,
                                         &file_id,
@@ -510,55 +475,46 @@ fn start_rec_thread(
                                         start_time,
                                     ) {
                                         Ok(child) => recorder = Some(child),
-                                        Err(e) => eprintln!("Failed to start recording: {}", e),
-                                    };
+                                        Err(e) => eprintln!("Recording start failed: {}", e),
+                                    }
                                 }
-                                println!("HI {}", is_eww_updater_running);
-                                if !is_eww_updater_running {
-                                    println!("HI2");
-                                    is_eww_updater_running =
-                                        eww_updater_thread("start", &eww_config, start_time_clone);
-                                    println!("HI3 {}", is_eww_updater_running);
+
+                                if !updater_active {
+                                    updater_active = eww_updater_thread(
+                                        "start",
+                                        &eww_config,
+                                        start_time_clone,
+                                    );
                                 }
                             }
                             "stop" => {
-                                if let Some(mut proc) = recorder.take() {
-                                    let pid = proc.id() as i32;
-                                    println!("Sending SIGINT to wf-recorder (pid: {})", pid);
+                                if let Some(mut process) = recorder.take() {
+                                    let pid = process.id() as i32;
                                     kill(Pid::from_raw(pid), Signal::SIGINT)
-                                        .expect("Failed to send SIGINT");
-                                    proc.wait().expect("Failed to wait on wf-recorder");
+                                        .expect("Failed to terminate recorder");
+                                    process.wait().expect("Failed to wait for process");
                                 }
-                                println!("HI11 {}", is_eww_updater_running);
-                                if is_eww_updater_running {
-                                    println!("HI12");
-                                    is_eww_updater_running = eww_updater_thread(
+
+                                if updater_active {
+                                    updater_active = eww_updater_thread(
                                         "stop",
                                         &eww_config,
                                         Arc::new(Mutex::new(Instant::now())),
                                     );
-                                    println!("HI13 {}", is_eww_updater_running);
                                 }
 
-                                // if started using PhotoGIF need to conv mp4 into gif
+                                // Handle GIF conversion for PhotoGIF action
                                 if action == CaptureAction::PhotoGIF {
-                                    // show the eww button as converting
-                                    // Optionally hide or reset any eww widgets
+                                    // UGLY: Temporary UI updates during conversion
+                                    // UGLY: Would be better to have proper state management
                                     let _ = Command::new("eww")
-                                        .arg("update")
-                                        .arg("show_stop_button=true")
-                                        .arg("-c")
-                                        .arg(&eww_config)
+                                        .args(["update", "show_stop_button=true", "-c", &eww_config])
                                         .output();
 
                                     let _ = Command::new("eww")
-                                        .arg("update")
-                                        .arg("stop_icon_with_duration=...")
-                                        .arg("-c")
-                                        .arg(&eww_config)
+                                        .args(["update", "stop_icon_with_duration=...", "-c", &eww_config])
                                         .output();
 
-                                    // start conversion of mp4 into gif
                                     convert_mp4_to_gif(
                                         &screencast_loc,
                                         &file_id,
@@ -566,29 +522,20 @@ fn start_rec_thread(
                                         10,
                                         800,
                                         true,
-                                        "default",
+                                        "lanczos",
                                         false,
                                     );
-                                    // after conversion  
+
                                     let _ = Command::new("eww")
-                                        .arg("update")
-                                        .arg("show_stop_button=false")
-                                        .arg("-c")
-                                        .arg(&eww_config)
-                                        .output();
-                                    let _ = Command::new("eww")
-                                        .arg("update")
-                                        .arg("stop_icon_with_duration= 0s")
-                                        .arg("-c")
-                                        .arg(&eww_config)
+                                        .args(["update", "show_stop_button=false", "-c", &eww_config])
                                         .output();
                                 }
                             }
-                            _ => {}
+                            _ => eprintln!("Received unknown command"),
                         }
                     }
                 }
-                Err(e) => eprintln!("Error accepting connection: {}", e),
+                Err(e) => eprintln!("Socket error: {}", e),
             }
         }
     });
@@ -601,44 +548,24 @@ pub fn capture(
     open_edit: bool,
     eww_config_loc: &str,
 ) {
-    let home = env::var("HOME")
-        .unwrap_or_else(|_| String::from("/srv/media"))
-        .to_string();
+    let home_dir = env::var("HOME")
+        .unwrap_or_else(|_| "/srv/media".to_string());
 
-    // Set file locations
-    let screenshot_location = format!("{}/Pictures/Screenshots", home);
-    let screencast_location = format!("{}/Videos/Screencasts", home);
-
+    let screenshot_location = format!("{}/Pictures/Screenshots", home_dir);
+    let screencast_location = format!("{}/Videos/Screencasts", home_dir);
     let file_id = chrono::Local::now().format("%F_%H-%M-%S").to_string();
 
-    println!("home : {}", home.as_str());
-    println!("screenshot_location : {}", screenshot_location.as_str());
-    println!("file id : {}", file_id.as_str());
-
     match action {
-        CaptureAction::PhotoJPEG => {
-            handle_capture(
-                action,
-                canvas,
-                wl_copy,
-                open_edit,
-                &screenshot_location,
-                &file_id,
-                true,
-            );
-        }
-        CaptureAction::PhotoPNG => {
-            handle_capture(
-                action,
-                canvas,
-                wl_copy,
-                open_edit,
-                &screenshot_location,
-                &file_id,
-                true,
-            );
-        }
-        CaptureAction::VideoMP4 => {
+        CaptureAction::PhotoJPEG | CaptureAction::PhotoPNG => handle_capture(
+            action,
+            canvas,
+            wl_copy,
+            open_edit,
+            &screenshot_location,
+            &file_id,
+            true,
+        ),
+        CaptureAction::VideoMP4 | CaptureAction::VideoMKV | CaptureAction::PhotoGIF => {
             start_rec_thread(
                 action,
                 canvas,
@@ -647,58 +574,18 @@ pub fn capture(
                 &screencast_location,
                 &screenshot_location,
                 &file_id,
-                &eww_config_loc,
+                eww_config_loc,
                 true,
             );
+
             let mut socket = std::os::unix::net::UnixStream::connect("/tmp/eww_capture.sock")
-                .expect("Failed to connect to socket");
-            socket
-                .write_all(b"start\n")
-                .expect("Failed to write to socket");
-        }
-        CaptureAction::VideoMKV => {
-            start_rec_thread(
-                action,
-                canvas,
-                wl_copy,
-                open_edit,
-                &screencast_location,
-                &screenshot_location,
-                &file_id,
-                &eww_config_loc,
-                true,
-            );
-            let mut socket = std::os::unix::net::UnixStream::connect("/tmp/eww_capture.sock")
-                .expect("Failed to connect to socket");
-            socket
-                .write_all(b"start\n")
-                .expect("Failed to write to socket");
-        }
-        CaptureAction::PhotoGIF => {
-            //rec video
-            start_rec_thread(
-                action,
-                canvas,
-                wl_copy,
-                open_edit,
-                &screencast_location,
-                &screenshot_location,
-                &file_id,
-                &eww_config_loc,
-                true,
-            );
-            let mut socket = std::os::unix::net::UnixStream::connect("/tmp/eww_capture.sock")
-                .expect("Failed to connect to socket");
-            socket
-                .write_all(b"start\n")
-                .expect("Failed to write to socket");
+                .expect("Socket connection failed");
+            socket.write_all(b"start\n").expect("Start command failed");
         }
         CaptureAction::RecSTOP => {
             let mut socket = std::os::unix::net::UnixStream::connect("/tmp/eww_capture.sock")
-                .expect("Failed to connect to socket");
-            socket
-                .write_all(b"stop\n")
-                .expect("Failed to write to socket");
+                .expect("Socket connection failed");
+            socket.write_all(b"stop\n").expect("Stop command failed");
         }
     }
 }
