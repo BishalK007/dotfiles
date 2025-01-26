@@ -3,7 +3,10 @@
 .PHONY: tvs test-video-start tvst test-video-stop tpj test-photo-jpeg tpp test-photo-png es eww-start est eww-stop
 
 tvs test-video-start:
-	@echo "capture:util:video-mp4:fullscreen:no-copy:no-edit" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock
+	@echo "capture:util:video-mkv:fullscreen:no-copy:no-edit" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock
+
+tgs test-gif-start:
+	@echo "capture:util:photo-gif:fullscreen:no-copy:no-edit" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock
 
 tvst test-video-stop:
 	@echo "capture:util:recstop" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock
