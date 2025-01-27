@@ -13,7 +13,7 @@ while [[ "$#" -gt 0 ]]; do
             bash $HOME/.config/eww/widgets/audio/scripts/volume-ctrl.sh --mute-toggle
         ;;
         --update-eww)
-            EWW_MAIN_CONF="$HOME/.config/eww/"
+            EWW_MAIN_CONF="$HOME/.config/dotfiles/eww-rs/src"
             EWW_BRIGHTNESS_DROPDOWN_CONF="$HOME/.config/eww/widgets/audio/audio-dropdown/"
             
             ICON=$(bash $HOME/.config/eww/widgets/audio/scripts/volume-ctrl.sh --get-volume-icon)

@@ -1,11 +1,15 @@
 mod models;
 mod widgets;
 
+use widgets::audio;
+use widgets::audio::functions::start_audio_widget;
+use widgets::audio::functions::initialize_audio_widget;
+use widgets::audio::audio::change_vol;
+use widgets::capture;
 use widgets::capture::capture::capture;
 use widgets::capture::capture::CaptureAction;
 use widgets::capture::capture::CaptureCanvas;
 use widgets::capture::functions::start_capture_widget;
-use widgets::capture::functions::Action;
 use widgets::workspaces::functions::initialize_workspace_numbers;
 use widgets::workspaces::functions::start_workspace_updater_thread;
 
@@ -23,6 +27,18 @@ use std::{
     thread,
     time::Duration,
 };
+fn parse_element<T, F>(message_vec: &[&str], index: usize, converter: F) -> Option<T>
+where
+    F: FnOnce(&str) -> Result<T, std::num::ParseIntError>,
+{
+    message_vec.get(index).and_then(|&s| {
+        if s.is_empty() {
+            None
+        } else {
+            converter(s).ok()
+        }
+    })
+}
 
 // This function handles a single client connection.
 fn handle_client(
@@ -34,7 +50,7 @@ fn handle_client(
     loop {
         let n = socket.read(&mut buffer)?;
         if n == 0 {
-            println!("Client disconnected.");
+            // println!("Client disconnected.");
             return Ok(());
         }
 
@@ -43,46 +59,96 @@ fn handle_client(
         let message_vec: Vec<&str> = message.trim_end().split(':').collect();
         // println!("vec: {:?}", message_vec[1]);
 
-        if message_vec[0].to_lowercase() == "capture" { // capture:<widget/util>:..
+        if message_vec[0].to_lowercase() == "audio" {
+            // audio:<widget/util>:..
+            if message_vec[1].to_lowercase() == "widget" {
+                // audio:widget:<Action>:<x_pos>:<y_pos>:<widget_width>:<show_ctrl_buttons(0=>false, 1=> true)>:<close_on_hover_lost(0=>false, 1=> true)>
+                let action = message_vec[2]
+                    .to_lowercase()
+                    .parse::<audio::functions::Action>()
+                    .unwrap();
 
-            if message_vec[1].to_lowercase() == "widget" { // capture:widget:<Action>:<x_pos>:<widget_width>
-                let state = message_vec[2].to_lowercase().parse::<Action>().unwrap();
+                let x_pos = parse_element(&message_vec, 3, |s| s.parse::<i32>()); // Get the fourh element (index 3) and parse it to i32
+                let y_pos = parse_element(&message_vec, 4, |s| s.parse::<i32>()); // Get the fifth element (index 4) and parse it to i32
+                let widget_width = parse_element(&message_vec, 5, |s| s.parse::<i32>()); // Get the sixth element (index 5) and parse it to i32
+                let show_ctrl_buttons = parse_element(&message_vec, 6, |s| {
+                    // Get the seventh element (index 6) and parse it to bool
+                    s.parse::<i32>().map(|n| n != 0)
+                });
+                let close_on_hover_lost = parse_element(&message_vec, 7, |s| {
+                    // Get the eight element (index 7) and parse it to bool
+                    s.parse::<i32>().map(|n| n != 0)
+                });
+                // println!("close_on_hover_lost {:?}", close_on_hover_lost);
+                start_audio_widget(
+                    x_pos,
+                    y_pos,
+                    widget_width,
+                    show_ctrl_buttons,
+                    close_on_hover_lost,
+                    action,
+                    &eww_config_loc,
+                );
+            }
+            if message_vec[1].to_lowercase() == "util" {
+                // audio:util:<VolumeAction>
+                let action = match message_vec.get(2) {
+                    Some(action_str) => match action_str.to_lowercase().parse::<audio::audio::VolumeAction>() {
+                        Ok(action) => action,
+                        Err(e) => {
+                            eprintln!("Failed to parse VolumeAction: {}", e);
+                            return Ok(());
+                        }
+                    },
+                    None => {
+                        eprintln!("VolumeAction not provided in the message.");
+                        return Ok(());
+                    }
+                };
+                let eww_config_loc_clone = eww_config_loc.to_string();
+                // std::thread::spawn(move || {
+                    change_vol(action, &eww_config_loc_clone);
+                // });
+            }
+        }
+
+        if message_vec[0].to_lowercase() == "capture" {
+            // capture:<widget/util>:..
+
+            if message_vec[1].to_lowercase() == "widget" {
+                // capture:widget:<Action>:<x_pos>:<widget_width>
+                let action = message_vec[2]
+                    .to_lowercase()
+                    .parse::<capture::functions::Action>()
+                    .unwrap();
 
                 // Get the fourh element (index 3) and parse it to i32
-                let x_pos: Option<i32> = message_vec
-                    .get(3) // Check if index 2 exists
-                    .and_then(|s| {
-                        // If it exists...
-                        if s.is_empty() {
-                            // Check if string is empty
-                            None
-                        } else {
-                            s.parse().ok() // Parse to i32, convert Result to Option
-                        }
-                    });
+                let x_pos = parse_element(&message_vec, 3, |s| s.parse::<i32>());
+                // Get the fourh element (index 4) and parse it to i32
+                let widget_width = parse_element(&message_vec, 5, |s| s.parse::<i32>());
 
-                start_capture_widget(x_pos, None, state, &eww_config_loc);
+                start_capture_widget(x_pos, widget_width, action, &eww_config_loc);
             }
-            if message_vec[1].to_lowercase() == "util" { // capture:util:<CaptureAction>:<CaptureCanvas>:wl-copy|<anything else>:open-edit|<anything else>
-                let state = message_vec.get(2)
-                    .ok_or_else(|| std::io::Error::new(
-                        std::io::ErrorKind::InvalidInput,
-                        "CaptureAction is required"
-                    ))?
+            if message_vec[1].to_lowercase() == "util" {
+                // capture:util:<CaptureAction>:<CaptureCanvas>:wl-copy|<anything else>:open-edit|<anything else>
+                let action = message_vec[2]
                     .to_lowercase()
                     .parse::<CaptureAction>()
-                    .map_err(|_| std::io::Error::new(
-                        std::io::ErrorKind::InvalidInput,
-                        "Invalid CaptureAction"
-                    ))?;
-                let canvas_state = match message_vec.get(3) {
-                    Some(s) if !s.is_empty() => s.to_lowercase().parse::<CaptureCanvas>().unwrap(),
-                    _ => CaptureCanvas::Fullscreen,
-                };
-                let wl_copy = message_vec.get(4).map_or(false, |s| s.to_lowercase() == "wl-copy");
-                let open_edit = message_vec.get(5).map_or(false, |s| s.to_lowercase() == "open-edit");
+                    .unwrap();
 
-                capture(state, canvas_state, wl_copy, open_edit, &eww_config_loc );
+                let canvas_state = message_vec[3]
+                    .to_lowercase()
+                    .parse::<CaptureCanvas>()
+                    .unwrap();
+
+                let wl_copy = parse_element(&message_vec, 4, |s| Ok(s.to_lowercase() == "wl-copy"))
+                    .unwrap_or(false);
+
+                let open_edit =
+                    parse_element(&message_vec, 5, |s| Ok(s.to_lowercase() == "open-edit"))
+                        .unwrap_or(false);
+
+                capture(action, canvas_state, wl_copy, open_edit, &eww_config_loc);
             }
         }
         if message_vec[0] == "eww" {
@@ -107,18 +173,29 @@ fn handle_client(
                     (_, Err(e)) => eprintln!("Failed to open eww-bar: {}", e),
                 }
 
-                // This functions initialise the workspace numbers then runs a thread that updates them on socket update
-                initialize_workspace_numbers(&eww_config_loc.to_string());
-                start_workspace_updater_thread(&eww_config_loc.to_string());
-
+                
                 // This loads all other widget daemons
                 // Load capture widget to daemon
-                let message = "capture:widget:load";
+                let mut message = "capture:widget:load";
                 if let Ok(mut stream) = UnixStream::connect("/tmp/eww_main_socket.sock") {
                     if let Err(e) = stream.write_all(message.as_bytes()) {
                         eprintln!("Failed to send message: {}", e);
                     }
                 }
+                // Load audio widget to daemon
+                message = "audio:widget:load";
+                if let Ok(mut stream) = UnixStream::connect("/tmp/eww_main_socket.sock") {
+                    if let Err(e) = stream.write_all(message.as_bytes()) {
+                        eprintln!("Failed to send message: {}", e);
+                    }
+                }
+
+                // This functions initialise the workspace numbers then runs a thread that updates them on socket update
+                initialize_workspace_numbers(&eww_config_loc.to_string());
+                start_workspace_updater_thread(&eww_config_loc.to_string());
+
+                // Initialize the audio widget icons nd all
+                initialize_audio_widget(&eww_config_loc.to_string());
             }
             if message_vec[1] == "stop" {
                 let close_bar = Command::new("eww")
@@ -201,7 +278,12 @@ fn main() -> std::io::Result<()> {
     // Load the .env file
     dotenv().expect("Failed to load .env file");
 
-    let eww_config_loc = std::env::var("EWW_CONFIG_LOC").expect("EWW_CONFIG_LOC must be set.");
+    let eww_config_loc = match std::env::var("EWW_CONFIG_LOC") {
+        Ok(val) => val,
+        Err(_) => {
+            return Err(std::io::Error::new(std::io::ErrorKind::Other, "Failed to get EWW_CONFIG_LOC environment variable"));
+        }
+    };
 
     let socket_path = "/tmp/eww_main_socket.sock";
 

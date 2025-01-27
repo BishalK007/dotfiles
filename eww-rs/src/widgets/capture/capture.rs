@@ -141,7 +141,6 @@ fn handle_capture(
     file_id: &str,
     close_popup_first: bool,
 ) {
-    println!("Capture initiated");
     let curr_time = Instant::now();
     
     if close_popup_first {
@@ -278,7 +277,7 @@ fn eww_updater_thread(
 ) -> bool {
     //UGLY BUT FOR FUTURE USE MAYBE SO LETS KEEP IT SHALL WE??
     //UGLY let capture_dropdown_rel_loc = std::env::var("CAPTURE_DROPDOWN_WIDGET_RELATIVE_LOCATION")
-    //UGLY     .unwrap_or_else(|_| String::from("/capture/capture-dropdown"));
+    //UGLY     .unwrap_or_else(|_| String::from("/widgets/capture/capture-dropdown"));
     //UGLY let eww_capture_dropdown_real_loc =
     //UGLY     Arc::new(format!("{}{}", _eww_config_loc, capture_dropdown_rel_loc));
     //UGLY let loc_clone = Arc::clone(&eww_capture_dropdown_real_loc);
@@ -376,7 +375,7 @@ fn convert_mp4_to_gif(
     if fps > 0 && fps <= 60 {
         filter_components.push(format!("fps={}", fps));
     } else {
-        println!("FPS for GIF must be between 1 and 60");
+        eprintln!("FPS for GIF must be between 1 and 60");
     }
 
     // Scaling configuration
@@ -388,7 +387,7 @@ fn convert_mp4_to_gif(
         };
         filter_components.push(scale_param);
     } else {
-        println!("Scale value must be between 1 and 800");
+        eprintln!("Scale value must be between 1 and 800");
     }
 
     // Palette generation

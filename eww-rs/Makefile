@@ -1,6 +1,6 @@
 # For Doc and testing dont use inside widgets
 
-.PHONY: tvs test-video-start tvst test-video-stop tpj test-photo-jpeg tpp test-photo-png es eww-start est eww-stop
+.PHONY: tavd test-audio-voldown tavu test-audio-volup tao test-audio-open tac test-audio-close tvs test-video-start tvst test-video-stop tpj test-photo-jpeg tpp test-photo-png es eww-start est eww-stop
 
 tvs test-video-start:
 	@echo "capture:util:video-mkv:fullscreen:no-copy:no-edit" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock
@@ -16,6 +16,17 @@ tpj test-photo-jpeg:
 
 tpp test-photo-png:
 	@echo "capture:util:photopng:fullscreen:no-copy:no-edit" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock
+
+tao test-audio-open:
+	@echo "audio:widget:open:0:0:300:1" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock
+
+tac test-audio-close:
+	@echo "audio:widget:close" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock
+
+tavu test-audio-volup:
+	@echo "audio:util:volup" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock
+tavd test-audio-voldown:
+	@echo "audio:util:voldown" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock
 
 
 es eww-start:
