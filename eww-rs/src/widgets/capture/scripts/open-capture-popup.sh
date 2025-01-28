@@ -51,13 +51,13 @@ echo "$x_pos"
 # Open the EWW window at the adjusted x-coordinate using the temporary config directory based on action
 case $action in
     open)
-        eww open capture_dropdown -c "$HOME/.config/eww/widgets/capture/capture-dropdown" --arg x_pos="$x_pos" --arg widget_width="$widget_width"
+        eww open capture_dropdown -c "$HOME/.config/eww/src/widgets/capture/capture-dropdown" --arg x_pos="$x_pos" --arg widget_width="$widget_width"
         ;;
     close)
-        eww close capture_dropdown -c "$HOME/.config/eww/widgets/capture/capture-dropdown"
+        eww close capture_dropdown -c "$HOME/.config/eww/src/widgets/capture/capture-dropdown"
         ;;
     toggle)
-        eww open capture_dropdown --toggle -c "$HOME/.config/eww/widgets/capture/capture-dropdown" --arg x_pos="$x_pos" --arg widget_width="$widget_width"
+        eww open capture_dropdown --toggle -c "$HOME/.config/eww/src/widgets/capture/capture-dropdown" --arg x_pos="$x_pos" --arg widget_width="$widget_width"
         ;;
     *)
         echo "Invalid action specified: $action"; exit 1;;

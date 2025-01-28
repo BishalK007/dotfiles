@@ -12,7 +12,7 @@
         :reveal show_stop_button
         (eventbox
           :cursor "pointer"
-          ; :onclick "(bash \"$HOME/.config/eww/widgets/capture/scripts/capture-eww-helper.sh\" --rec-stop &) && eww update show_stop_button=false -c \"$HOME/.config/eww/\" &"
+          ; :onclick "(bash \"$HOME/.config/eww/src/widgets/capture/scripts/capture-eww-helper.sh\" --rec-stop &) && eww update show_stop_button=false -c \"$HOME/.config/eww/\" &"
           :onclick "echo \"capture:util:recstop\" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock"
           (label :text stop_icon_with_duration :class "stop-label")
         )

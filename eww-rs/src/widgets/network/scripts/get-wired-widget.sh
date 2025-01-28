@@ -1,8 +1,8 @@
 #!/bin/bash
-eww update -c $HOME/.config/eww/widgets/network/network-dropdown wired_conns_widget="(label :text 'Loading...')"
+eww update -c $HOME/.config/eww/src/widgets/network/network-dropdown wired_conns_widget="(label :text 'Loading...')"
 
 # Run the network script and store the JSON output
-network_json=$(bash $HOME/.config/eww/widgets/network/scripts/list-networks.sh --wired)
+network_json=$(bash $HOME/.config/eww/src/widgets/network/scripts/list-networks.sh --wired)
 
 # Parse the JSON to get device names using jq
 device_names=$(echo "$network_json" | jq -r '.[].DEVICE')
@@ -27,4 +27,4 @@ widget_definition+=")"
 # Echo the complete widget definition at once
 echo -e "$widget_definition"
 
-eww update -c $HOME/.config/eww/widgets/network/network-dropdown wired_conns_widget="$widget_definition"
+eww update -c $HOME/.config/eww/src/widgets/network/network-dropdown wired_conns_widget="$widget_definition"

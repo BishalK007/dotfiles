@@ -1,6 +1,6 @@
 ; generate to a dir that wont affect eww to reload everytime u generate
 
-(defpoll  wired_conns_widget :interval "15s" "bash $HOME/.config/eww/widgets/network/scripts/get-wired-widget.sh")
+(defpoll  wired_conns_widget :interval "15s" "bash $HOME/.config/eww/src/widgets/network/scripts/get-wired-widget.sh")
 
 (defwindow network_dropdown [x_pos widget_width]
     :monitor 0

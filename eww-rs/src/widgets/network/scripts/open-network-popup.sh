@@ -42,4 +42,4 @@ echo "$x_pos"
 
 # Open the EWW window at the specified x-coordinate using the temporary config directory
 # eww open network_dropdown --toggle -c /tmp/network-dropdown
-eww open network_dropdown --toggle -c "$HOME/.config/eww/widgets/network/network-dropdown" --arg x_pos="$x_pos" --arg widget_width="$widget_width"
+eww open network_dropdown --toggle -c "$HOME/.config/eww/src/widgets/network/network-dropdown" --arg x_pos="$x_pos" --arg widget_width="$widget_width"

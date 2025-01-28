@@ -7,5 +7,5 @@
 #### Things to keep in mind-
  - Need to add eww update to key binds such as- XF86MonBrightnessUp
     ```
-    && bash $HOME/.config/eww/widgets/brightness/scripts/eww-bar-update-brightness.sh
+    && bash $HOME/.config/eww/src/widgets/brightness/scripts/eww-bar-update-brightness.sh
     ```

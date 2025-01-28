@@ -3,7 +3,7 @@
       :class "systray_button "
       :cursor "pointer"
       :tooltip "Open System Tray"
-      :onclick "hyprctl cursorpos | awk -F',' '{print $1}' | xargs -I{} bash $HOME/.config/eww/widgets/systray/scripts/open-systray-popup.sh --x-pos {}"
+      :onclick "hyprctl cursorpos | awk -F',' '{print $1}' | xargs -I{} bash $HOME/.config/eww/src/widgets/systray/scripts/open-systray-popup.sh --x-pos {}"
       (label :text "󱊖" :class "systray_icon")
     )
   )

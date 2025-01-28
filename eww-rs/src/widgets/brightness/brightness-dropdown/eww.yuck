@@ -18,7 +18,7 @@
   (defwidget hello_box [close_on_hover_lost show_ctrl_buttons widget_width]
     (
       eventbox
-      :onhoverlost "bash $HOME/.config/eww/widgets/brightness/scripts/open-brightness-popup.sh --close-bool $close_on_hover_lost"
+      :onhoverlost "bash $HOME/.config/eww/src/widgets/brightness/scripts/open-brightness-popup.sh --close-bool $close_on_hover_lost"
       (box
         :orientation "vertical"
         :spacing "22"
@@ -33,7 +33,7 @@
           :spacing 20
           :width 200
           (eventbox
-            :onclick "[ \$(brightnessctl -m | awk -F, '{print \$4}' | tr -d '%') -gt 5 ] && brightnessctl set 5%- && bash $HOME/.config/eww/widgets/brightness/scripts/eww-bar-update-brightness.sh "
+            :onclick "[ \$(brightnessctl -m | awk -F, '{print \$4}' | tr -d '%') -gt 5 ] && brightnessctl set 5%- && bash $HOME/.config/eww/src/widgets/brightness/scripts/eww-bar-update-brightness.sh "
             :cursor "pointer"
             :visible show_ctrl_buttons
             :class "plus-button brightness-button"
@@ -45,7 +45,7 @@
             ; :width 200
           )
           (eventbox
-            :onclick "brightnessctl set +5% && bash $HOME/.config/eww/widgets/brightness/scripts/eww-bar-update-brightness.sh"
+            :onclick "brightnessctl set +5% && bash $HOME/.config/eww/src/widgets/brightness/scripts/eww-bar-update-brightness.sh"
             :cursor "pointer"
             :visible show_ctrl_buttons
             :class "minus-button brightness-button"

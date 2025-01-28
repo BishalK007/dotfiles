@@ -42,7 +42,7 @@
           :orientation "h"
           (eventbox
             :cursor "pointer"
-            :onclick "bash $HOME/.config/eww/widgets/system-buttons/scripts/hyprlock.sh"
+            :onclick "bash $HOME/.config/eww/src/widgets/system-buttons/scripts/hyprlock.sh"
             (label :text "")
           )
           ; (eventbox

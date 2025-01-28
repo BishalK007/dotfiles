@@ -2,7 +2,7 @@
   (eventbox 
     :class "network_button"
     :tooltip "Switch Networks Button"
-    :onclick "hyprctl cursorpos | awk -F',' '{print $1}' | xargs -I{} bash $HOME/.config/eww/widgets/network/scripts/open-network-popup.sh --x-pos {}"
+    :onclick "hyprctl cursorpos | awk -F',' '{print $1}' | xargs -I{} bash $HOME/.config/eww/src/widgets/network/scripts/open-network-popup.sh --x-pos {}"
     " "
   )
 )

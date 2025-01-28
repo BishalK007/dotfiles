@@ -180,7 +180,7 @@ echo -e "Widget Width:      $widget_width\n"
 case $action in
     open)
         eww open brightness_dropdown \
-            -c "$HOME/.config/eww/widgets/brightness/brightness-dropdown" \
+            -c "$HOME/.config/eww/src/widgets/brightness/brightness-dropdown" \
             --arg x_pos="$x_pos" \
             --arg y_pos="$y_pos" \
             --arg widget_width="$widget_width" \
@@ -189,11 +189,11 @@ case $action in
         ;;
     close)
         eww close brightness_dropdown \
-            -c "$HOME/.config/eww/widgets/brightness/brightness-dropdown"
+            -c "$HOME/.config/eww/src/widgets/brightness/brightness-dropdown"
         ;;
     toggle)
         eww open --toggle brightness_dropdown \
-            -c "$HOME/.config/eww/widgets/brightness/brightness-dropdown" \
+            -c "$HOME/.config/eww/src/widgets/brightness/brightness-dropdown" \
             --arg x_pos="$x_pos" \
             --arg y_pos="$y_pos" \
             --arg widget_width="$widget_width" \
@@ -214,7 +214,7 @@ case $action in
             else
                 # Widget is closed (time expired); re-open
                 eww open brightness_dropdown \
-                    -c "$HOME/.config/eww/widgets/brightness/brightness-dropdown" \
+                    -c "$HOME/.config/eww/src/widgets/brightness/brightness-dropdown" \
                     --arg x_pos="$x_pos" \
                     --arg y_pos="$y_pos" \
                     --arg widget_width="$widget_width" \
@@ -225,7 +225,7 @@ case $action in
         else
             # 3) If the file doesn't exist, open the widget
             eww open brightness_dropdown \
-                -c "$HOME/.config/eww/widgets/brightness/brightness-dropdown" \
+                -c "$HOME/.config/eww/src/widgets/brightness/brightness-dropdown" \
                 --arg x_pos="$x_pos" \
                 --arg y_pos="$y_pos" \
                 --arg widget_width="$widget_width" \
@@ -247,7 +247,7 @@ case $action in
                 till_time="$(cat "$show_widget_till_file")"
                 if [ "$current_time" -ge "$till_time" ]; then
                     eww close brightness_dropdown \
-                        -c "$HOME/.config/eww/widgets/brightness/brightness-dropdown" 
+                        -c "$HOME/.config/eww/src/widgets/brightness/brightness-dropdown" 
                     rm -f "$show_widget_till_file"
                     exit 0
                 fi

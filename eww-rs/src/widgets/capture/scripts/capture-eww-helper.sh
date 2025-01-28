@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Close any existing capture popup
-bash "$HOME/.config/eww/widgets/capture/scripts/open-capture-popup.sh" --close &
+bash "$HOME/.config/eww/src/widgets/capture/scripts/open-capture-popup.sh" --close &
 sleep 0.6
 
 # Start the capture process (synchronously)
-bash "$HOME/.config/eww/widgets/capture/scripts/capture.sh" "$@"
+bash "$HOME/.config/eww/src/widgets/capture/scripts/capture.sh" "$@"
 
 # PID file location (must match the one in capture.sh)
 PID_FILE="/tmp/eww-recorder"

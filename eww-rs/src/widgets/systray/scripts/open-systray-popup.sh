@@ -38,4 +38,4 @@ fi
 
 echo "$x_pos"
 # Open the EWW window at the adjusted x-coordinate using the temporary config directory
-eww open systray_dropdown --toggle -c "$HOME/.config/eww/widgets/systray/systray-dropdown" --arg x_pos="$x_pos" --arg widget_width="$widget_width"
+eww open systray_dropdown --toggle -c "$HOME/.config/eww/src/widgets/systray/systray-dropdown" --arg x_pos="$x_pos" --arg widget_width="$widget_width"

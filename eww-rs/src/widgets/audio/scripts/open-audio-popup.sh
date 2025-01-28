@@ -182,7 +182,7 @@ echo -e "Widget Width:      $widget_width\n"
 case "$action" in
     open)
         eww open audio_dropdown \
-            -c "$HOME/.config/eww/widgets/audio/audio-dropdown" \
+            -c "$HOME/.config/eww/src/widgets/audio/audio-dropdown" \
             --arg x_pos="$x_pos" \
             --arg y_pos="$y_pos" \
             --arg widget_width="$widget_width" \
@@ -192,12 +192,12 @@ case "$action" in
     
     close)
         eww close audio_dropdown \
-            -c "$HOME/.config/eww/widgets/audio/audio-dropdown"
+            -c "$HOME/.config/eww/src/widgets/audio/audio-dropdown"
         ;;
     
     toggle)
         eww open --toggle audio_dropdown \
-            -c "$HOME/.config/eww/widgets/audio/audio-dropdown" \
+            -c "$HOME/.config/eww/src/widgets/audio/audio-dropdown" \
             --arg x_pos="$x_pos" \
             --arg y_pos="$y_pos" \
             --arg widget_width="$widget_width" \
@@ -219,7 +219,7 @@ case "$action" in
             else
                 # Widget is closed (time expired); re-open
                 eww open audio_dropdown \
-                    -c "$HOME/.config/eww/widgets/audio/audio-dropdown" \
+                    -c "$HOME/.config/eww/src/widgets/audio/audio-dropdown" \
                     --arg x_pos="$x_pos" \
                     --arg y_pos="$y_pos" \
                     --arg widget_width="$widget_width" \
@@ -230,7 +230,7 @@ case "$action" in
         else
             # 3) If the file doesn't exist, open the widget
             eww open audio_dropdown \
-                -c "$HOME/.config/eww/widgets/audio/audio-dropdown" \
+                -c "$HOME/.config/eww/src/widgets/audio/audio-dropdown" \
                 --arg x_pos="$x_pos" \
                 --arg y_pos="$y_pos" \
                 --arg widget_width="$widget_width" \
@@ -252,7 +252,7 @@ case "$action" in
                 till_time="$(cat "$show_widget_till_file")"
                 if [ "$current_time" -ge "$till_time" ]; then
                     eww close audio_dropdown \
-                        -c "$HOME/.config/eww/widgets/audio/audio-dropdown"
+                        -c "$HOME/.config/eww/src/widgets/audio/audio-dropdown"
                     rm -f "$show_widget_till_file"
                     exit 0
                 fi

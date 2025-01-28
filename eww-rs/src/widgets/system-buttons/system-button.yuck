@@ -3,7 +3,7 @@
       :class "system_button"
       :cursor "pointer"
       :tooltip "Open power options"
-      :onclick "hyprctl cursorpos | awk -F',' '{print $1}' | xargs -I{} bash $HOME/.config/eww/widgets/system-buttons/scripts/open-system-popup.sh --x-pos {}"
+      :onclick "hyprctl cursorpos | awk -F',' '{print $1}' | xargs -I{} bash $HOME/.config/eww/src/widgets/system-buttons/scripts/open-system-popup.sh --x-pos {}"
       (label :text "󰐦" :class "system_button_icon")
     )
   )
