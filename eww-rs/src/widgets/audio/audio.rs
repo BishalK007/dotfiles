@@ -1,7 +1,6 @@
 use std::{
     fmt::{Display, Formatter},
-    os::unix::process::ExitStatusExt,
-    process::{Command, ExitStatus},
+    process::{Command},
     str::FromStr,
 };
 

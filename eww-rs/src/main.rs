@@ -25,8 +25,9 @@ use std::{
         Arc,
     },
     thread,
-    time::Duration,
 };
+use chrono::Duration;
+
 fn parse_element<T, F>(message_vec: &[&str], index: usize, converter: F) -> Option<T>
 where
     F: FnOnce(&str) -> Result<T, std::num::ParseIntError>,
@@ -62,7 +63,7 @@ fn handle_client(
         if message_vec[0].to_lowercase() == "audio" {
             // audio:<widget/util>:..
             if message_vec[1].to_lowercase() == "widget" {
-                // audio:widget:<Action>:<x_pos>:<y_pos>:<widget_width>:<show_ctrl_buttons(0=>false, 1=> true)>:<close_on_hover_lost(0=>false, 1=> true)>
+                // audio:widget:<Action>:<x_pos>:<y_pos>:<widget_width>:<show_ctrl_buttons(0=>false, 1=> true)>:<close_on_hover_lost(0=>false, 1=> true)>:<duration_in_millis>
                 let action = message_vec[2]
                     .to_lowercase()
                     .parse::<audio::functions::Action>()
@@ -79,6 +80,19 @@ fn handle_client(
                     // Get the eight element (index 7) and parse it to bool
                     s.parse::<i32>().map(|n| n != 0)
                 });
+                let duration_in_millies = parse_element(&message_vec, 8, |s| {
+                    // Get the eighth element (index 8) and parse it to u64
+                    s.parse::<u64>().map(|millis| Duration::milliseconds(millis as i64))
+                });
+                if let Some(duration) = duration_in_millies {
+                    if duration.num_milliseconds() >= 1000 {
+                        println!("Duration is: {} milliseconds", duration.num_milliseconds());
+                    } else {
+                        println!("Duration is less than 1000 milliseconds: {} milliseconds", duration.num_milliseconds());
+                    }
+                } else {
+                    println!("Duration is not provided.");
+                }
                 // println!("close_on_hover_lost {:?}", close_on_hover_lost);
                 start_audio_widget(
                     x_pos,
@@ -88,6 +102,7 @@ fn handle_client(
                     close_on_hover_lost,
                     action,
                     &eww_config_loc,
+                    duration_in_millies,
                 );
             }
             if message_vec[1].to_lowercase() == "util" {
@@ -254,7 +269,7 @@ fn accept_connections(
             Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
                 // No pending connection right now; just keep going.
                 // Sleep briefly to avoid burning 100% CPU in this loop.
-                thread::sleep(Duration::from_millis(50));
+                thread::sleep(std::time::Duration::from_millis(50));
             }
             Err(e) => {
                 eprintln!("Accept error: {}", e);
