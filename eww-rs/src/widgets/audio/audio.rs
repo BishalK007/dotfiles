@@ -111,7 +111,7 @@ impl VolumeState {
 }
 
 // Helper function to get current volume and muted status
-fn get_volume_state() -> Option<VolumeState> {
+fn get_volume_state() -> Option<VolumeState> { 
     let output = Command::new("wpctl")
         .args(["get-volume", "@DEFAULT_AUDIO_SINK@"])
         .output()

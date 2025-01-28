@@ -38,7 +38,7 @@
       :spacing "2"
       :space-evenly false
       :orientation "h"
-      (eventbox :class "restart-eww" :tooltip "Restart EWW bar On Mouse Right Click" :cursor "pointer" :onrightclick "pgrep eww | xargs kill && bash $HOME/.config/eww/run_eww.sh" "  ")
+      (eventbox :class "restart-eww" :tooltip "Restart EWW bar On Mouse Right Click" :cursor "pointer" :onrightclick " echo \"eww:stop\" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock  && echo \"eww:start\" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock " "  ")
       (capture_button)
       (audio_button)
       (brightness_button)
