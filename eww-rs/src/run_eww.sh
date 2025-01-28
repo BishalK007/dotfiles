@@ -1,34 +1,6 @@
-bash $HOME/.config/eww/src/widgets/workspaces/scripts/workspaces-listener.sh & 
+pgrep eww | xargs kill {}
 
-## HAVE widget daemons leaded in memA
+cargo watch -x run --workdir $HOME/.config/eww & 
 
-#AUDIO
-echo -e "\e[33mSTARTING AUDIO DAEMON\e[0m"
-eww daemon -c "$HOME/.config/eww/src/widgets/audio/audio-dropdown" 
-
-#BRIGHTNESS
-echo -e "\e[33mSTARTING BRIGHTNESS DAEMON\e[0m"
-eww daemon -c "$HOME/.config/eww/src/widgets/brightness/brightness-dropdown" 
-
-#CAPTURE
-echo -e "\e[33mSTARTING CAPTURE DAEMON\e[0m"
-eww daemon -c "$HOME/.config/eww/src/widgets/capture/capture-dropdown" 
-
-#NETWORK
-echo -e "\e[33mSTARTING NETWORK DAEMON\e[0m"
-eww daemon -c "$HOME/.config/eww/src/widgets/network/network-dropdown" 
-
-#SYSTEM BUTTONS
-echo -e "\e[33mSTARTING SYSTEM DAEMON\e[0m"
-eww daemon -c "$HOME/.config/eww/src/widgets/system-buttons/system-dropdown" 
-
-#SYSTRAY ## we start and close it so that applets can utilise it in startup
-echo -e "\e[33mSTARTING SYSTRAY DAEMON\e[0m"
-eww daemon -c "$HOME/.config/eww/src/widgets/systray/systray-dropdown" 
-# eww open systray_dropdown -c "$HOME/.config/eww/src/widgets/systray/systray-dropdown" --arg x_pos="0" --arg widget_width="100"
-# eww close systray_dropdown -c "$HOME/.config/eww/src/widgets/systray/systray-dropdown"
-
-## RUN EWW BAR
-echo -e "\e[33mSTARTING EWW BAR\e[0m"
-eww daemon -c ~/.config/eww/
-eww open eww-bar -c ~/.config/eww/
+sleep 2
+echo "eww:start" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock

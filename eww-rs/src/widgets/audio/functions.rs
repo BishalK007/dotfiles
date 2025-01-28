@@ -176,7 +176,7 @@ impl Drop for RunningGuard {
     }
 }
 
-pub fn handle_auto_toggle(
+fn handle_auto_toggle(
     duration: Duration,
     x_pos: i32,
     y_pos: i32,

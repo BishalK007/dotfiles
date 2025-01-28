@@ -2,9 +2,13 @@ mod models;
 mod widgets;
 
 use widgets::audio;
-use widgets::audio::functions::start_audio_widget;
-use widgets::audio::functions::initialize_audio_widget;
 use widgets::audio::audio::change_vol;
+use widgets::audio::functions::initialize_audio_widget;
+use widgets::audio::functions::start_audio_widget;
+use widgets::brightness;
+use widgets::brightness::brightness::change_brightness;
+use widgets::brightness::functions::initialize_brightness_widget;
+use widgets::brightness::functions::start_brightness_widget;
 use widgets::capture;
 use widgets::capture::capture::capture;
 use widgets::capture::capture::CaptureAction;
@@ -13,6 +17,7 @@ use widgets::capture::functions::start_capture_widget;
 use widgets::workspaces::functions::initialize_workspace_numbers;
 use widgets::workspaces::functions::start_workspace_updater_thread;
 
+use chrono::Duration;
 use dotenvy::dotenv;
 use std::{
     fs,
@@ -26,7 +31,6 @@ use std::{
     },
     thread,
 };
-use chrono::Duration;
 
 fn parse_element<T, F>(message_vec: &[&str], index: usize, converter: F) -> Option<T>
 where
@@ -58,7 +62,80 @@ fn handle_client(
         let message = String::from_utf8_lossy(&buffer[..n]);
         // println!("Received: {}", message);
         let message_vec: Vec<&str> = message.trim_end().split(':').collect();
-        // println!("vec: {:?}", message_vec[1]);
+        // println!("vec: {:?}", message_vec);
+
+        if message_vec[0].to_lowercase() == "brightness" {
+            // brightness:<widget/util>:..
+            if message_vec[1].to_lowercase() == "widget" {
+                // brightness:widget:<Action>:<x_pos>:<y_pos>:<widget_width>:<show_ctrl_buttons(0=>false, 1=> true)>:<close_on_hover_lost(0=>false, 1=> true)>:<duration_in_millis>
+                let action = message_vec[2]
+                    .to_lowercase()
+                    .parse::<brightness::functions::Action>()
+                    .unwrap();
+
+                let x_pos = parse_element(&message_vec, 3, |s| s.parse::<i32>()); // Get the fourh element (index 3) and parse it to i32
+                let y_pos = parse_element(&message_vec, 4, |s| s.parse::<i32>()); // Get the fifth element (index 4) and parse it to i32
+                let widget_width = parse_element(&message_vec, 5, |s| s.parse::<i32>()); // Get the sixth element (index 5) and parse it to i32
+                let show_ctrl_buttons = parse_element(&message_vec, 6, |s| {
+                    // Get the seventh element (index 6) and parse it to bool
+                    s.parse::<i32>().map(|n| n != 0)
+                });
+                let close_on_hover_lost = parse_element(&message_vec, 7, |s| {
+                    // Get the eight element (index 7) and parse it to bool
+                    s.parse::<i32>().map(|n| n != 0)
+                });
+                let duration_in_millies = parse_element(&message_vec, 8, |s| {
+                    // Get the eighth element (index 8) and parse it to u64
+                    s.parse::<u64>()
+                        .map(|millis| Duration::milliseconds(millis as i64))
+                });
+                if let Some(duration) = duration_in_millies {
+                    if duration.num_milliseconds() >= 1000 {
+                        println!("Duration is: {} milliseconds", duration.num_milliseconds());
+                    } else {
+                        println!(
+                            "Duration is less than 1000 milliseconds: {} milliseconds",
+                            duration.num_milliseconds()
+                        );
+                    }
+                } else {
+                    println!("Duration is not provided.");
+                }
+                // println!("close_on_hover_lost {:?}", close_on_hover_lost);
+                start_brightness_widget(
+                    x_pos,
+                    y_pos,
+                    widget_width,
+                    show_ctrl_buttons,
+                    close_on_hover_lost,
+                    action,
+                    &eww_config_loc,
+                    duration_in_millies,
+                );
+            }
+            if message_vec[1].to_lowercase() == "util" {
+                // brightness:util:<BrightnessAction>
+                let action = match message_vec.get(2) {
+                    Some(action_str) => match action_str
+                        .to_lowercase()
+                        .parse::<brightness::brightness::BrightnessAction>()
+                    {
+                        Ok(action) => action,
+                        Err(e) => {
+                            eprintln!("Failed to parse BrightnessAction: {}", e);
+                            return Ok(());
+                        }
+                    },
+                    None => {
+                        eprintln!("BrightnessAction not provided in the message.");
+                        return Ok(());
+                    }
+                };
+                let eww_config_loc_clone = eww_config_loc.to_string();
+
+                change_brightness(action, &eww_config_loc_clone);
+            }
+        }
 
         if message_vec[0].to_lowercase() == "audio" {
             // audio:<widget/util>:..
@@ -82,13 +159,17 @@ fn handle_client(
                 });
                 let duration_in_millies = parse_element(&message_vec, 8, |s| {
                     // Get the eighth element (index 8) and parse it to u64
-                    s.parse::<u64>().map(|millis| Duration::milliseconds(millis as i64))
+                    s.parse::<u64>()
+                        .map(|millis| Duration::milliseconds(millis as i64))
                 });
                 if let Some(duration) = duration_in_millies {
                     if duration.num_milliseconds() >= 1000 {
                         println!("Duration is: {} milliseconds", duration.num_milliseconds());
                     } else {
-                        println!("Duration is less than 1000 milliseconds: {} milliseconds", duration.num_milliseconds());
+                        println!(
+                            "Duration is less than 1000 milliseconds: {} milliseconds",
+                            duration.num_milliseconds()
+                        );
                     }
                 } else {
                     println!("Duration is not provided.");
@@ -108,7 +189,10 @@ fn handle_client(
             if message_vec[1].to_lowercase() == "util" {
                 // audio:util:<VolumeAction>
                 let action = match message_vec.get(2) {
-                    Some(action_str) => match action_str.to_lowercase().parse::<audio::audio::VolumeAction>() {
+                    Some(action_str) => match action_str
+                        .to_lowercase()
+                        .parse::<audio::audio::VolumeAction>()
+                    {
                         Ok(action) => action,
                         Err(e) => {
                             eprintln!("Failed to parse VolumeAction: {}", e);
@@ -121,9 +205,7 @@ fn handle_client(
                     }
                 };
                 let eww_config_loc_clone = eww_config_loc.to_string();
-                // std::thread::spawn(move || {
-                    change_vol(action, &eww_config_loc_clone);
-                // });
+                change_vol(action, &eww_config_loc_clone);
             }
         }
 
@@ -188,7 +270,10 @@ fn handle_client(
                     (_, Err(e)) => eprintln!("Failed to open eww-bar: {}", e),
                 }
 
-                
+                // This functions initialise the workspace numbers then runs a thread that updates them on socket update
+                initialize_workspace_numbers(&eww_config_loc.to_string());
+                start_workspace_updater_thread(&eww_config_loc.to_string());
+
                 // This loads all other widget daemons
                 // Load capture widget to daemon
                 let mut message = "capture:widget:load";
@@ -204,13 +289,18 @@ fn handle_client(
                         eprintln!("Failed to send message: {}", e);
                     }
                 }
-
-                // This functions initialise the workspace numbers then runs a thread that updates them on socket update
-                initialize_workspace_numbers(&eww_config_loc.to_string());
-                start_workspace_updater_thread(&eww_config_loc.to_string());
-
                 // Initialize the audio widget icons nd all
                 initialize_audio_widget(&eww_config_loc.to_string());
+
+                // Load audio widget to daemon
+                message = "brightness:widget:load";
+                if let Ok(mut stream) = UnixStream::connect("/tmp/eww_main_socket.sock") {
+                    if let Err(e) = stream.write_all(message.as_bytes()) {
+                        eprintln!("Failed to send message: {}", e);
+                    }
+                }
+                // Initialize the brightness widget icons nd all
+                initialize_brightness_widget(&eww_config_loc.to_string());
             }
             if message_vec[1] == "stop" {
                 let close_bar = Command::new("eww")
@@ -296,7 +386,10 @@ fn main() -> std::io::Result<()> {
     let eww_config_loc = match std::env::var("EWW_CONFIG_LOC") {
         Ok(val) => val,
         Err(_) => {
-            return Err(std::io::Error::new(std::io::ErrorKind::Other, "Failed to get EWW_CONFIG_LOC environment variable"));
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "Failed to get EWW_CONFIG_LOC environment variable",
+            ));
         }
     };
 
