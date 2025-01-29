@@ -101,6 +101,7 @@ fn handle_client(
                 } else {
                     println!("Duration is not provided.");
                 }
+                println!("HELLO: {:?}", message_vec);
                 // println!("close_on_hover_lost {:?}", close_on_hover_lost);
                 start_brightness_widget(
                     x_pos,
