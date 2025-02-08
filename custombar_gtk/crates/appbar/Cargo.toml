@@ -1,0 +1,10 @@
+[package]
+name = "appbar"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Reference workspace dependencies
+gtk4.workspace = true
+gtk4-layer-shell.workspace = true
+workspaces.workspace = true
