@@ -1,0 +1,11 @@
+[workspace]
+members = [
+    "crates/appbar",
+    "crates/workspaces"
+]
+
+[workspace.dependencies]
+gtk4 = "0.9.5"
+gtk4-layer-shell = "0.4.0"
+# Add custom dependencies here
+workspaces = { path = "crates/workspaces" }
