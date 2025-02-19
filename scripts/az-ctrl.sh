@@ -198,6 +198,7 @@ if [ "$stop_vm" = true ]; then
   echo "Stopping VM '$VM_NAME'..."
   az vm stop --resource-group "$RESOURCE_GROUP" --name "$VM_NAME" >/dev/null
   wait_for_stopped_state
+  az vm deallocate --resource-group "$RESOURCE_GROUP" --name "$VM_NAME" >/dev/null
   exit 0
 fi
 
