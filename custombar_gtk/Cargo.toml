@@ -1,11 +1,20 @@
 [workspace]
 members = [
     "crates/appbar",
-    "crates/workspaces"
+    "crates/workspaces",
+    "crates/clock",
+    "crates/utils"
 ]
 
 [workspace.dependencies]
-gtk4 = "0.9.5"
-gtk4-layer-shell = "0.4.0"
+gtk4 = "=0.9.5"
+gtk4-layer-shell = "=0.4.0"
+gsk4 = "=0.9.5"
+dotenv = "0.15.0"
+pretty_env_logger = "0.5.0"
+log = "0.4.25"
+async-channel = "2.3.1"
 # Add custom dependencies here
+utils = { path = "crates/utils" }
 workspaces = { path = "crates/workspaces" }
+clock = { path = "crates/clock" }

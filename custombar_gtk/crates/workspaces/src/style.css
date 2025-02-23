@@ -1,0 +1,25 @@
+.workspace-box {
+    border-radius: 80px;
+    border: 2px solid;
+    min-width: 100px;
+}
+
+.workspace-arrow {
+    font-size: 16px;
+}
+.workspace-num-box {
+    min-width: 36px;
+}
+.workspace-num {
+    border-radius: 100%;
+    min-height: 24px; 
+    min-width: 24px; 
+    font-size: 12px ;
+}
+.workspace-left-arrow-box {
+    transform: scale(-1, 1);
+    min-width:32px;
+}
+.workspace-right-arrow-box {
+    min-width: 32px;
+}

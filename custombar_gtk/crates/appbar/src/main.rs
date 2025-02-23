@@ -1,39 +1,22 @@
+use appbar::{Bar, BoxPosition};
+use clock::Clock;
 use gtk4::prelude::*;
-use gtk4::{Application, ApplicationWindow};
-
-// Bring the gtk4-layer-shell extension traits into scope:
-use gtk4_layer_shell::LayerShell;
+use workspaces::Workspace;
+use utils::logger;
 
 fn main() {
-    let app = Application::new(
-        Some("com.example.gtk4_layer_shell_demo"),
-        Default::default(),
-    );
+    // Initialize the logger first thing in main
+    logger::init(logger::LevelFilter::Trace);
 
-    app.connect_activate(|app| {
-        let window = ApplicationWindow::new(app);
-        window.set_title(Some("Wayland Dummy Bar"));
-        window.set_decorated(false);
 
-        // Initialize layer shell via the WindowExt extension trait
-        window.init_layer_shell();
-
-        // Request a "top" layer (like a panel).
-        window.set_layer(gtk4_layer_shell::Layer::Top);
-
-        // Pin (anchor) the bar to top, left, and right edges.
-        window.set_anchor(gtk4_layer_shell::Edge::Top, true);
-        window.set_anchor(gtk4_layer_shell::Edge::Left, true);
-        window.set_anchor(gtk4_layer_shell::Edge::Right, true);
-
-        // Set a fixed height (e.g. 30), let width expand.
-        window.set_default_size(-1, 30);
-
-        // Reserve exclusive space so other windows don’t overlap the bar.
-        window.auto_exclusive_zone_enable();
-
-        window.show();
-    });
-
-    app.run();
+    let bar = Bar::new();
+    
+    // Create clock widget and add to start position
+    let workspace = Workspace::new();
+    let clock = Clock::with_format(clock::TimeFormat::HoursMinutes24);
+    bar.append_to(workspace.widget(), BoxPosition::Start);
+    bar.append_to(clock.widget(), BoxPosition::Start);
+    
+    // Run the bar application
+    bar.run();
 }

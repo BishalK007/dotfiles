@@ -7,4 +7,8 @@ edition = "2021"
 # Reference workspace dependencies
 gtk4.workspace = true
 gtk4-layer-shell.workspace = true
+utils.workspace = true
+# logger.workspace = true
 workspaces.workspace = true
+clock.workspace = true
+# workspaces.clock = true

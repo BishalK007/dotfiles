@@ -1,0 +1,4 @@
+.bar-window {
+    /* background-color: aqua; */
+    min-height: 25px; /* adjusted for scale 1.2 effectively 25*1.2 = 30px */
+}

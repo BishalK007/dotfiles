@@ -1,13 +1,11 @@
 [package]
-name = "workspaces"
+name = "clock"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 chrono = "0.4.39"
-# Module specific dependencies
+
 utils.workspace = true
 gtk4.workspace = true
 gtk4-layer-shell.workspace = true
-gsk4.workspace = true
-async-channel.workspace = true

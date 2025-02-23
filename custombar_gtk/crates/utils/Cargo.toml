@@ -1,0 +1,13 @@
+[package]
+name = "utils"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+regex = "1.11.1"
+cairo = "0.0.4"
+gtk4.workspace = true
+gtk4-layer-shell.workspace = true
+dotenv.workspace = true
+pretty_env_logger.workspace = true
+log.workspace = true
