@@ -1,0 +1,10 @@
+[package]
+name = "home_btn"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+utils.workspace = true
+gtk4.workspace = true
+gtk4-layer-shell.workspace = true

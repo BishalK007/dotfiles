@@ -14,7 +14,8 @@
     border-radius: 100%;
     min-height: 24px; 
     min-width: 24px; 
-    font-size: 12px ;
+    font-size: 12px;
+    font-weight: bold;
 }
 .workspace-left-arrow-box {
     transform: scale(-1, 1);

@@ -1,0 +1,11 @@
+
+.home_btn-box {
+    border-radius: 80px;
+    border: 1px solid;
+    min-height: 30px; 
+    min-width: 36px;  
+}
+
+.home_btn-icon {
+    font-size: 16px;
+}

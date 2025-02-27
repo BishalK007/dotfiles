@@ -84,6 +84,7 @@ impl Bar {
             window.auto_exclusive_zone_enable();
             window.show();
         }));
+        
 
         self.app.run();
     }

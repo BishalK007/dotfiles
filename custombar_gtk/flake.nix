@@ -81,11 +81,11 @@
               pkgs.gtk3
               pkgs.gtk4
               pkgs.gtk4-layer-shell
+              pkgs.gdk-pixbuf
               pkgs.glib
               pkgs.cairo
               pkgs.pango
               pkgs.atk
-              pkgs.gdk-pixbuf
               pkgs.glade
             ];
             RUST_SRC_PATH = "${rust}/lib/rustlib/src/rust/library";

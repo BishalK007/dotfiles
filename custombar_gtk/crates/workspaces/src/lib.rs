@@ -1,23 +1,24 @@
 use async_channel::unbounded;
-use gtk4::glib;
+use gtk4::{glib, EventControllerMotion};
 use gtk4::{prelude::*, CenterBox};
 use gtk4::{Box, Orientation};
 use gtk4::{Label, Widget};
+use regex::Regex;
+use std::env;
 use std::io::{BufRead, BufReader, Write};
 use std::os::unix::net::UnixStream;
-use std::sync::{Arc, Mutex};
 use std::thread;
-use std::time::Duration;
-use utils;
-use std::env;
+use utils::{self, logger};
 
 pub struct Workspace {
     container: Box,
     workspace_label: Label,
+    // Store the arrow boxes so we can attach events later.
+    left_arrow_box: CenterBox,
+    right_arrow_box: CenterBox,
 }
 
 impl Workspace {
-
     pub fn new() -> Self {
         // Create the main horizontal container.
         let container: Box = gtk4::Box::new(Orientation::Horizontal, 0);
@@ -29,9 +30,10 @@ impl Workspace {
 
         // Create arrow labels.
         let left_arrow = Label::new(Some("")); // (Flipped using CSS)
-        let left_arrow_box = CenterBox::new();
-
         let right_arrow = Label::new(Some(""));
+
+        // Create arrow boxes.
+        let left_arrow_box = CenterBox::new();
         let right_arrow_box = CenterBox::new();
 
         // Apply the CSS files.
@@ -90,13 +92,18 @@ impl Workspace {
         container.append(&workspace_num_box);
         container.append(&right_arrow_box);
 
-        
         let workspace = Workspace {
             container,
             workspace_label: workspace_num,
+            left_arrow_box,
+            right_arrow_box,
         };
-        
-        // Start listening for updates on socket2.
+
+        // Attach mouse click events to the arrow boxes.
+        workspace.attach_events();
+
+        // Initialise the workspace label and start listening for updates.
+        workspace.initialise_workspace_label();
         workspace.listen_for_workspace_updates();
         workspace
     }
@@ -105,14 +112,54 @@ impl Workspace {
     pub fn widget(&self) -> &Widget {
         self.container.upcast_ref()
     }
+    fn add_hover_cursor(&self, widget: &impl IsA<Widget>) {
+        // Create an EventControllerMotion to detect pointer enter/leave events.
+        let motion = EventControllerMotion::new();
+        // Create a weak reference to the widget.
+        let weak_widget = widget.downgrade();
+    
+        // Connect the "enter" signal.
+        motion.connect_enter(move |_controller, _x, _y| {
+            if let Some(widget) = weak_widget.upgrade() {
+                if let Some(root) = widget.root() {
+                    if let Some(surface) = root.surface() {
+                        // Create a hand pointer cursor.
+                        logger::debug!("Setting cursor for surface: {:?}", surface);
+                        if let Some(cursor) = gdk4::Cursor::from_name("pointer", None) {
+                            logger::debug!("Setting pointer cursor: {:?}", cursor);
+                            surface.set_cursor(Some(&cursor));
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Create another weak reference for the "leave" signal.
+        let weak_widget = widget.downgrade();
+        motion.connect_leave(move |_controller| {
+            if let Some(widget) = weak_widget.upgrade() {
+                if let Some(root) = widget.root() {
+                    if let Some(surface) = root.surface() {
+                        // Remove the cursor override.
+                        logger::debug!("Cursor reset to default on widget leave event");
+                        surface.set_cursor(None);
+                    }
+                }
+            }
+        });
+    
+        widget.add_controller(motion);
+    }
 
     /// Sends a command to change the workspace by writing to a Unix socket.
-    fn workspace_change(&self, direction: i32) {
-        let socket_path = format!(
-            "{}/hypr/{}.socket.sock",
-            std::env::var("XDG_RUNTIME_DIR").unwrap_or_default(),
-            std::env::var("HYPRLAND_INSTANCE_SIGNATURE").unwrap_or_default()
-        );
+    fn workspace_change(&self, direction: &str) {
+        let socket_path = match self.get_hypr_socket_path() {
+            Ok(val) => val,
+            Err(e) => {
+                println!("Could not get socket path :: {}", e);
+                String::new()
+            }
+        };
 
         let command = format!("/dispatch workspace {}", direction);
 
@@ -123,26 +170,106 @@ impl Workspace {
         }
     }
 
+    fn initialise_workspace_label(&self) {
+        let socket_path = match self.get_hypr_socket_path() {
+            Ok(val) => val,
+            Err(e) => {
+                println!("Could not get socket path :: {}", e);
+                return;
+            }
+        };
+
+        let command = "/activeworkspace";
+
+        if let Ok(mut stream) = UnixStream::connect(&socket_path) {
+            if let Err(e) = stream.write_all(command.as_bytes()) {
+                eprintln!("Failed to get curr workspace: {}", e);
+                return;
+            }
+            let mut reader = BufReader::new(stream);
+            let mut response = String::new();
+            if let Ok(_) = reader.read_line(&mut response) {
+                // The response is expected to look like:
+                // "workspace ID 5 (5) on monitor eDP-1:"
+                // Use a regex to capture the first number following "workspace ID"
+                let re = Regex::new(r"workspace ID (\d+)").unwrap();
+                if let Some(caps) = re.captures(&response) {
+                    if let Some(id_match) = caps.get(1) {
+                        let workspace_id = id_match.as_str();
+                        self.workspace_label.set_text(workspace_id);
+                    }
+                } else {
+                    eprintln!("Could not parse workspace ID from response: {}", response);
+                }
+            }
+        } else {
+            eprintln!("Failed to connect to socket at path: {}", socket_path);
+        }
+    }
+
     /// Changes to the next workspace.
     pub fn workspace_next(&self) {
-        self.workspace_change(1);
+        self.workspace_change("+1");
     }
 
     /// Changes to the previous workspace.
     pub fn workspace_prev(&self) {
-        self.workspace_change(-1);
+        self.workspace_change("-1");
     }
 
     fn get_hypr_socket_path(&self) -> Result<String, String> {
         let instance_sig = env::var("HYPRLAND_INSTANCE_SIGNATURE")
             .map_err(|_| "HYPRLAND_INSTANCE_SIGNATURE not set".to_string())?;
-        let runtime_dir = env::var("XDG_RUNTIME_DIR")
-            .map_err(|_| "XDG_RUNTIME_DIR not set".to_string())?;
+        let runtime_dir =
+            env::var("XDG_RUNTIME_DIR").map_err(|_| "XDG_RUNTIME_DIR not set".to_string())?;
+
+        Ok(format!(
+            "{}/hypr/{}/.socket.sock",
+            runtime_dir, instance_sig
+        ))
+    }
+
+    fn get_hypr_socket2_path(&self) -> Result<String, String> {
+        let instance_sig = env::var("HYPRLAND_INSTANCE_SIGNATURE")
+            .map_err(|_| "HYPRLAND_INSTANCE_SIGNATURE not set".to_string())?;
+        let runtime_dir =
+            env::var("XDG_RUNTIME_DIR").map_err(|_| "XDG_RUNTIME_DIR not set".to_string())?;
 
         Ok(format!(
             "{}/hypr/{}/.socket2.sock",
             runtime_dir, instance_sig
         ))
+    }
+
+    // Attaches mouse click events to the left and right arrow boxes.
+    fn attach_events(&self) {
+        // Use a GestureClick controller for the left arrow.
+        let left_click = gtk4::GestureClick::new();
+        // Capture a raw pointer to self.
+        let self_ptr = self as *const Workspace;
+        left_click.connect_pressed(move |_, _, _, _| {
+            // SAFETY: the controllers are attached to widgets that are owned by self,
+            // so self is guaranteed to live as long as the closures.
+            unsafe {
+                (*self_ptr).workspace_prev();
+            }
+        });
+        // Pass the controller by value (remove the leading '&')
+        self.left_arrow_box.add_controller(left_click);
+    
+        // Similarly for the right arrow.
+        let right_click = gtk4::GestureClick::new();
+        let self_ptr = self as *const Workspace; // rebind for the right arrow
+        right_click.connect_pressed(move |_, _, _, _| {
+            unsafe {
+                (*self_ptr).workspace_next();
+            }
+        });
+        self.right_arrow_box.add_controller(right_click);
+
+        // Add hover behavior so the cursor becomes a pointer when hovering:
+        self.add_hover_cursor(&self.left_arrow_box);
+        self.add_hover_cursor(&self.right_arrow_box);
     }
 
     // Spawns a background thread that listens for updates on socket2 and
@@ -162,11 +289,11 @@ impl Workspace {
             }
         });
 
-        let socket_path =  match self.get_hypr_socket_path() {
+        let socket_path = match self.get_hypr_socket2_path() {
             Ok(val) => val,
-            Err(_) => {
-                println!("Could not get socket path");
-                "HELLO".to_string()
+            Err(e) => {
+                println!("Could not get socket path :: {}", e);
+                String::new()
             }
         };
 
