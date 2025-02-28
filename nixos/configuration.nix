@@ -21,6 +21,10 @@ let
 
   ags_flake = builtins.getFlake "github:Aylur/ags";
   ags_github_package = ags_flake.packages.${builtins.currentSystem}.default;
+
+  astral_flake = builtins.getFlake "github:aylur/astal";
+  astral_github_package = astral_flake.packages.${builtins.currentSystem}.default;
+  
 in
 
 {
@@ -50,6 +54,7 @@ in
     networkmanager.enable = true;
     networkmanager.dns = "default";  # Use "dnsmasq" or "systemd-resolved" if needed.
     nameservers = [ "8.8.8.8" "8.8.4.4" ];  # Google's DNS servers.
+
   };
   #networking.wireguard.enable = true;
 	
@@ -111,7 +116,9 @@ in
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
-  
+ 
+
+	services.cloudflare-warp.enable = true;
 
 
   # Enable OpenGL
@@ -237,20 +244,15 @@ in
     obsidian
     (azure-cli.withExtensions [ azure-cli.extensions.aks-preview ]) # to install with extentions
     libreoffice-qt6-fresh
-    cloudflare-warp
     alacritty
     fastfetch
     mongodb-compass
-	cargo-watch
-	brightnessctl
-	unstable.awscli2
-	wireshark
-	obs-studio
-    # gnome-keyring
-    # glib
-    # gsettings-desktop-schemas
-    # libsecret
-    # gnome-shell
+    cargo-watch
+    brightnessctl
+    unstable.awscli2
+    wireshark
+    obs-studio
+    astral
 ];
   # Fonts __ 
   fonts.packages = with pkgs; [
@@ -285,7 +287,7 @@ in
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
-
+   
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It‘s perfectly fine and recommended to leave
@@ -325,16 +327,24 @@ in
   ## __________ NEOVIM _______________________ ##
   programs.neovim = {
   enable = true;
+
   configure = {
     customRC = ''
       set number
       set autoindent
+
       set tabstop=4
       set shiftwidth=4
+
       set smarttab
       set softtabstop=4
+
       set mouse=a
+
+      set clipboard=unnamedplus
     '';
+
+    # Add wl-clipboard to the packages available to Neovim
     packages.myVimPackage = with pkgs.vimPlugins; {
       start = [ ctrlp ];
     };
