@@ -2,13 +2,17 @@ use std::rc::Rc;
 use gtk4::{prelude::*, Box, GestureClick, Label, Orientation, Widget};
 use utils::{self, logger};
 
-pub struct HomeBtn {
+
+
+pub struct Calendar {
     container: Box,
 }
 
-impl HomeBtn {
+impl Calendar {
     pub fn new() -> Rc<Self> {
-        let home_btn_icon = Label::new(Some(""));
+        let calendar_icon = Label::new(Some(""));
+        let calendar_day_label = Label::new(Some("Day"));
+        let calendar_date_label = Label::new(Some("DD/MM/YYYY"));
         let container = Box::new(Orientation::Horizontal, 0);
 
         // Apply the CSS files
@@ -18,27 +22,33 @@ impl HomeBtn {
         ]);
         
         // Set CSS classes
-        container.set_css_classes(&["home_btn", "home_btn-box", "background-color", "border-color"]);
-        home_btn_icon.set_css_classes(&["home_btn", "home_btn-icon", "primary-color"]);
+        container.set_css_classes(&["calendar", "calendar-box", "background-color", "border-color"]);
+        calendar_icon.set_css_classes(&["calendar", "calendar-icon", "primary-color"]);
+        calendar_day_label.set_css_classes(&["calendar", "calendar-day-label", "primary-color"]);
+        calendar_date_label.set_css_classes(&["calendar", "calendar-date-label", "primary-color"]);
         
         // Do some paddings and margins
-        home_btn_icon.set_margin_start(8);
-        home_btn_icon.set_margin_end(12);
+        calendar_icon.set_margin_start(8);
+        calendar_icon.set_margin_end(12);
+        calendar_day_label.set_margin_end(8);
+        calendar_date_label.set_margin_end(8);
 
         // Add label to container
-        container.append(&home_btn_icon); 
+        container.append(&calendar_icon); 
+        container.append(&calendar_day_label); 
+        container.append(&calendar_date_label); 
 
-        let home_btn = Rc::new(HomeBtn {
+        let calendar = Rc::new(Calendar {
             container,
         });
         
         // Clone the Rc pointer to capture it in the closure
-        let home_btn_clone = Rc::clone(&home_btn);
-        home_btn.connect_clicked(move || {
-            home_btn_clone.handle_click();
+        let calendar_clone = Rc::clone(&calendar);
+        calendar.connect_clicked(move || {
+            calendar_clone.handle_click();
         });
         
-        home_btn
+        calendar
     }
 
     // Return the Box (container) as the top-level widget.

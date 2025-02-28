@@ -125,7 +125,7 @@ impl Workspace {
                     if let Some(surface) = root.surface() {
                         // Create a hand pointer cursor.
                         logger::debug!("Setting cursor for surface: {:?}", surface);
-                        if let Some(cursor) = gdk4::Cursor::from_name("pointer", None) {
+                        if let Some(cursor) = gtk4::gdk::Cursor::from_name("pointer", None) {
                             logger::debug!("Setting pointer cursor: {:?}", cursor);
                             surface.set_cursor(Some(&cursor));
                         }

@@ -1,8 +1,8 @@
 use appbar::{Bar, BoxPosition};
 use clock::Clock;
-use gtk4::prelude::*;
 use home_btn::HomeBtn;
 use workspaces::Workspace;
+use calendar::Calendar;
 use utils::logger;
 
 fn main() {
@@ -16,8 +16,10 @@ fn main() {
     let workspace = Workspace::new();
     let home_btn = HomeBtn::new();
     let clock = Clock::with_format(clock::TimeFormat::HoursMinutes24);
+    let calendar = Calendar::new();
     bar.append_to(workspace.widget(), BoxPosition::Start);
     bar.append_to(home_btn.widget(), BoxPosition::Start);
+    bar.append_to(calendar.widget(), BoxPosition::Start);
     bar.append_to(clock.widget(), BoxPosition::Start);
     
     // Run the bar application

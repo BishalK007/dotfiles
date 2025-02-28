@@ -30,6 +30,7 @@ dependencies = [
 name = "appbar"
 version = "0.1.0"
 dependencies = [
+ "calendar",
  "clock",
  "gtk4",
  "gtk4-layer-shell",
@@ -99,6 +100,15 @@ dependencies = [
  "glib-sys",
  "libc",
  "system-deps",
+]
+
+[[package]]
+name = "calendar"
+version = "0.1.0"
+dependencies = [
+ "gtk4",
+ "gtk4-layer-shell",
+ "utils",
 ]
 
 [[package]]
@@ -1311,8 +1321,6 @@ version = "0.1.0"
 dependencies = [
  "async-channel",
  "chrono",
- "gdk4",
- "gsk4",
  "gtk4",
  "gtk4-layer-shell",
  "regex",

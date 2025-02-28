@@ -11,5 +11,6 @@ utils.workspace = true
 # logger.workspace = true
 workspaces.workspace = true
 home_btn.workspace = true
+calendar.workspace = true
 clock.workspace = true
 # workspaces.clock = true
