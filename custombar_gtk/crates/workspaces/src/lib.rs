@@ -18,6 +18,17 @@ pub struct Workspace {
     right_arrow_box: CenterBox,
 }
 
+impl Clone for Workspace {
+    fn clone(&self) -> Self {
+        Workspace {
+            container: self.container.clone(),
+            workspace_label: self.workspace_label.clone(),
+            left_arrow_box: self.left_arrow_box.clone(),
+            right_arrow_box: self.right_arrow_box.clone(),
+        }
+    }
+}
+
 impl Workspace {
     pub fn new() -> Self {
         // Create the main horizontal container.
@@ -243,29 +254,17 @@ impl Workspace {
 
     // Attaches mouse click events to the left and right arrow boxes.
     fn attach_events(&self) {
-        // Use a GestureClick controller for the left arrow.
-        let left_click = gtk4::GestureClick::new();
-        // Capture a raw pointer to self.
-        let self_ptr = self as *const Workspace;
-        left_click.connect_pressed(move |_, _, _, _| {
-            // SAFETY: the controllers are attached to widgets that are owned by self,
-            // so self is guaranteed to live as long as the closures.
-            unsafe {
-                (*self_ptr).workspace_prev();
-            }
+        // Add click event for the left arrow using utils::add_click_event
+        utils::connect_clicked(&self.left_arrow_box, {
+            let self_clone = self.clone(); 
+            move || self_clone.workspace_prev()
         });
-        // Pass the controller by value (remove the leading '&')
-        self.left_arrow_box.add_controller(left_click);
-    
-        // Similarly for the right arrow.
-        let right_click = gtk4::GestureClick::new();
-        let self_ptr = self as *const Workspace; // rebind for the right arrow
-        right_click.connect_pressed(move |_, _, _, _| {
-            unsafe {
-                (*self_ptr).workspace_next();
-            }
+
+        // Add click event for the right arrow using utils::add_click_event
+        utils::connect_clicked(&self.right_arrow_box, {
+            let self_clone = self.clone();
+            move || self_clone.workspace_next()
         });
-        self.right_arrow_box.add_controller(right_click);
 
         // Add hover behavior so the cursor becomes a pointer when hovering:
         self.add_hover_cursor(&self.left_arrow_box);

@@ -34,8 +34,9 @@ impl HomeBtn {
         
         // Clone the Rc pointer to capture it in the closure
         let home_btn_clone = Rc::clone(&home_btn);
-        home_btn.connect_clicked(move || {
-            home_btn_clone.handle_click();
+        let home_btn_clone_two = Rc::clone(&home_btn);
+        utils::connect_clicked(&home_btn_clone.container, move || {
+            home_btn_clone_two.handle_click();
         });
         
         home_btn
@@ -44,17 +45,6 @@ impl HomeBtn {
     // Return the Box (container) as the top-level widget.
     pub fn widget(&self) -> &Widget {
         self.container.as_ref()
-    }
-
-    pub fn connect_clicked<F>(&self, handler: F)
-    where
-        F: Fn() + 'static,
-    {
-        let gesture = GestureClick::new();
-        gesture.connect_pressed(move |_, _, _, _| {
-            handler();
-        });
-        self.container.add_controller(gesture);
     }
 
     pub fn handle_click(&self) {

@@ -60,43 +60,13 @@ pub fn scale_sizes(css: &'static str) -> &'static str {
 }
 
 
-// fn to flip a widget-
-
-
-// pub fn flip_widget(widget: &gtk4::Widget, horizontal: bool, vertical: bool) -> gtk4::Widget {
-//     let drawing_area = gtk4::DrawingArea::new();
-//     let allocation = widget.allocation();
-//     drawing_area.set_size_request(allocation.width(), allocation.height());
-
-//     let flipped_widget = drawing_area.clone();
-//     let widget_clone = widget.clone();
-
-//     drawing_area.set_draw_func(move |_area, cr, width, height| {
-//         let width = width as f64;
-//         let height = height as f64;
-
-//         cr.translate(width / 2.0, height / 2.0);
-
-//         let x_scale = if horizontal { -1.0 } else { 1.0 };
-//         let y_scale = if vertical { -1.0 } else { 1.0 };
-//         let matrix = Matrix::new(x_scale, 0.0, 0.0, y_scale, 0.0, 0.0);
-
-//         cr.transform(matrix);
-//         cr.translate(-width / 2.0, -height / 2.0);
-
-//         cr.save().expect("Failed to save cairo context");
-//         gtk4::render_background(
-//             &flipped_widget.style_context(),
-//             cr,
-//             0.0,
-//             0.0,
-//             width,
-//             height,
-//         );
-//         cr.restore().expect("Failed to restore cairo context");
-
-//         widget_clone.queue_draw();
-//     });
-
-//     drawing_area.upcast()
-// }
+pub fn connect_clicked<F>(container: &impl IsA<gtk4::Widget>, handler: F)
+where
+    F: Fn() + 'static,
+{
+    let gesture = gtk4::GestureClick::new();
+    gesture.connect_pressed(move |_, _, _, _| {
+        handler();
+    });
+    container.add_controller(gesture);
+}
