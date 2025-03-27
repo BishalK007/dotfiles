@@ -97,6 +97,11 @@ impl Workspace {
         workspace_num_inner_box.append(&workspace_num);
         workspace_num_box.set_center_widget(Some(&workspace_num_inner_box));
         left_arrow_box.set_center_widget(Some(&left_arrow));
+        if let Some(cursor) = gtk4::gdk::Cursor::from_name("pointer", None) {
+            logger::debug!("Setting pointer cursor: {:?}", cursor.name());
+            // surface.set_cursor(Some(&cursor));
+            left_arrow.set_cursor(Some(&cursor)); 
+        }
         right_arrow_box.set_center_widget(Some(&right_arrow));
 
         container.append(&left_arrow_box);
@@ -267,8 +272,8 @@ impl Workspace {
         });
 
         // Add hover behavior so the cursor becomes a pointer when hovering:
-        self.add_hover_cursor(&self.left_arrow_box);
-        self.add_hover_cursor(&self.right_arrow_box);
+        // self.add_hover_cursor(&self.left_arrow_box);
+        // self.add_hover_cursor(&self.right_arrow_box);
     }
 
     // Spawns a background thread that listens for updates on socket2 and

@@ -1,0 +1,132 @@
+/* 
+ ************* Bar Icon css
+*/
+.capture-box {
+  border-radius: 80px;
+  border: 1px solid;
+  min-height: 30px;
+  min-width: 36px;
+  border-color: @primary-color;
+  background: @bg-color;
+}
+
+.capture-icon {
+  font-size: 16px;
+  color: @primary-color;
+}
+
+/* 
+ ************* Popover css
+*/
+.capture-popover {
+  all: unset;
+  background: transparent;
+}
+.capture-popover contents {
+  all: unset;
+  background: transparent;
+}
+.capture-popover arrow {
+  all: unset;
+  background: transparent;
+}
+.capture-popover-container {
+  border-radius: 10px;
+  min-width: 300px;
+  min-height: 300px;
+  background-color: @primary-color;
+}
+
+.capture-popover-capture-button {
+  min-width: 60px;
+  min-height: 50px;
+  border-radius: 12px;
+  border: 1px solid;
+  border-color: @bg-color-no-transparent;
+  background-color: @primary-color;
+}
+
+.capture-popover-record-button {
+  min-width: 60px;
+  min-height: 50px;
+  border-radius: 12px;
+  border: 1px solid;
+  border-color: @bg-color-no-transparent;
+  background-color: @primary-color;
+}
+
+/* 
+    Target all the radio buttons 
+*/
+box.capture-popover-img-format-box checkbutton radio,
+box.capture-popover-record-format-box checkbutton radio {
+  -gtk-icon-source: none;
+  -gtk-icon-shadow: none;
+  background: rgb(255, 255, 255);
+}
+
+box.capture-popover-img-format-box checkbutton radio:checked,
+box.capture-popover-record-format-box checkbutton radio:checked {
+  background: @bg-color-no-transparent;
+}
+
+box.capture-popover-img-format-box checkbutton radio:hover,
+box.capture-popover-record-format-box checkbutton radio:hover {
+  padding: 2px;
+  background: @bg-color-no-transparent;
+}
+
+/* 
+    Target Full-screen Region Segmented Button
+*/
+.capture-popover-screen-format-box {
+  border: 1px solid;
+  border-color: @bg-color-no-transparent;
+  border-radius: 17px;
+  padding: 4px;
+}
+
+.capture-mode-button {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: transparent;
+  min-width: 94px;
+}
+
+.capture-mode-button:checked {
+  background-color: @bg-color-no-transparent;
+}
+
+.capture-mode-button:checked label {
+  color: @primary-color;
+}
+
+.capture-popover-mute-switch,
+.capture-popover-mic-switch {
+  border: 1px solid;
+  border-color: @bg-color-no-transparent;
+  background-color: @primari-color;
+}
+.capture-popover-mute-switch slider,
+.capture-popover-mic-switch slider {
+    padding: 2px;
+    margin: 0 2.3px;
+    min-width: 12px;
+    min-height: 12px;
+    border-radius: 100%;
+    border: none;
+    background-image: none;
+    background-color: @bg-color-no-transparent;
+}
+
+.capture-popover-mute-switch:checked,
+.capture-popover-mic-switch:checked {
+  background-color: @bg-color-no-transparent;
+}
+.capture-popover-mute-switch:checked slider,
+.capture-popover-mic-switch:checked slider {
+  border: none;
+  background-image: none;
+  background-color: @primary-color;
+}

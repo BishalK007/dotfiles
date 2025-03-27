@@ -13,4 +13,5 @@ workspaces.workspace = true
 home_btn.workspace = true
 calendar.workspace = true
 clock.workspace = true
+capture.workspace = true
 # workspaces.clock = true

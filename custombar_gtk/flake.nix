@@ -87,9 +87,13 @@
               pkgs.pango
               pkgs.atk
               pkgs.glade
+              pkgs.gnome-settings-daemon
+              pkgs.gsettings-desktop-schemas 
             ];
             RUST_SRC_PATH = "${rust}/lib/rustlib/src/rust/library";
             PKG_CONFIG_PATH = "${pkgs.gtk3.dev}/lib/pkgconfig:${pkgs.gtk4.dev}/lib/pkgconfig:$PKG_CONFIG_PATH";
+            GSETTINGS_SCHEMA_DIR = "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}/glib-2.0/schemas";
+            XDG_DATA_DIRS = "${pkgs.gsettings-desktop-schemas}/share:${pkgs.gtk4}/share";
           };
         }
       );

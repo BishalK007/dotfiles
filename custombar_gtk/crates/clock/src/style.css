@@ -4,13 +4,17 @@
     border: 1px solid;
     min-height: 30px; 
     min-width: 24px;  
+    border-color: @primary-color;
+    background: @bg-color;
 }
 
 .clock-label {
     font-size: 12px; 
     font-weight: bold;
+    color: @primary-color;
 }
 
 .clock-icon {
     font-size: 18px;
+    color: @primary-color;
 }

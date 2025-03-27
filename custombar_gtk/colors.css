@@ -1,5 +1,14 @@
-.background-color {
+@define-color bg-color rgba(218, 152, 240, 0.30);
+@define-color bg-color-no-transparent rgb(218, 152, 240);
+/* @define-color bg-color-no-transparent red; */
+@define-color primary-color #0B081B;
+
+
+/* .background-color {
     background-color: rgba(218, 152, 240, 0.30);
+}
+.background-color-no-transparent {
+    background-color: rgb(218, 152, 240);
 }
 .primary-color-bg {
     color: rgba(218, 152, 240, 1);
@@ -12,4 +21,4 @@
 }
 .border-color {
     color: #0B081B;
-}
+} */

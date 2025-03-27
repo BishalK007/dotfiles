@@ -75,6 +75,7 @@ impl Bar {
             window.set_title(Some("Wayland Dummy Bar"));
             window.set_decorated(false);
 
+            gtk4::Window::set_interactive_debugging(true);
             window.init_layer_shell();
             window.set_layer(Layer::Top);
             window.set_anchor(Edge::Top, true);

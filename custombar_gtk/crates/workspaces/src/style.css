@@ -2,10 +2,13 @@
     border-radius: 80px;
     border: 2px solid;
     min-width: 100px;
+    border-color: @primary-color;
+    background: @bg-color;
 }
 
 .workspace-arrow {
     font-size: 16px;
+    color: @primary-color;
 }
 .workspace-num-box {
     min-width: 36px;
@@ -16,6 +19,8 @@
     min-width: 24px; 
     font-size: 12px;
     font-weight: bold;
+    background: @primary-color;
+    color: @bg-color-no-transparent;
 }
 .workspace-left-arrow-box {
     transform: scale(-1, 1);
