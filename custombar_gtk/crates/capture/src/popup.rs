@@ -3,7 +3,6 @@
 use gtk4::ffi::GtkSwitch;
 use gtk4::{prelude::*, CenterBox, Label};
 use gtk4::{Box, CheckButton, Popover, PositionType};
-use segmented_button::SegmentedButton;
 
 /// A popup that shows the GTK Capture widget.
 pub struct CapturePopup {

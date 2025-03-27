@@ -7,7 +7,6 @@ members = [
     "crates/clock",
     "crates/capture",
     "crates/utils",
-    "crates/components/segmented_button",
 ]
 
 [workspace.dependencies]
@@ -28,4 +27,3 @@ home_btn = { path = "crates/home_btn" }
 calendar = { path = "crates/calendar" }
 clock = { path = "crates/clock" }
 capture = { path = "crates/capture" }
-segmented_button = { path = "crates/components/segmented_button" }
