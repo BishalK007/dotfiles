@@ -18,14 +18,8 @@
 /* 
  ************* Popover css
 */
-.capture-popover {
-  all: unset;
-  background: transparent;
-}
-.capture-popover contents {
-  all: unset;
-  background: transparent;
-}
+.capture-popover, 
+.capture-popover contents, 
 .capture-popover arrow {
   all: unset;
   background: transparent;

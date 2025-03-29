@@ -61,6 +61,7 @@
               automake
               libtool
               autoconf-archive
+              gcc
             ];
             # Use gtk4 as your system dependency for GTK4 development.
             buildInputs       = with pkgs; [ gtk4 ];
@@ -88,12 +89,40 @@
               pkgs.atk
               pkgs.glade
               pkgs.gnome-settings-daemon
-              pkgs.gsettings-desktop-schemas 
+              pkgs.gsettings-desktop-schemas
+              pkgs.pipewire
+              pkgs.wireplumber
+              pkgs.llvmPackages_19.clang-unwrapped
             ];
             RUST_SRC_PATH = "${rust}/lib/rustlib/src/rust/library";
-            PKG_CONFIG_PATH = "${pkgs.gtk3.dev}/lib/pkgconfig:${pkgs.gtk4.dev}/lib/pkgconfig:$PKG_CONFIG_PATH";
+            
+            # Update PKG_CONFIG_PATH to include all necessary libraries
+            PKG_CONFIG_PATH = nixpkgs.lib.makeLibraryPath [
+              pkgs.gtk3.dev
+              pkgs.gtk4.dev
+              pkgs.gdk-pixbuf.dev
+              pkgs.glib.dev
+              pkgs.cairo.dev
+              pkgs.pango.dev
+              pkgs.atk.dev
+              pkgs.pipewire.dev
+              pkgs.wireplumber.dev
+            ] + ":$PKG_CONFIG_PATH";
+            
             GSETTINGS_SCHEMA_DIR = "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}/glib-2.0/schemas";
-            XDG_DATA_DIRS = "${pkgs.gsettings-desktop-schemas}/share:${pkgs.gtk4}/share";
+            XDG_DATA_DIRS = "${pkgs.gsettings-desktop-schemas}/share:${pkgs.gtk4}/share:${pkgs.pipewire}/share:${pkgs.wireplumber}/share";
+            LIBCLANG_PATH = "${pkgs.libclang.lib}/lib";
+            
+            # Add LD_LIBRARY_PATH for runtime dependencies
+            LD_LIBRARY_PATH = nixpkgs.lib.makeLibraryPath [
+              pkgs.pipewire
+              pkgs.wireplumber
+              pkgs.gtk4
+              pkgs.gdk-pixbuf
+              pkgs.glib
+            ];
+
+            BINDGEN_EXTRA_CLANG_ARGS = "-I${pkgs.llvmPackages_19.clang-unwrapped.lib}/lib/clang/19/include -I${pkgs.glibc.dev}/include";
           };
         }
       );

@@ -1,0 +1,46 @@
+/* 
+ ********** Bar Styles
+*/
+.sound-and-brightness-box {
+    border-radius: 80px;
+    border: 1px solid;
+    min-height: 30px;
+    min-width: 36px;
+    border-color: @primary-color;
+    background: @bg-color; 
+}
+.sound-and-brightness-icon {
+    font-size: 16px;
+    color: @primary-color;
+}
+
+
+
+
+
+/* 
+ ********** Popup Styles
+*/
+.sound-popover,
+.sound-popover contents,
+.sound-popover arrow {
+    all: unset;
+    background: transparent;
+}
+.sound-popover-container {
+    padding: 16px;
+    border-radius: 10px;
+    min-width: 300px;
+    min-height: 80px;
+    background-color: @primary-color;
+}
+
+.icon-scale-box {
+    /* background-color: gray; */
+}
+.sound-scale {
+    /* background-color: blue; */
+}
+.sound-icon {
+    font-size: 24px;
+}

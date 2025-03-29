@@ -1,0 +1,11 @@
+[package]
+name = "sound_and_brightness"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+anyhow.workspace = true
+utils.workspace = true
+gtk4.workspace = true
+gtk4-layer-shell.workspace = true

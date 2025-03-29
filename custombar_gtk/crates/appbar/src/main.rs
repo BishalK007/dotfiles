@@ -2,6 +2,7 @@ use appbar::{Bar, BoxPosition};
 use capture::Capture;
 use clock::Clock;
 use home_btn::HomeBtn;
+use sound_and_brightness::SoundAndBrightness;
 use workspaces::Workspace;
 use calendar::Calendar;
 use utils::logger;
@@ -19,11 +20,13 @@ fn main() {
     let clock = Clock::with_format(clock::TimeFormat::HoursMinutes24);
     let calendar = Calendar::new();
     let capture = Capture::new();
+    let sound_and_brightness = SoundAndBrightness::new();
     bar.append_to(workspace.widget(), BoxPosition::Start);
     bar.append_to(home_btn.widget(), BoxPosition::Start);
     bar.append_to(calendar.widget(), BoxPosition::End);
     bar.append_to(clock.widget(), BoxPosition::Start);
     bar.append_to(capture.widget(), BoxPosition::End);
+    bar.append_to(sound_and_brightness.widget(), BoxPosition::End);
     
     // Run the bar application
     bar.run();

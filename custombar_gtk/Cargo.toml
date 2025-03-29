@@ -7,6 +7,7 @@ members = [
     "crates/clock",
     "crates/capture",
     "crates/utils",
+    "crates/sound_and_brightness",
 ]
 
 [workspace.dependencies]
@@ -20,6 +21,7 @@ pretty_env_logger = "0.5.0"
 log = "0.4.25"
 async-channel = "2.3.1"
 regex = "1.11.1"
+anyhow = "1.0.97"
 # Add custom dependencies here
 utils = { path = "crates/utils" }
 workspaces = { path = "crates/workspaces" }
@@ -27,3 +29,4 @@ home_btn = { path = "crates/home_btn" }
 calendar = { path = "crates/calendar" }
 clock = { path = "crates/clock" }
 capture = { path = "crates/capture" }
+sound_and_brightness = { path = "crates/sound_and_brightness" }

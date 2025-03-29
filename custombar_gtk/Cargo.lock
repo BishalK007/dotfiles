@@ -27,6 +27,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.97"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dcfed56ad506cb2c684a14971b8861fdc3baaaae314b9e5f9bb532cbe3ba7a4f"
+
+[[package]]
 name = "appbar"
 version = "0.1.0"
 dependencies = [
@@ -36,6 +42,7 @@ dependencies = [
  "gtk4",
  "gtk4-layer-shell",
  "home_btn",
+ "sound_and_brightness",
  "utils",
  "workspaces",
 ]
@@ -1048,6 +1055,16 @@ name = "smallvec"
 version = "1.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7fcf8323ef1faaee30a44a340193b1ac6814fd9b7b4e88e9d4519a3e4abe1cfd"
+
+[[package]]
+name = "sound_and_brightness"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "gtk4",
+ "gtk4-layer-shell",
+ "utils",
+]
 
 [[package]]
 name = "syn"
