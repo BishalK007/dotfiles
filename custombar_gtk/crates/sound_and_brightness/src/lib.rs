@@ -126,6 +126,27 @@ impl SoundAndBrightness {
     fn get_sender(&self) -> Sender<ChannelMessage> {
         self.tx.clone()
     }
+    // Function to create a handler that can process colon-separated messages
+    fn create_composite_handler(
+        handlers: HashMap<String, Box<dyn Fn() + Send + Sync>>,
+    ) -> Box<dyn Fn(String) + Send + Sync> {
+        // Take ownership of handlers instead of trying to clone them
+        Box::new(move |message: String| {
+            // Split the message by colon
+            let commands: Vec<&str> = message.split(':').collect();
+    
+            for cmd in commands {
+                // Look up the handler for this command
+                if let Some(handler) = handlers.get(cmd) {
+                    // Call the handler if found
+                    handler();
+                } else {
+                    println!("Warning: Unknown command '{}'", cmd);
+                }
+            }
+        }) as Box<dyn Fn(String) + Send + Sync>
+    }
+
     pub fn handle_socket(self: &Rc<Self>, rx: async_channel::Receiver<ChannelMessage>) {
         // Start a background thread to listen for messages
         let sbcontainer = Rc::clone(self);
@@ -258,10 +279,13 @@ impl SoundAndBrightness {
             }) as Box<dyn Fn() + Send + Sync>,
         );
 
+        // Create a composite message handler
+        let composite_handler = Self::create_composite_handler(handlers);
+
         // Start the socket listener in a background thread
         let socket_path = "/tmp/sound_and_brightness_socket";
         let (_socket_thread, _terminate_flag) =
-            utils::socket::start_unix_socket(socket_path, handlers);
+            utils::socket::start_unix_socket_with_parser(socket_path, composite_handler);
     }
 
     pub fn update_widget(&self) {
@@ -288,8 +312,6 @@ impl SoundAndBrightness {
         F: Fn() + 'static,
         G: Fn() + 'static,
     {
-        println!("Handling show auto hide");
-
         // Call the show function immediately
         show_fn();
 
@@ -302,17 +324,18 @@ impl SoundAndBrightness {
         let hide_fn = Rc::new(hide_fn);
         let hide_fn_clone = hide_fn.clone();
         let auto_hide_timeout = self.auto_hide_timeout.clone();
-        
-        let source_id = gtk4::glib::timeout_add_local(std::time::Duration::from_millis(1500), move || {
-            // Call the hide function after delay
-            hide_fn_clone();
-            
-            // Clear the stored timeout ID
-            *auto_hide_timeout.borrow_mut() = None;
-            
-            // Return false to prevent repeating
-            gtk4::glib::ControlFlow::Break
-        });
+
+        let source_id =
+            gtk4::glib::timeout_add_local(std::time::Duration::from_millis(1500), move || {
+                // Call the hide function after delay
+                hide_fn_clone();
+
+                // Clear the stored timeout ID
+                *auto_hide_timeout.borrow_mut() = None;
+
+                // Return false to prevent repeating
+                gtk4::glib::ControlFlow::Break
+            });
 
         // Store the new timeout ID
         *self.auto_hide_timeout.borrow_mut() = Some(source_id);

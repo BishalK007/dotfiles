@@ -1,9 +1,11 @@
 use std::collections::HashMap;
 use std::fs;
 use std::io::{BufRead, BufReader, Write};
+use std::os::unix::fs::PermissionsExt;
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::sync::{Arc, atomic::{AtomicBool, Ordering}};
 use std::thread::{self, JoinHandle};
+use std::time::Duration;
 
 /// Starts a Unix socket listener in a background thread.
 /// 
@@ -17,79 +19,65 @@ use std::thread::{self, JoinHandle};
 /// A tuple containing:
 /// - A thread handle to the background socket listener thread
 /// - An atomic boolean that can be set to true to request the listener to terminate
-pub fn start_unix_socket(
-    socket_path: &str,
-    handlers: HashMap<String, Box<dyn Fn() + Send + Sync>>
-) -> (JoinHandle<()>, Arc<AtomicBool>) {
-    // Remove any previous socket file if it exists
-    let _ = fs::remove_file(socket_path);
-    
-    // Create a socket path string that's owned and can be moved into the thread
-    let socket_path = socket_path.to_string();
-    
-    // Wrap handlers in an Arc for thread-safe sharing
-    let handlers = Arc::new(handlers);
-    
-    // Create a termination flag
+// In utils/socket.rs
+pub fn start_unix_socket_with_parser<F>(
+    path: &str,
+    message_handler: F,
+) -> (JoinHandle<()>, Arc<AtomicBool>)
+where
+    F: Fn(String) + Send + Sync + 'static,
+{
+    let path = path.to_string();
     let terminate = Arc::new(AtomicBool::new(false));
     let terminate_clone = Arc::clone(&terminate);
     
-    // Spawn the listener thread
     let handle = thread::spawn(move || {
-        // Bind the Unix socket
-        let listener = match UnixListener::bind(&socket_path) {
-            Ok(l) => l,
+        // Remove the socket if it exists
+        let _ = std::fs::remove_file(&path);
+        
+        // Create the listener
+        let listener = match UnixListener::bind(&path) {
+            Ok(sock) => sock,
             Err(e) => {
-                eprintln!("Failed to bind to the Unix socket path {}: {}", socket_path, e);
+                eprintln!("Failed to bind to socket {}: {}", path, e);
                 return;
             }
         };
         
-        // Set socket to non-blocking mode so we can check the terminate flag
-        if let Err(e) = listener.set_nonblocking(true) {
-            eprintln!("Failed to set socket to non-blocking mode: {}", e);
-            return;
+        // Set appropriate permissions
+        if let Err(e) = std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o777)) {
+            eprintln!("Failed to set socket permissions: {}", e);
         }
         
-        // Process incoming connections until termination is requested
-        while !terminate_clone.load(Ordering::Relaxed) {
+        // Make listener non-blocking
+        if let Err(e) = listener.set_nonblocking(true) {
+            eprintln!("Failed to set socket to non-blocking mode: {}", e);
+        }
+        
+        while !terminate_clone.load(Ordering::SeqCst) {
             match listener.accept() {
-                Ok((stream, _)) => {
-                    // Clone handlers for the spawned thread
-                    let handlers = Arc::clone(&handlers);
-                    thread::spawn(move || {
-                        let reader = BufReader::new(stream);
-                        // Process each line (message) received on the socket
-                        for line in reader.lines() {
-                            match line {
-                                Ok(msg) => {
-                                    let key = msg.trim();
-                                    if let Some(handler) = handlers.get(key) {
-                                        handler();
-                                    }
-                                }
-                                Err(e) => {
-                                    eprintln!("Error reading from connection: {}", e);
-                                    break;
-                                }
-                            }
-                        }
-                    });
+                Ok((stream, _addr)) => {
+                    let mut reader = BufReader::new(stream);
+                    let mut message = String::new();
+                    
+                    if reader.read_line(&mut message).is_ok() {
+                        let message = message.trim().to_string();
+                        message_handler(message);
+                    }
                 }
                 Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
-                    // No incoming connection available, sleep briefly
-                    thread::sleep(std::time::Duration::from_millis(100));
-                    continue;
+                    // No connection available, sleep a bit
+                    thread::sleep(Duration::from_millis(100));
                 }
                 Err(e) => {
                     eprintln!("Error accepting connection: {}", e);
-                    thread::sleep(std::time::Duration::from_millis(100));
+                    break;
                 }
             }
         }
         
-        // Clean up the socket file when terminating
-        let _ = fs::remove_file(&socket_path);
+        // Clean up socket
+        let _ = std::fs::remove_file(&path);
     });
     
     (handle, terminate)
