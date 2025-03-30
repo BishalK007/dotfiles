@@ -1,12 +1,12 @@
 use std::cell::RefCell;
 
-use crate::sbutils;
+use crate::sbutils::{self, VolumeAction};
 use gtk4::glib::{timeout_add_local, ControlFlow};
 use gtk4::prelude::*;
 use gtk4::{glib::object::IsA, Popover, PositionType};
-// Define message types
+use utils::socket;
 
-// use std::ops::ControlFlow;
+
 #[derive(Clone)]
 pub struct SoundPopup {
     popover: Popover,
@@ -26,7 +26,7 @@ impl SoundPopup {
         popover.set_autohide(false);
         popover.add_css_class("sound-popover");
 
-        let container = gtk4::Box::new(gtk4::Orientation::Vertical, 0);
+        let container = gtk4::Box::new(gtk4::Orientation::Vertical, 10);
         popover.set_child(Some(&container));
         container.add_css_class("sound-popover-container");
 
@@ -36,7 +36,7 @@ impl SoundPopup {
         icon_scale_box.add_css_class("icon-scale-box");
 
         let sound_icon = gtk4::Label::new(Some(""));
-        sound_icon.add_css_class("sound-icon");
+        sound_icon.add_css_class("sound-popover-sound-icon");
 
         let sound_scale =
             gtk4::Scale::new(gtk4::Orientation::Horizontal, None::<&gtk4::Adjustment>);
@@ -44,12 +44,13 @@ impl SoundPopup {
         sound_scale.set_value(50.0);
 
         sound_scale.set_hexpand(true);
-        sound_scale.add_css_class("sound-scale");
+        sound_scale.add_css_class("sound-popover-sound-scale");
 
         icon_scale_box.append(&sound_icon);
         icon_scale_box.append(&sound_scale);
 
         container.append(&icon_scale_box);
+        
 
         // Create SoundPopup instance.
         let popup = SoundPopup {
@@ -65,6 +66,10 @@ impl SoundPopup {
         // Add a signal handler to update the popup when the volume changes.
         popup.add_slider_change_handler();
 
+        let popup_clone = popup.clone();
+        utils::connect_clicked(&popup.vol_icon, move || {
+            popup_clone.handle_vol_mute_toggle();
+        });
 
         popup
     }
@@ -103,6 +108,12 @@ impl SoundPopup {
             self.vol_slider.set_value(current_volume_with_boost);
             self.vol_slider.set_range(0.0, 150.0);
         }
+        if except_list
+            .as_ref()
+            .map_or(true, |list| !list.contains(&"slider-class".to_string()))
+        {
+            self.update_volume_class(current_volume_with_boost);
+        }
 
         if except_list
             .as_ref()
@@ -111,12 +122,22 @@ impl SoundPopup {
             self.vol_icon.set_label(&current_vol_icon);
         }
     }
+    fn update_volume_class(&self, volume: f64) {
+        if volume > 100.0 {
+            self.vol_slider.add_css_class("sound-popover-sound-scale-boosed");
+        } else {
+            self.vol_slider.remove_css_class("sound-popover-sound-scale-boosed");
+        }
+    }
+
     fn add_slider_change_handler(&self) {
         // Connect value-changed signal to update system volume
         let vol_slider_clone = self.vol_slider.clone();
-        let vol_icon_clone = self.vol_icon.clone();
         let debounce_source_clone = self.debounce_source.clone();
+        let popup_clone = self.clone();
         self.vol_slider.connect_value_changed(move |_| {
+            
+            // Convert slider value to fraction (0.0-1.5)
             let current_value = vol_slider_clone.value() / 100.0;
             println!(
                 "Slider changed, scheduling volume update to: {}",
@@ -127,19 +148,28 @@ impl SoundPopup {
                 let _ = source_id.remove();
             }
             // Schedule volume update after 200ms
-            let icon = vol_icon_clone.clone();
+            let popup_inner_clone = popup_clone.clone();
             let debounce_source_clone_inner = debounce_source_clone.clone();
             let source_id = timeout_add_local(std::time::Duration::from_millis(200), move || {
                 println!("Updating system volume to: {}", current_value);
                 sbutils::change_vol(current_value);
-                if let Some(state) = sbutils::get_volume_state() {
-                    icon.set_label(&state.get_icon());
-                }
+                // Update all UI elements
+                popup_inner_clone.update_popup(Some(vec!["slider".to_string()]));
+                socket::send_socket_msg("/tmp/sound_socket", "SoundWidgetUpdate")
+                    .expect("Failed to send socket message to /tmp/sound_socket");
                 *debounce_source_clone_inner.borrow_mut() = None;
                 ControlFlow::Break
             });
             *debounce_source_clone.borrow_mut() = Some(source_id);
         });
     }
+
+    fn handle_vol_mute_toggle(&self) {
+        sbutils::change_vol(VolumeAction::VolMuteToggle);
+        socket::send_socket_msg("/tmp/sound_socket", "SoundWidgetUpdate")
+                    .expect("Failed to send socket message to /tmp/sound_socket");
+        self.update_popup(None);
+    }
     
 }
+

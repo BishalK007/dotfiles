@@ -13,7 +13,9 @@
     font-size: 16px;
     color: @primary-color;
 }
-
+.sound-icon {
+    font-size: 20px;
+}
 
 
 
@@ -28,19 +30,34 @@
     background: transparent;
 }
 .sound-popover-container {
-    padding: 16px;
+    padding: 12px 10px 12px 10px;
     border-radius: 10px;
-    min-width: 300px;
-    min-height: 80px;
+    min-width: 280px;
+    /* min-height: 42px; */
     background-color: @primary-color;
 }
 
 .icon-scale-box {
-    /* background-color: gray; */
 }
-.sound-scale {
+.sound-popover-sound-scale {
     /* background-color: blue; */
 }
-.sound-icon {
+.sound-popover-sound-scale highlight {
+    background-color: @bg-color-no-transparent;
+}
+.sound-popover-sound-scale-boosed highlight {
+    background-color: red;
+}
+
+.sound-popover-sound-scale slider {
+    background-image: none;
+    background-color: @primary-color;
+    border: 2px solid;
+    border-color: @bg-color-no-transparent;
+    border-radius: 100%;
+}
+.sound-popover-sound-icon {
     font-size: 24px;
+    min-width: 44px;
+    color: @bg-color-no-transparent;
 }

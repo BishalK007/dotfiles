@@ -12,7 +12,8 @@ use gtk4::{
 };
 
 pub enum ChannelMessage {
-    SoundUpdate,
+    SoundWidgetUpdate,
+    SoundPopupUpdate,
     SoundPopupShow,
     SoundPopupHide,
 }
@@ -51,8 +52,8 @@ impl SoundAndBrightness {
             "background-color",
             "border-color",
         ]);
-        sound_icon.set_css_classes(&["sound-and-brightness", "sound-and-brightness-icon", ]);
-        brightness_icon.set_css_classes(&["sound-and-brightness", "sound-and-brightness-icon", ]);
+        sound_icon.set_css_classes(&["sound-and-brightness", "sound-and-brightness-icon", "sound-icon" ]);
+        brightness_icon.set_css_classes(&["sound-and-brightness", "sound-and-brightness-icon", "brightness-icon" ]);
 
         // Set margins.
         sound_icon.set_margin_start(8);
@@ -83,7 +84,10 @@ impl SoundAndBrightness {
             instance_clone.handle_click();
         });
 
-        instance.handle_socket(rx);
+        let instance_for_socket = Rc::clone(&instance);
+        instance_for_socket.handle_socket(rx);
+
+        instance.update_widget();
 
         instance
 
@@ -99,15 +103,21 @@ impl SoundAndBrightness {
     fn get_sender(&self) -> Sender<ChannelMessage> {
         self.tx.clone()
     }
-
-    pub fn handle_socket(&self, rx: async_channel::Receiver<ChannelMessage>) {
+    pub fn handle_socket(self: &Rc<Self>, rx: async_channel::Receiver<ChannelMessage>) {
         // Start a background thread to listen for messages
-        let sound_popup_clone = self.sound_popup.clone();
+        let sbcontainer = Rc::clone(self);
+        let sound_popup_clone = sbcontainer.sound_popup.clone();
         // Set up message handler using GTK's main context
+
         MainContext::default().spawn_local(async move {
             while let Ok(msg) = rx.recv().await {
                 match msg {
-                    ChannelMessage::SoundUpdate => sound_popup_clone.update_popup(None),
+                    ChannelMessage::SoundWidgetUpdate => {
+                        sbcontainer.update_widget();
+                    },
+                    ChannelMessage::SoundPopupUpdate => {
+                        sound_popup_clone.update_popup(None);
+                    },
                     ChannelMessage::SoundPopupShow => sound_popup_clone.show(),
                     ChannelMessage::SoundPopupHide => sound_popup_clone.hide(),
                 }
@@ -117,11 +127,19 @@ impl SoundAndBrightness {
         let mut handlers: HashMap<String, Box<dyn Fn() + Send + Sync>> = HashMap::new();
 
         // Create thread-safe references to the sender
-        let tx_update = self.get_sender();
+        let tx_widget_update = self.get_sender();
         handlers.insert(
-            "SoundUpdate".to_string(),
+            "SoundWidgetUpdate".to_string(),
             Box::new(move || {
-                let _ = tx_update.send_blocking(ChannelMessage::SoundUpdate);
+                let _ = tx_widget_update.send_blocking(ChannelMessage::SoundWidgetUpdate);
+            }) as Box<dyn Fn() + Send + Sync>,
+        );
+
+        let tx_popup_update = self.get_sender();
+        handlers.insert(
+            "SoundPopupUpdate".to_string(),
+            Box::new(move || {
+                let _ = tx_popup_update.send_blocking(ChannelMessage::SoundPopupUpdate);
             }) as Box<dyn Fn() + Send + Sync>,
         );
 
@@ -143,9 +161,19 @@ impl SoundAndBrightness {
         );
 
         // Start the socket listener in a background thread
-        let socket_path = "/tmp/sound_popup_socket";
+        let socket_path = "/tmp/sound_socket";
         let (_socket_thread, _terminate_flag) =
             utils::socket::start_unix_socket(socket_path, handlers);
+    }
+
+    pub fn update_widget(&self) {
+        // Update sound Icon
+        let curr_vol_icon = sbutils::get_volume_state();
+        let curr_vol_icon = match curr_vol_icon {
+            Some(icon) => icon.get_icon(),
+            None => "󰴸".to_string(),
+        };
+        self.sound_icon.set_label(curr_vol_icon.as_str());
     }
 
 }

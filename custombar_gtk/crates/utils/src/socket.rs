@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fs;
-use std::io::{BufRead, BufReader};
-use std::os::unix::net::UnixListener;
+use std::io::{BufRead, BufReader, Write};
+use std::os::unix::net::{UnixListener, UnixStream};
 use std::sync::{Arc, atomic::{AtomicBool, Ordering}};
 use std::thread::{self, JoinHandle};
 
@@ -93,4 +93,17 @@ pub fn start_unix_socket(
     });
     
     (handle, terminate)
+}
+
+pub fn send_socket_msg(
+    socket_path: &str,
+    msg: &str,
+) -> Result<(), std::io::Error> {
+    // Create a Unix stream to connect to the socket
+    let mut stream = UnixStream::connect(socket_path)?;
+    
+    // Send the message to the socket
+    stream.write_all(msg.as_bytes())?;
+    
+    Ok(())
 }
