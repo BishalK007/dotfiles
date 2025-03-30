@@ -1,10 +1,13 @@
 use std::cell::RefCell;
 
 use crate::sbutils;
-use gtk4::prelude::*;
-use gtk4::{glib::object::IsA,  Popover, PositionType};
 use gtk4::glib::{timeout_add_local, ControlFlow};
+use gtk4::prelude::*;
+use gtk4::{glib::object::IsA, Popover, PositionType};
+// Define message types
+
 // use std::ops::ControlFlow;
+#[derive(Clone)]
 pub struct SoundPopup {
     popover: Popover,
     vol_icon: gtk4::Label,
@@ -14,6 +17,8 @@ pub struct SoundPopup {
 
 impl SoundPopup {
     pub fn new<T: IsA<gtk4::Widget> + ?Sized>(parent: &T) -> Self {
+        
+
         let popover = Popover::new();
         // Attach the popover to the given parent.
         popover.set_parent(parent);
@@ -46,21 +51,20 @@ impl SoundPopup {
 
         container.append(&icon_scale_box);
 
-
         // Create SoundPopup instance.
         let popup = SoundPopup {
             popover,
             vol_icon: sound_icon,
             vol_slider: sound_scale,
-            debounce_source: std::rc::Rc::new(RefCell::new(None)),
+            debounce_source: std::rc::Rc::new(RefCell::new(None))
         };
-    
 
         // Initialize the popup.
         popup.update_popup(None);
 
         // Add a signal handler to update the popup when the volume changes.
         popup.add_slider_change_handler();
+
 
         popup
     }
@@ -81,7 +85,7 @@ impl SoundPopup {
     // basically we wanna not update the stuff in the except_list
     // if were changing vol from the slider itself it makes no sence to
     // set it's state again
-    fn update_popup(&self, except_list: Option<Vec<String>>) {
+    pub fn update_popup(&self, except_list: Option<Vec<String>>) {
         let current_volume_state = sbutils::get_volume_state();
         let current_volume_with_boost = match current_volume_state.as_ref() {
             Some(state) => (state.level + state.boost) * 100.00,
@@ -92,12 +96,18 @@ impl SoundPopup {
             None => "󰴸".to_string(),
         };
 
-        if except_list.as_ref().map_or(true, |list| !list.contains(&"slider".to_string())) {
+        if except_list
+            .as_ref()
+            .map_or(true, |list| !list.contains(&"slider".to_string()))
+        {
             self.vol_slider.set_value(current_volume_with_boost);
             self.vol_slider.set_range(0.0, 150.0);
         }
 
-        if except_list.as_ref().map_or(true, |list| !list.contains(&"icon".to_string())) {
+        if except_list
+            .as_ref()
+            .map_or(true, |list| !list.contains(&"icon".to_string()))
+        {
             self.vol_icon.set_label(&current_vol_icon);
         }
     }
@@ -108,7 +118,10 @@ impl SoundPopup {
         let debounce_source_clone = self.debounce_source.clone();
         self.vol_slider.connect_value_changed(move |_| {
             let current_value = vol_slider_clone.value() / 100.0;
-            println!("Slider changed, scheduling volume update to: {}", current_value);
+            println!(
+                "Slider changed, scheduling volume update to: {}",
+                current_value
+            );
             // If there's already a pending timeout, remove it.
             if let Some(source_id) = debounce_source_clone.borrow_mut().take() {
                 let _ = source_id.remove();
@@ -128,4 +141,5 @@ impl SoundPopup {
             *debounce_source_clone.borrow_mut() = Some(source_id);
         });
     }
+    
 }

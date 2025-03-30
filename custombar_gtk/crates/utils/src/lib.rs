@@ -7,6 +7,7 @@ use gtk4::cairo::Matrix;
 use gtk4::prelude::*;
 
 pub mod logger;
+pub mod socket;
 
 /// Applies multiple CSS data strings. The parameter `css_files` should be a slice of the CSS content strings.
 ///
@@ -70,3 +71,4 @@ where
     });
     container.add_controller(gesture);
 }
+

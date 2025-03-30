@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 
 anyhow.workspace = true
+async-channel.workspace = true
 utils.workspace = true
 gtk4.workspace = true
 gtk4-layer-shell.workspace = true
