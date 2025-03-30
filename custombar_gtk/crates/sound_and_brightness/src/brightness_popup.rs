@@ -20,7 +20,7 @@ impl BrightnessPopup {
         // Attach the popover to the given parent.
         popover.set_parent(parent);
         popover.set_position(PositionType::Bottom);
-        popover.set_autohide(false);
+        popover.set_autohide(true);
         popover.add_css_class("brightness-popover");
 
         let container = gtk4::Box::new(gtk4::Orientation::Vertical, 10);

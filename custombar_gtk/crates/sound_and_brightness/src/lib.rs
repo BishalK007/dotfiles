@@ -1,28 +1,26 @@
+mod brightness_popup;
 mod sbutils;
 mod sound_popup;
-mod brightness_popup;
 
 use async_channel::{unbounded, Sender};
-pub use sound_popup::SoundPopup;
 pub use brightness_popup::BrightnessPopup;
+pub use sound_popup::SoundPopup;
 
-
-use std::{collections::HashMap, rc::Rc};
-use gtk4::{
-    glib::MainContext, prelude::*, Label, Orientation
-};
+use gtk4::{glib::MainContext, prelude::*, Label, Orientation};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 pub enum ChannelMessage {
     SoundWidgetUpdate,
     SoundPopupUpdate,
     SoundPopupShow,
     SoundPopupHide,
+    SoundPopupShowAutoHide,
     BrightnessWidgetUpdate,
     BrightnessPopupUpdate,
     BrightnessPopupShow,
     BrightnessPopupHide,
+    BrightnessPopupShowAutoHide,
 }
-
 
 pub struct SoundAndBrightness {
     container: gtk4::Box,
@@ -31,8 +29,8 @@ pub struct SoundAndBrightness {
     sound_popup: SoundPopup,
     brightness_popup: BrightnessPopup,
     tx: Sender<ChannelMessage>,
+    auto_hide_timeout: Rc<RefCell<Option<gtk4::glib::SourceId>>>,
 }
-
 
 impl SoundAndBrightness {
     pub fn new() -> Rc<Self> {
@@ -58,8 +56,16 @@ impl SoundAndBrightness {
             "background-color",
             "border-color",
         ]);
-        sound_icon.set_css_classes(&["sound-and-brightness", "sound-and-brightness-icon", "sound-icon" ]);
-        brightness_icon.set_css_classes(&["sound-and-brightness", "sound-and-brightness-icon", "brightness-icon" ]);
+        sound_icon.set_css_classes(&[
+            "sound-and-brightness",
+            "sound-and-brightness-icon",
+            "sound-icon",
+        ]);
+        brightness_icon.set_css_classes(&[
+            "sound-and-brightness",
+            "sound-and-brightness-icon",
+            "brightness-icon",
+        ]);
 
         // Set margins.
         sound_icon.set_margin_start(8);
@@ -83,6 +89,7 @@ impl SoundAndBrightness {
             sound_popup,
             brightness_popup,
             tx,
+            auto_hide_timeout: Rc::new(RefCell::new(None)),
         };
 
         // Wrap the instance in an Rc and connect a click event.
@@ -102,7 +109,6 @@ impl SoundAndBrightness {
         instance.update_widget();
 
         instance
-
     }
     pub fn handle_sound_icon_click(&self) {
         self.brightness_popup.hide();
@@ -126,28 +132,46 @@ impl SoundAndBrightness {
         let sound_popup_clone = sbcontainer.sound_popup.clone();
         let sbcontainer = Rc::clone(self);
         let brightness_popup_clone = sbcontainer.brightness_popup.clone();
-        
+
         // Set up message handler using GTK's main context
         MainContext::default().spawn_local(async move {
             while let Ok(msg) = rx.recv().await {
                 match msg {
                     ChannelMessage::SoundWidgetUpdate => {
                         sbcontainer.update_widget();
-                    },
+                    }
                     ChannelMessage::SoundPopupUpdate => {
                         sound_popup_clone.update_popup(None);
-                    },
+                    }
                     ChannelMessage::SoundPopupShow => sound_popup_clone.show(),
                     ChannelMessage::SoundPopupHide => sound_popup_clone.hide(),
+                    ChannelMessage::SoundPopupShowAutoHide => {
+                        // Create show and hide functions for sound popup with cloned references
+                        let sp_show = sound_popup_clone.clone();
+                        let show_fn = move || sp_show.show();
+                        let sp_hide = sound_popup_clone.clone();
+                        let hide_fn = move || sp_hide.hide();
+
+                        // Pass these functions to handle_show_auto_hide
+                        sbcontainer.handle_show_auto_hide(show_fn, hide_fn)
+                    }
                     ChannelMessage::BrightnessWidgetUpdate => {
-                        println!("BrightnessWidgetUpdate called in MainContext");
                         sbcontainer.update_widget();
-                    },
+                    }
                     ChannelMessage::BrightnessPopupUpdate => {
                         brightness_popup_clone.update_popup(None);
-                    },
+                    }
                     ChannelMessage::BrightnessPopupShow => brightness_popup_clone.show(),
                     ChannelMessage::BrightnessPopupHide => brightness_popup_clone.hide(),
+                    ChannelMessage::BrightnessPopupShowAutoHide => {
+                        let bp_show = brightness_popup_clone.clone();
+                        let show_fn = move || bp_show.show();
+                        let bp_hide = brightness_popup_clone.clone();
+                        let hide_fn = move || bp_hide.hide();
+
+                        // Pass these functions to handle_show_auto_hide
+                        sbcontainer.handle_show_auto_hide(show_fn, hide_fn);
+                    }
                 }
             }
         });
@@ -187,13 +211,19 @@ impl SoundAndBrightness {
                 let _ = tx_hide.send_blocking(ChannelMessage::SoundPopupHide);
             }) as Box<dyn Fn() + Send + Sync>,
         );
+        let tx_show_auto_hide = self.get_sender();
+        handlers.insert(
+            "SoundPopupShowAutoHide".to_string(),
+            Box::new(move || {
+                let _ = tx_show_auto_hide.send_blocking(ChannelMessage::SoundPopupShowAutoHide);
+            }) as Box<dyn Fn() + Send + Sync>,
+        );
 
-        // Brightness Hanglers 
+        // Brightness Hanglers
         let tx_widget_update = self.get_sender();
         handlers.insert(
             "BrightnessWidgetUpdate".to_string(),
             Box::new(move || {
-                println!("BrightnessWidgetUpdate called in BOX");
                 let _ = tx_widget_update.send_blocking(ChannelMessage::BrightnessWidgetUpdate);
             }) as Box<dyn Fn() + Send + Sync>,
         );
@@ -219,15 +249,20 @@ impl SoundAndBrightness {
                 let _ = tx_hide.send_blocking(ChannelMessage::BrightnessPopupHide);
             }) as Box<dyn Fn() + Send + Sync>,
         );
+        let tx_show_auto_hide = self.get_sender();
+        handlers.insert(
+            "BrightnessPopupShowAutoHide".to_string(),
+            Box::new(move || {
+                let _ =
+                    tx_show_auto_hide.send_blocking(ChannelMessage::BrightnessPopupShowAutoHide);
+            }) as Box<dyn Fn() + Send + Sync>,
+        );
 
         // Start the socket listener in a background thread
         let socket_path = "/tmp/sound_and_brightness_socket";
         let (_socket_thread, _terminate_flag) =
             utils::socket::start_unix_socket(socket_path, handlers);
-        
-
     }
-
 
     pub fn update_widget(&self) {
         // Update sound Icon
@@ -237,16 +272,49 @@ impl SoundAndBrightness {
             None => "󰴸".to_string(),
         };
         self.sound_icon.set_label(curr_vol_icon.as_str());
-        println!("BrightnessWidgetUpdate called");
         // Update brightness Icon
         let curr_brightness_icon = sbutils::get_brightness_state();
         let curr_brightness_icon = match curr_brightness_icon {
             Some(icon) => icon.get_icon(),
             None => "󰳲".to_string(),
         };
-        println!("BrightnessWidgetUpdate called {}", curr_brightness_icon);
         // Set the label of the brightness icon
-        self.brightness_icon.set_label(curr_brightness_icon.as_str()); 
+        self.brightness_icon
+            .set_label(curr_brightness_icon.as_str());
     }
 
+    fn handle_show_auto_hide<F, G>(&self, show_fn: F, hide_fn: G)
+    where
+        F: Fn() + 'static,
+        G: Fn() + 'static,
+    {
+        println!("Handling show auto hide");
+
+        // Call the show function immediately
+        show_fn();
+
+        // If there's already a pending timeout, cancel it
+        if let Some(source_id) = self.auto_hide_timeout.borrow_mut().take() {
+            source_id.remove();
+        }
+
+        // Schedule hide after 1500ms
+        let hide_fn = Rc::new(hide_fn);
+        let hide_fn_clone = hide_fn.clone();
+        let auto_hide_timeout = self.auto_hide_timeout.clone();
+        
+        let source_id = gtk4::glib::timeout_add_local(std::time::Duration::from_millis(1500), move || {
+            // Call the hide function after delay
+            hide_fn_clone();
+            
+            // Clear the stored timeout ID
+            *auto_hide_timeout.borrow_mut() = None;
+            
+            // Return false to prevent repeating
+            gtk4::glib::ControlFlow::Break
+        });
+
+        // Store the new timeout ID
+        *self.auto_hide_timeout.borrow_mut() = Some(source_id);
+    }
 }
