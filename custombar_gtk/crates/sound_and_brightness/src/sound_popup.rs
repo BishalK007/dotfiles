@@ -155,8 +155,8 @@ impl SoundPopup {
                 sbutils::change_vol(current_value);
                 // Update all UI elements
                 popup_inner_clone.update_popup(Some(vec!["slider".to_string()]));
-                socket::send_socket_msg("/tmp/sound_socket", "SoundWidgetUpdate")
-                    .expect("Failed to send socket message to /tmp/sound_socket");
+                socket::send_socket_msg("/tmp/sound_and_brightness_socket", "SoundWidgetUpdate")
+                    .expect("Failed to send socket message to /tmp/sound_and_brightness_socket");
                 *debounce_source_clone_inner.borrow_mut() = None;
                 ControlFlow::Break
             });
@@ -166,8 +166,8 @@ impl SoundPopup {
 
     fn handle_vol_mute_toggle(&self) {
         sbutils::change_vol(VolumeAction::VolMuteToggle);
-        socket::send_socket_msg("/tmp/sound_socket", "SoundWidgetUpdate")
-                    .expect("Failed to send socket message to /tmp/sound_socket");
+        socket::send_socket_msg("/tmp/sound_and_brightness_socket", "SoundWidgetUpdate")
+                    .expect("Failed to send socket message to /tmp/sound_and_brightness_socket");
         self.update_popup(None);
     }
     

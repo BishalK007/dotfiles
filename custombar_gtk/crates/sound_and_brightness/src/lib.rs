@@ -1,9 +1,10 @@
 mod sbutils;
-
-
 mod sound_popup;
+mod brightness_popup;
+
 use async_channel::{unbounded, Sender};
 pub use sound_popup::SoundPopup;
+pub use brightness_popup::BrightnessPopup;
 
 
 use std::{collections::HashMap, rc::Rc};
@@ -16,6 +17,10 @@ pub enum ChannelMessage {
     SoundPopupUpdate,
     SoundPopupShow,
     SoundPopupHide,
+    BrightnessWidgetUpdate,
+    BrightnessPopupUpdate,
+    BrightnessPopupShow,
+    BrightnessPopupHide,
 }
 
 
@@ -24,6 +29,7 @@ pub struct SoundAndBrightness {
     sound_icon: Label,
     brightness_icon: Label,
     sound_popup: SoundPopup,
+    brightness_popup: BrightnessPopup,
     tx: Sender<ChannelMessage>,
 }
 
@@ -67,6 +73,7 @@ impl SoundAndBrightness {
 
         //sound popup
         let sound_popup = SoundPopup::new(&container);
+        let brightness_popup = BrightnessPopup::new(&container);
 
         // Build the SoundAndBrightness instance.
         let sound_and_brightness = SoundAndBrightness {
@@ -74,6 +81,7 @@ impl SoundAndBrightness {
             sound_icon,
             brightness_icon,
             sound_popup,
+            brightness_popup,
             tx,
         };
 
@@ -81,7 +89,11 @@ impl SoundAndBrightness {
         let instance = Rc::new(sound_and_brightness);
         let instance_clone = Rc::clone(&instance);
         utils::connect_clicked(&instance.sound_icon, move || {
-            instance_clone.handle_click();
+            instance_clone.handle_sound_icon_click();
+        });
+        let instance_clone = Rc::clone(&instance);
+        utils::connect_clicked(&instance.brightness_icon, move || {
+            instance_clone.handle_brightness_icon_click();
         });
 
         let instance_for_socket = Rc::clone(&instance);
@@ -92,8 +104,13 @@ impl SoundAndBrightness {
         instance
 
     }
-    pub fn handle_click(&self) {
+    pub fn handle_sound_icon_click(&self) {
+        self.brightness_popup.hide();
         self.sound_popup.show();
+    }
+    pub fn handle_brightness_icon_click(&self) {
+        self.sound_popup.hide();
+        self.brightness_popup.show();
     }
     pub fn widget(&self) -> &gtk4::Box {
         &self.container
@@ -107,8 +124,10 @@ impl SoundAndBrightness {
         // Start a background thread to listen for messages
         let sbcontainer = Rc::clone(self);
         let sound_popup_clone = sbcontainer.sound_popup.clone();
+        let sbcontainer = Rc::clone(self);
+        let brightness_popup_clone = sbcontainer.brightness_popup.clone();
+        
         // Set up message handler using GTK's main context
-
         MainContext::default().spawn_local(async move {
             while let Ok(msg) = rx.recv().await {
                 match msg {
@@ -120,6 +139,15 @@ impl SoundAndBrightness {
                     },
                     ChannelMessage::SoundPopupShow => sound_popup_clone.show(),
                     ChannelMessage::SoundPopupHide => sound_popup_clone.hide(),
+                    ChannelMessage::BrightnessWidgetUpdate => {
+                        println!("BrightnessWidgetUpdate called in MainContext");
+                        sbcontainer.update_widget();
+                    },
+                    ChannelMessage::BrightnessPopupUpdate => {
+                        brightness_popup_clone.update_popup(None);
+                    },
+                    ChannelMessage::BrightnessPopupShow => brightness_popup_clone.show(),
+                    ChannelMessage::BrightnessPopupHide => brightness_popup_clone.hide(),
                 }
             }
         });
@@ -160,11 +188,46 @@ impl SoundAndBrightness {
             }) as Box<dyn Fn() + Send + Sync>,
         );
 
+        // Brightness Hanglers 
+        let tx_widget_update = self.get_sender();
+        handlers.insert(
+            "BrightnessWidgetUpdate".to_string(),
+            Box::new(move || {
+                println!("BrightnessWidgetUpdate called in BOX");
+                let _ = tx_widget_update.send_blocking(ChannelMessage::BrightnessWidgetUpdate);
+            }) as Box<dyn Fn() + Send + Sync>,
+        );
+        let tx_popup_update = self.get_sender();
+        handlers.insert(
+            "BrightnessPopupUpdate".to_string(),
+            Box::new(move || {
+                let _ = tx_popup_update.send_blocking(ChannelMessage::BrightnessPopupUpdate);
+            }) as Box<dyn Fn() + Send + Sync>,
+        );
+        // Add handlers for show/hide
+        let tx_show = self.get_sender();
+        handlers.insert(
+            "BrightnessPopupShow".to_string(),
+            Box::new(move || {
+                let _ = tx_show.send_blocking(ChannelMessage::BrightnessPopupShow);
+            }) as Box<dyn Fn() + Send + Sync>,
+        );
+        let tx_hide = self.get_sender();
+        handlers.insert(
+            "BrightnessPopupHide".to_string(),
+            Box::new(move || {
+                let _ = tx_hide.send_blocking(ChannelMessage::BrightnessPopupHide);
+            }) as Box<dyn Fn() + Send + Sync>,
+        );
+
         // Start the socket listener in a background thread
-        let socket_path = "/tmp/sound_socket";
+        let socket_path = "/tmp/sound_and_brightness_socket";
         let (_socket_thread, _terminate_flag) =
             utils::socket::start_unix_socket(socket_path, handlers);
+        
+
     }
+
 
     pub fn update_widget(&self) {
         // Update sound Icon
@@ -174,6 +237,16 @@ impl SoundAndBrightness {
             None => "󰴸".to_string(),
         };
         self.sound_icon.set_label(curr_vol_icon.as_str());
+        println!("BrightnessWidgetUpdate called");
+        // Update brightness Icon
+        let curr_brightness_icon = sbutils::get_brightness_state();
+        let curr_brightness_icon = match curr_brightness_icon {
+            Some(icon) => icon.get_icon(),
+            None => "󰳲".to_string(),
+        };
+        println!("BrightnessWidgetUpdate called {}", curr_brightness_icon);
+        // Set the label of the brightness icon
+        self.brightness_icon.set_label(curr_brightness_icon.as_str()); 
     }
 
 }
