@@ -22,6 +22,7 @@ log = "0.4.25"
 async-channel = "2.3.1"
 regex = "1.11.1"
 anyhow = "1.0.97"
+lazy_static = "1.5.0"
 # Add custom dependencies here
 utils = { path = "crates/utils" }
 workspaces = { path = "crates/workspaces" }

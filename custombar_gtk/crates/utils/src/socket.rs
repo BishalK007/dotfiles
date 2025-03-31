@@ -7,6 +7,8 @@ use std::sync::{Arc, atomic::{AtomicBool, Ordering}};
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
 
+use crate::logger;
+
 /// Starts a Unix socket listener in a background thread.
 /// 
 /// # Arguments
@@ -39,19 +41,19 @@ where
         let listener = match UnixListener::bind(&path) {
             Ok(sock) => sock,
             Err(e) => {
-                eprintln!("Failed to bind to socket {}: {}", path, e);
+                logger::error!("Failed to bind to socket {}: {}", path, e);
                 return;
             }
         };
         
         // Set appropriate permissions
         if let Err(e) = std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o777)) {
-            eprintln!("Failed to set socket permissions: {}", e);
+            logger::error!("Failed to set socket permissions: {}", e);
         }
         
         // Make listener non-blocking
         if let Err(e) = listener.set_nonblocking(true) {
-            eprintln!("Failed to set socket to non-blocking mode: {}", e);
+            logger::error!("Failed to set socket to non-blocking mode: {}", e);
         }
         
         while !terminate_clone.load(Ordering::SeqCst) {
@@ -70,7 +72,7 @@ where
                     thread::sleep(Duration::from_millis(100));
                 }
                 Err(e) => {
-                    eprintln!("Error accepting connection: {}", e);
+                    logger::error!("Error accepting connection: {}", e);
                     break;
                 }
             }

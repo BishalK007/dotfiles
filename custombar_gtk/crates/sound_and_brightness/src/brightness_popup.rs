@@ -124,7 +124,7 @@ impl BrightnessPopup {
             
             // Convert slider value to fraction (0.0-1.0)
             let current_value = brightness_slider_clone.value() / 100.0;
-            println!(
+            utils::logger::info!(
                 "Slider changed, scheduling brightness update to: {}",
                 current_value
             );
@@ -136,7 +136,7 @@ impl BrightnessPopup {
             let popup_inner_clone = popup_clone.clone();
             let debounce_source_clone_inner = debounce_source_clone.clone();
             let source_id = timeout_add_local(std::time::Duration::from_millis(200), move || {
-                println!("Updating system brightness to: {}", current_value);
+                utils::logger::info!("Updating system brightness to: {}", current_value);
                 sbutils::change_brightness(current_value);
                 // Update all UI elements
                 popup_inner_clone.update_popup(Some(vec!["slider".to_string()]));

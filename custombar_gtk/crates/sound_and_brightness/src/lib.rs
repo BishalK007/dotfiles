@@ -4,17 +4,24 @@ mod sound_popup;
 
 use async_channel::{unbounded, Sender};
 pub use brightness_popup::BrightnessPopup;
+use sbutils::{BrightnessAction, VolumeAction};
 pub use sound_popup::SoundPopup;
 
 use gtk4::{glib::MainContext, prelude::*, Label, Orientation};
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 pub enum ChannelMessage {
+    VolUp,
+    VolDown,
+    VolMute,
     SoundWidgetUpdate,
     SoundPopupUpdate,
     SoundPopupShow,
     SoundPopupHide,
     SoundPopupShowAutoHide,
+    BrightnessUp,
+    BrightnessDown,
+    BrightnessToggle,
     BrightnessWidgetUpdate,
     BrightnessPopupUpdate,
     BrightnessPopupShow,
@@ -34,6 +41,8 @@ pub struct SoundAndBrightness {
 
 impl SoundAndBrightness {
     pub fn new() -> Rc<Self> {
+        // Initilise VolumeState
+        sbutils::init_volume_state();
         // Create the channel
         let (tx, rx) = unbounded::<ChannelMessage>();
 
@@ -134,14 +143,14 @@ impl SoundAndBrightness {
         Box::new(move |message: String| {
             // Split the message by colon
             let commands: Vec<&str> = message.split(':').collect();
-    
+
             for cmd in commands {
                 // Look up the handler for this command
                 if let Some(handler) = handlers.get(cmd) {
                     // Call the handler if found
                     handler();
                 } else {
-                    println!("Warning: Unknown command '{}'", cmd);
+                   utils::logger::warn!("Warning: Unknown command '{}'", cmd);
                 }
             }
         }) as Box<dyn Fn(String) + Send + Sync>
@@ -158,6 +167,15 @@ impl SoundAndBrightness {
         MainContext::default().spawn_local(async move {
             while let Ok(msg) = rx.recv().await {
                 match msg {
+                    ChannelMessage::VolUp => {
+                        sbutils::change_vol(VolumeAction::VolUp);
+                    }
+                    ChannelMessage::VolDown => {
+                        sbutils::change_vol(VolumeAction::VolDown);
+                    }
+                    ChannelMessage::VolMute => {
+                        sbutils::change_vol(VolumeAction::VolMuteToggle);
+                    }
                     ChannelMessage::SoundWidgetUpdate => {
                         sbcontainer.update_widget();
                     }
@@ -175,6 +193,15 @@ impl SoundAndBrightness {
 
                         // Pass these functions to handle_show_auto_hide
                         sbcontainer.handle_show_auto_hide(show_fn, hide_fn)
+                    }
+                    ChannelMessage::BrightnessUp => {
+                        sbutils::change_brightness(BrightnessAction::BrightUp);
+                    }
+                    ChannelMessage::BrightnessDown => {
+                        sbutils::change_brightness(BrightnessAction::BrightDown);
+                    }
+                    ChannelMessage::BrightnessToggle => {
+                        sbutils::change_brightness(BrightnessAction::BrightToggle); 
                     }
                     ChannelMessage::BrightnessWidgetUpdate => {
                         sbcontainer.update_widget();
@@ -200,6 +227,31 @@ impl SoundAndBrightness {
         let mut handlers: HashMap<String, Box<dyn Fn() + Send + Sync>> = HashMap::new();
 
         // Create thread-safe references to the sender
+        // Add these handlers right after your other handlers
+        // Volume control handlers
+        let tx_volup = self.get_sender();
+        handlers.insert(
+            "VolUp".to_string(),
+            Box::new(move || {
+                let _ = tx_volup.send_blocking(ChannelMessage::VolUp);
+            }) as Box<dyn Fn() + Send + Sync>,
+        );
+
+        let tx_voldown = self.get_sender();
+        handlers.insert(
+            "VolDown".to_string(),
+            Box::new(move || {
+                let _ = tx_voldown.send_blocking(ChannelMessage::VolDown);
+            }) as Box<dyn Fn() + Send + Sync>,
+        );
+
+        let tx_volmute = self.get_sender();
+        handlers.insert(
+            "VolMute".to_string(),
+            Box::new(move || {
+                let _ = tx_volmute.send_blocking(ChannelMessage::VolMute);
+            }) as Box<dyn Fn() + Send + Sync>,
+        );
         let tx_widget_update = self.get_sender();
         handlers.insert(
             "SoundWidgetUpdate".to_string(),
@@ -237,6 +289,30 @@ impl SoundAndBrightness {
             "SoundPopupShowAutoHide".to_string(),
             Box::new(move || {
                 let _ = tx_show_auto_hide.send_blocking(ChannelMessage::SoundPopupShowAutoHide);
+            }) as Box<dyn Fn() + Send + Sync>,
+        );
+
+        let tx_brightness_up = self.get_sender();
+        handlers.insert(
+            "BrightnessUp".to_string(),
+            Box::new(move || {
+                let _ = tx_brightness_up.send_blocking(ChannelMessage::BrightnessUp);
+            }) as Box<dyn Fn() + Send + Sync>,
+        );
+
+        let tx_brightness_down = self.get_sender();
+        handlers.insert(
+            "BrightnessDown".to_string(),
+            Box::new(move || {
+                let _ = tx_brightness_down.send_blocking(ChannelMessage::BrightnessDown);
+            }) as Box<dyn Fn() + Send + Sync>,
+        );
+
+        let tx_brightness_toggle = self.get_sender();
+        handlers.insert(
+            "BrightnessToggle".to_string(),
+            Box::new(move || {
+                let _ = tx_brightness_toggle.send_blocking(ChannelMessage::BrightnessToggle);
             }) as Box<dyn Fn() + Send + Sync>,
         );
 

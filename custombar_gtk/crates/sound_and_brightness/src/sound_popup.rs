@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::rc::Rc;
 
 use crate::sbutils::{self, VolumeAction};
 use gtk4::glib::{timeout_add_local, ControlFlow};
@@ -13,6 +14,7 @@ pub struct SoundPopup {
     vol_icon: gtk4::Label,
     vol_slider: gtk4::Scale,
     debounce_source: std::rc::Rc<RefCell<Option<gtk4::glib::SourceId>>>,
+    updating_programmatically: Rc<RefCell<bool>>,
 }
 
 impl SoundPopup {
@@ -57,7 +59,8 @@ impl SoundPopup {
             popover,
             vol_icon: sound_icon,
             vol_slider: sound_scale,
-            debounce_source: std::rc::Rc::new(RefCell::new(None))
+            debounce_source: std::rc::Rc::new(RefCell::new(None)),
+            updating_programmatically: Rc::new(RefCell::new(false)),
         };
 
         // Initialize the popup.
@@ -92,6 +95,10 @@ impl SoundPopup {
     // set it's state again
     pub fn update_popup(&self, except_list: Option<Vec<String>>) {
         let current_volume_state = sbutils::get_volume_state();
+        // let mut rng = rand::rng();
+        // let volume: f64 = rng.random_range(0.0..=1.5);
+        // let muted = false;
+        // let current_volume_state = Some(VolumeState::new(volume, muted));
         let current_volume_with_boost = match current_volume_state.as_ref() {
             Some(state) => (state.level + state.boost) * 100.00,
             None => 0.0,
@@ -105,8 +112,14 @@ impl SoundPopup {
             .as_ref()
             .map_or(true, |list| !list.contains(&"slider".to_string()))
         {
+            // Set the flag before programmatically changing the slider
+            *self.updating_programmatically.borrow_mut() = true;
+
             self.vol_slider.set_value(current_volume_with_boost);
             self.vol_slider.set_range(0.0, 150.0);
+
+            // Clear the flag after update
+            *self.updating_programmatically.borrow_mut() = false;
         }
         if except_list
             .as_ref()
@@ -135,11 +148,19 @@ impl SoundPopup {
         let vol_slider_clone = self.vol_slider.clone();
         let debounce_source_clone = self.debounce_source.clone();
         let popup_clone = self.clone();
+        let updating_programmatically = self.updating_programmatically.clone();
+
         self.vol_slider.connect_value_changed(move |_| {
+
+            // Check if this is a programmatic update
+            if *updating_programmatically.borrow() {
+                // Skip processing for programmatic updates
+                return;
+            }
             
             // Convert slider value to fraction (0.0-1.5)
             let current_value = vol_slider_clone.value() / 100.0;
-            println!(
+            utils::logger::info!(
                 "Slider changed, scheduling volume update to: {}",
                 current_value
             );
@@ -151,7 +172,7 @@ impl SoundPopup {
             let popup_inner_clone = popup_clone.clone();
             let debounce_source_clone_inner = debounce_source_clone.clone();
             let source_id = timeout_add_local(std::time::Duration::from_millis(200), move || {
-                println!("Updating system volume to: {}", current_value);
+                utils::logger::info!("Updating system volume to: {}", current_value);
                 sbutils::change_vol(current_value);
                 // Update all UI elements
                 popup_inner_clone.update_popup(Some(vec!["slider".to_string()]));
