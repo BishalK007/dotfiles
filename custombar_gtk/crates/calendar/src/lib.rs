@@ -134,7 +134,7 @@ impl Calendar {
         self.day_label.set_label(&day_str);
         self.date_label.set_label(&date_str);
 
-        logger::debug!("Calendar updated: {} {}", day_str, date_str);
+        logger::info!("Calendar updated: {} {}", day_str, date_str);
     }
 
     // Schedule the widget to update at the next midnight.

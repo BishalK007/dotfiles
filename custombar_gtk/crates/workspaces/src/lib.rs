@@ -172,7 +172,7 @@ impl Workspace {
         let socket_path = match self.get_hypr_socket_path() {
             Ok(val) => val,
             Err(e) => {
-                println!("Could not get socket path :: {}", e);
+                utils::logger::info!("Could not get socket path :: {}", e);
                 String::new()
             }
         };
@@ -182,7 +182,7 @@ impl Workspace {
         if let Err(e) = UnixStream::connect(&socket_path)
             .and_then(|mut stream| stream.write_all(command.as_bytes()))
         {
-            eprintln!("Failed to change workspace: {}", e);
+            utils::logger::error!("Failed to change workspace: {}", e);
         }
     }
 
@@ -190,7 +190,7 @@ impl Workspace {
         let socket_path = match self.get_hypr_socket_path() {
             Ok(val) => val,
             Err(e) => {
-                println!("Could not get socket path :: {}", e);
+                utils::logger::info!("Could not get socket path :: {}", e);
                 return;
             }
         };
@@ -199,7 +199,7 @@ impl Workspace {
 
         if let Ok(mut stream) = UnixStream::connect(&socket_path) {
             if let Err(e) = stream.write_all(command.as_bytes()) {
-                eprintln!("Failed to get curr workspace: {}", e);
+                utils::logger::error!("Failed to get curr workspace: {}", e);
                 return;
             }
             let mut reader = BufReader::new(stream);
@@ -215,11 +215,11 @@ impl Workspace {
                         self.workspace_label.set_text(workspace_id);
                     }
                 } else {
-                    eprintln!("Could not parse workspace ID from response: {}", response);
+                    utils::logger::error!("Could not parse workspace ID from response: {}", response);
                 }
             }
         } else {
-            eprintln!("Failed to connect to socket at path: {}", socket_path);
+            utils::logger::error!("Failed to connect to socket at path: {}", socket_path);
         }
     }
 
@@ -296,7 +296,7 @@ impl Workspace {
         let socket_path = match self.get_hypr_socket2_path() {
             Ok(val) => val,
             Err(e) => {
-                println!("Could not get socket path :: {}", e);
+                utils::logger::info!("Could not get socket path :: {}", e);
                 String::new()
             }
         };
@@ -311,7 +311,7 @@ impl Workspace {
                             line if line.starts_with("workspace>>") => {
                                 if let Some(num) = line.strip_prefix("workspace>>") {
                                     if let Err(e) = sender.send_blocking(num.to_string()) {
-                                        eprintln!("Failed to send workspace update: {}", e);
+                                        utils::logger::error!("Failed to send workspace update: {}", e);
                                         break;
                                     }
                                 }
