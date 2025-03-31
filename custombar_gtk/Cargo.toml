@@ -8,6 +8,7 @@ members = [
     "crates/capture",
     "crates/utils",
     "crates/sound_and_brightness",
+    "crates/power_and_systray",
 ]
 
 [workspace.dependencies]
@@ -31,3 +32,4 @@ calendar = { path = "crates/calendar" }
 clock = { path = "crates/clock" }
 capture = { path = "crates/capture" }
 sound_and_brightness = { path = "crates/sound_and_brightness" }
+power_and_systray = { path = "crates/power_and_systray" }

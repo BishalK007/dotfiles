@@ -27,7 +27,21 @@ pub fn apply_css_files(css_files: &[&'static str]) {
         );
     }
 }
+pub fn scale_size_i32(size: i32) -> i32 {
+    dotenv().ok();
+    let scale: f64 = env::var("WAYLAND_MONITOR_SCALE")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(1.0);
 
+    // Use `scale` as needed; for example, adjusting UI sizes:
+    // adjust_size = original_size * scale;
+    let adjusted_value = (size as f64 / scale).floor() as i32;
+    if adjusted_value == 0 {
+        return 1;
+    }
+    adjusted_value
+}
 // thsi function will be ised to replace sizes of any kind into salce adjusted
 // scale is provided inside .env as WAYLAND_MONITOR_SCALE variable
 // TODO may later wanna dynamically get scale for multi monitor setup

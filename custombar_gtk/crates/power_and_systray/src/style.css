@@ -1,0 +1,121 @@
+/* 
+ ********** Bar Styles
+*/
+.power-and-systray-box {
+    border-radius: 80px;
+    border: 1px solid;
+    min-height: 30px;
+    min-width: 36px;
+    border-color: @primary-color;
+    background: @bg-color; 
+}
+.power-and-systray-icon {
+    font-size: 16px;
+    color: @primary-color;
+}
+.power-icon {
+    font-size: 18px;
+}
+
+
+
+
+/* 
+ ********** Popup Styles power Popup
+*/
+
+.power-popover,
+.power-popover contents,
+.power-popover arrow {
+    all: unset;
+    background: transparent;
+}
+.power-popover-container {
+    padding: 10px;
+    border-radius: 10px;
+    min-width: 134px;
+    min-height: 30px;
+    background-color: @primary-color;
+}
+
+.power-popover-restart-button,
+.power-popover-power-button,
+.power-popover-lock-button {
+    min-height: 30px;
+    min-width: 30px;
+    border-radius: 100%;
+    border: 2px solid;
+    border-color: @bg-color-no-transparent;
+}
+.power-popover-restart-button:hover,
+.power-popover-power-button:hover,
+.power-popover-lock-button:hover {
+    background-color: @bg-color-no-transparent;
+}
+.power-popover-restart-button:hover *,
+.power-popover-power-button:hover *,
+.power-popover-lock-button:hover *{
+    color: @primary-color;
+}
+
+.power-popover-restart-icon,
+.power-popover-power-icon,
+.power-popover-lock-icon {
+    font-size: 18px;
+    color: @bg-color-no-transparent;
+}
+
+
+.power-popover-lock-icon {
+    font-size: 16px;
+}
+
+.power-popover-power-icon {
+    margin: 0 4px 0 0;
+}
+.power-popover-lock-icon {
+    margin: 0 4px 0 0;
+}
+
+/* 
+ ********** Popup Styles systray Popup
+*/
+
+.systray-popover,
+.systray-popover contents,
+.systray-popover arrow {
+    all: unset;
+    background: transparent;
+}
+.systray-popover-container {
+    padding: 12px 10px 12px 10px;
+    border-radius: 10px;
+    min-width: 280px;
+    /* min-height: 42px; */
+    background-color: @primary-color;
+}
+
+.icon-scale-box {
+}
+.systray-popover-systray-scale {
+    /* background-color: blue; */
+}
+.systray-popover-systray-scale highlight {
+    background-color: @bg-color-no-transparent;
+}
+.systray-popover-systray-scale-boosed highlight {
+    background-color: red;
+}
+
+.systray-popover-systray-scale slider {
+    background-image: none;
+    background-color: @primary-color;
+    border: 2px solid;
+    border-color: @bg-color-no-transparent;
+    border-radius: 100%;
+}
+.systray-popover-systray-icon {
+    font-size: 24px;
+    min-width: 44px;
+    color: @bg-color-no-transparent;
+}

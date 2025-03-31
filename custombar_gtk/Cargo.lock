@@ -42,6 +42,7 @@ dependencies = [
  "gtk4",
  "gtk4-layer-shell",
  "home_btn",
+ "power_and_systray",
  "sound_and_brightness",
  "utils",
  "workspaces",
@@ -881,6 +882,18 @@ name = "pkg-config"
 version = "0.3.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "953ec861398dccce10c670dfeaf3ec4911ca479e9c02154b3a215178c5f566f2"
+
+[[package]]
+name = "power_and_systray"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-channel",
+ "gtk4",
+ "gtk4-layer-shell",
+ "lazy_static",
+ "utils",
+]
 
 [[package]]
 name = "pretty_env_logger"

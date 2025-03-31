@@ -15,3 +15,4 @@ calendar.workspace = true
 clock.workspace = true
 capture.workspace = true
 sound_and_brightness.workspace = true
+power_and_systray.workspace = true

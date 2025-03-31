@@ -1,0 +1,13 @@
+[package]
+name = "power_and_systray"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+anyhow.workspace = true
+lazy_static.workspace = true
+async-channel.workspace = true
+utils.workspace = true
+gtk4.workspace = true
+gtk4-layer-shell.workspace = true
