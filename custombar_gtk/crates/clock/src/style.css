@@ -9,12 +9,15 @@
 }
 
 .clock-label {
+    margin-right: 8px;
     font-size: 12px; 
     font-weight: bold;
     color: @primary-color;
 }
 
 .clock-icon {
+    margin-left: 8px;
+    margin-right: 12px;
     font-size: 18px;
     color: @primary-color;
 }

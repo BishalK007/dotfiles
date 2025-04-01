@@ -8,17 +8,20 @@
 }
 
 .calendar-icon {
+    margin: 0 12px 0 8px;
     font-size: 16px;
     color: @primary-color;
 }
 
 .calendar-day-label {
+    margin: 0 5px 0 0;
     font-size: 12px;
     font-weight: bold;
     color: @primary-color;
 }
 
 .calendar-date-label {
+    margin: 0 8px 0 0;
     font-size: 12px;
     font-weight: bold; 
     color: @primary-color;

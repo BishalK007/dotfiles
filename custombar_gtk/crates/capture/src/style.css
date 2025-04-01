@@ -11,6 +11,7 @@
 }
 
 .capture-icon {
+  margin: 0 0 0 10px;
   font-size: 16px;
   color: @primary-color;
 }
@@ -31,6 +32,10 @@
   background-color: @primary-color;
 }
 
+.capture-popover-img-container,
+.capture-popover-record-container {
+  margin: 16px 16px 0 16px;
+}
 .capture-popover-capture-button {
   min-width: 60px;
   min-height: 50px;
@@ -74,6 +79,7 @@ box.capture-popover-record-format-box checkbutton radio:hover {
     Target Full-screen Region Segmented Button
 */
 .capture-popover-screen-format-box {
+  margin: 6px;
   border: 1px solid;
   border-color: @bg-color-no-transparent;
   border-radius: 17px;
@@ -88,6 +94,10 @@ box.capture-popover-record-format-box checkbutton radio:hover {
   min-width: 94px;
 }
 
+.capture-popover-fullscreen-icon, 
+.capture-popover-region-icon {
+  margin-right: 3px;
+}
 .capture-mode-button:checked {
   background-color: @bg-color-no-transparent;
 }
@@ -123,4 +133,13 @@ box.capture-popover-record-format-box checkbutton radio:hover {
   border: none;
   background-image: none;
   background-color: @primary-color;
+}
+
+
+.capture-popover-bottom-box {
+  margin: 0 26px 16px 26px;
+}
+.capture-popover-mute-icon {
+  margin: 0 0 0 10px;
+  font-size: 16px;
 }

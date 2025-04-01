@@ -95,11 +95,10 @@
     background-color: @primary-color;
 }
 
-.icon-scale-box {
+.power-and-systray-icon {
+    margin: 0 12px 0 8px;
 }
-.systray-popover-systray-scale {
-    /* background-color: blue; */
-}
+
 .systray-popover-systray-scale highlight {
     background-color: @bg-color-no-transparent;
 }

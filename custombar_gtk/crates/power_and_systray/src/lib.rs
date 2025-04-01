@@ -3,7 +3,7 @@ mod sbutils;
 mod power_popup;
 
 use async_channel::{unbounded, Sender};
-pub use systray_popup::systrayPopup;
+pub use systray_popup::SystrayPopup;
 use sbutils::{systrayAction, VolumeAction};
 pub use power_popup::PowerPopup;
 
@@ -34,7 +34,7 @@ pub struct PowerAndSystray {
     power_icon: Label,
     systray_icon: Label,
     power_popup: PowerPopup,
-    systray_popup: systrayPopup,
+    systray_popup: SystrayPopup,
 }
 
 impl PowerAndSystray {
@@ -47,7 +47,7 @@ impl PowerAndSystray {
         let systray_icon = Label::new(Some(""));
 
         // Create a horizontal container.
-        let container = gtk4::Box::new(Orientation::Horizontal, 0);
+        let container = gtk4::Box::new(Orientation::Horizontal, utils::scale_size_i32(0));
 
         // Apply the CSS files.
         utils::apply_css_files(&[
@@ -73,11 +73,6 @@ impl PowerAndSystray {
             "systray-icon",
         ]);
 
-        // Set margins.
-        power_icon.set_margin_start(8);
-        power_icon.set_margin_end(12);
-        systray_icon.set_margin_start(8);
-        systray_icon.set_margin_end(12);
 
         // Add the labels to the container.
         container.append(&power_icon);
@@ -85,7 +80,7 @@ impl PowerAndSystray {
 
         //power popup
         let power_popup = PowerPopup::new(&container);
-        let systray_popup = systrayPopup::new(&container);
+        let systray_popup = SystrayPopup::new(&container);
 
         // Build the powerAndsystray instance.
         let power_and_systray = PowerAndSystray {

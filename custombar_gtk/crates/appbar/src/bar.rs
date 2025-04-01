@@ -34,23 +34,19 @@ impl Bar {
         );
 
         // Create boxes
-        let container = Rc::new(Box::new(Orientation::Horizontal, 0));
+        let container = Rc::new(Box::new(Orientation::Horizontal, utils::scale_size_i32(0)));
         container.set_css_classes(&["bar-container"]);
-        let start_box = Rc::new(Box::new(Orientation::Horizontal, 5));
+        let start_box = Rc::new(Box::new(Orientation::Horizontal, utils::scale_size_i32(5)));
         start_box.set_css_classes(&["bar-box start-box"]);
-        let center_box = Rc::new(Box::new(Orientation::Horizontal, 5));
+        let center_box = Rc::new(Box::new(Orientation::Horizontal, utils::scale_size_i32(5)));
         center_box.set_css_classes(&["bar-box center-box"]);
-        let end_box = Rc::new(Box::new(Orientation::Horizontal, 5));
+        let end_box = Rc::new(Box::new(Orientation::Horizontal, utils::scale_size_i32(5)));
         end_box.set_css_classes(&["bar-box end-box"]);
 
         // Set up container layout
         container.append(&*start_box);
         container.append(&*center_box);
         container.append(&*end_box);
-
-        container.set_margin_top(4);
-        container.set_margin_start(4);
-        container.set_margin_end(4);
 
         center_box.set_hexpand(true);
         center_box.set_halign(gtk4::Align::Center);

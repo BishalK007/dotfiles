@@ -28,12 +28,12 @@ impl SoundPopup {
         popover.set_autohide(true);
         popover.add_css_class("sound-popover");
 
-        let container = gtk4::Box::new(gtk4::Orientation::Vertical, 10);
+        let container = gtk4::Box::new(gtk4::Orientation::Vertical, utils::scale_size_i32(10));
         popover.set_child(Some(&container));
         container.add_css_class("sound-popover-container");
 
         // icon and indicator
-        let icon_scale_box = gtk4::Box::new(gtk4::Orientation::Horizontal, 10);
+        let icon_scale_box = gtk4::Box::new(gtk4::Orientation::Horizontal, utils::scale_size_i32(10));
         icon_scale_box.set_valign(gtk4::Align::Center);
         icon_scale_box.add_css_class("icon-scale-box");
 

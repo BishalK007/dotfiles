@@ -50,7 +50,7 @@ impl SoundAndBrightness {
         let brightness_icon = Label::new(Some(""));
 
         // Create a horizontal container.
-        let container = gtk4::Box::new(Orientation::Horizontal, 0);
+        let container = gtk4::Box::new(Orientation::Horizontal, utils::scale_size_i32(0));
 
         // Apply the CSS files.
         utils::apply_css_files(&[
@@ -75,12 +75,6 @@ impl SoundAndBrightness {
             "sound-and-brightness-icon",
             "brightness-icon",
         ]);
-
-        // Set margins.
-        sound_icon.set_margin_start(8);
-        sound_icon.set_margin_end(12);
-        brightness_icon.set_margin_start(8);
-        brightness_icon.set_margin_end(12);
 
         // Add the labels to the container.
         container.append(&sound_icon);

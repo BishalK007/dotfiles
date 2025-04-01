@@ -48,7 +48,7 @@ impl Calendar {
         let calendar_date_label = Label::new(Some(""));
 
         // Create a horizontal container.
-        let container = gtk4::Box::new(Orientation::Horizontal, 0);
+        let container = gtk4::Box::new(Orientation::Horizontal, utils::scale_size_i32(0));
 
         // Apply the CSS files.
         utils::apply_css_files(&[
@@ -66,12 +66,6 @@ impl Calendar {
         calendar_icon.set_css_classes(&["calendar", "calendar-icon", ]);
         calendar_day_label.set_css_classes(&["calendar", "calendar-day-label", ]);
         calendar_date_label.set_css_classes(&["calendar", "calendar-date-label",]);
-
-        // Set margins.
-        calendar_icon.set_margin_start(8);
-        calendar_icon.set_margin_end(12);
-        calendar_day_label.set_margin_end(5);
-        calendar_date_label.set_margin_end(8);
 
         // Add the labels to the container.
         container.append(&calendar_icon);

@@ -1,6 +1,5 @@
 // src/popup.rs
 
-use gtk4::ffi::GtkSwitch;
 use gtk4::{prelude::*, CenterBox, Label};
 use gtk4::{Box, CheckButton, Popover, PositionType};
 
@@ -20,7 +19,7 @@ impl CapturePopup {
         popover.set_autohide(true);
         popover.add_css_class("capture-popover");
         
-        let container = Box::new(gtk4::Orientation::Vertical, 0);
+        let container = Box::new(gtk4::Orientation::Vertical, utils::scale_size_i32(0));
         popover.set_child(Some(&container));
         container.add_css_class("capture-popover-container");
 
@@ -31,19 +30,16 @@ impl CapturePopup {
         /*
         // Image section
          */
-        let img_container = Box::new(gtk4::Orientation::Vertical, 10);
+        let img_container = Box::new(gtk4::Orientation::Vertical, utils::scale_size_i32(10));
         let capture_button = CenterBox::new();
-        let capture_horizontal_container = Box::new(gtk4::Orientation::Horizontal, 10);
+        let capture_horizontal_container = Box::new(gtk4::Orientation::Horizontal, utils::scale_size_i32(10));
         let capture_icon = Label::new(Some(""));
         let capture_label = Label::new(Some("Capture Screen"));
         capture_horizontal_container.append(&capture_icon);
         capture_horizontal_container.append(&capture_label);
         capture_button.set_center_widget(Some(&capture_horizontal_container));
         img_container.append(&capture_button);
-        // margins and stuff
-        img_container.set_margin_top(16);
-        img_container.set_margin_start(16);
-        img_container.set_margin_end(16);
+
         // Img container stuff
         img_container.add_css_class("capture-popover-img-container");
         capture_button.add_css_class("capture-popover-capture-button");
@@ -52,7 +48,7 @@ impl CapturePopup {
         /*
         // Image format radio group
          */
-        let img_format_box = Box::new(gtk4::Orientation::Horizontal, 16);
+        let img_format_box = Box::new(gtk4::Orientation::Horizontal, utils::scale_size_i32(16));
         img_format_box.set_halign(gtk4::Align::Center);
 
         let png_radio = CheckButton::with_label("PNG");
@@ -69,19 +65,16 @@ impl CapturePopup {
         img_format_box.add_css_class("capture-popover-img-format-box");
 
         // Record section
-        let record_container = Box::new(gtk4::Orientation::Vertical, 10);
+        let record_container = Box::new(gtk4::Orientation::Vertical, utils::scale_size_i32(10));
         let record_button = CenterBox::new();
-        let record_horizontal_container = Box::new(gtk4::Orientation::Horizontal, 10);
+        let record_horizontal_container = Box::new(gtk4::Orientation::Horizontal, utils::scale_size_i32(10));
         let record_icon = Label::new(Some(""));
         let record_label = Label::new(Some("Record Screen"));
         record_horizontal_container.append(&record_icon);
         record_horizontal_container.append(&record_label);
         record_button.set_center_widget(Some(&record_horizontal_container));
         img_container.append(&record_button);
-        // margins and stuff
-        record_container.set_margin_top(16);
-        record_container.set_margin_start(16);
-        record_container.set_margin_end(16);
+
         // Record container stuff
         record_container.add_css_class("capture-popover-record-container");
         record_button.add_css_class("capture-popover-record-button");
@@ -90,7 +83,7 @@ impl CapturePopup {
         
         
         // Image format radio group
-        let record_format_box = Box::new(gtk4::Orientation::Horizontal, 16);
+        let record_format_box = Box::new(gtk4::Orientation::Horizontal, utils::scale_size_i32(16));
         record_format_box.set_halign(gtk4::Align::Center);
         
         let png_radio = CheckButton::with_label("MKV");
@@ -110,20 +103,16 @@ impl CapturePopup {
         /*
             Screen format radio group as segmented button
         */
-        let outer_box = Box::new(gtk4::Orientation::Horizontal, 12);
-        outer_box.set_margin_bottom(16);
-        outer_box.set_margin_top(16);
-        outer_box.set_margin_start(16); 
-        outer_box.set_margin_end(16);
+        let outer_box = Box::new(gtk4::Orientation::Horizontal, utils::scale_size_i32(12));
         outer_box.set_halign(gtk4::Align::Center);
         outer_box.add_css_class("capture-popover-screen-format-box");
 
         // Create toggle buttons instead of boxes
         let fs_button = gtk4::ToggleButton::new();
         fs_button.set_active(true); // Set as default selected
-        let fs_box = Box::new(gtk4::Orientation::Vertical, 0);
+        let fs_box = Box::new(gtk4::Orientation::Vertical, utils::scale_size_i32(0));
         let fs_icon = Label::new(Some(""));
-        fs_icon.set_margin_end(2);
+        fs_icon.add_css_class("capture-popover-fullscreen-icon");
         let fs_label = Label::new(Some("Fullscreen"));
         fs_box.append(&fs_icon);
         fs_box.append(&fs_label);
@@ -131,9 +120,9 @@ impl CapturePopup {
         fs_button.add_css_class("capture-mode-button");
         
         let slug_button = gtk4::ToggleButton::new();
-        let slug_box = Box::new(gtk4::Orientation::Vertical, 0);
+        let slug_box = Box::new(gtk4::Orientation::Vertical, utils::scale_size_i32(0));
         let slug_icon = Label::new(Some(""));
-        slug_icon.set_margin_end(3);
+        slug_icon.add_css_class("capture-popover-region-icon");
         let slug_label = Label::new(Some("Region"));
         slug_box.append(&slug_icon);
         slug_box.append(&slug_label);
@@ -150,13 +139,10 @@ impl CapturePopup {
         /*
             Bottom horizontal box with toggle buttons
         */
-        let bottom_box = Box::new(gtk4::Orientation::Horizontal, 0);
-        bottom_box.set_margin_bottom(16);
-        bottom_box.set_margin_start(16);
-        bottom_box.set_margin_end(16);
+        let bottom_box = Box::new(gtk4::Orientation::Horizontal, utils::scale_size_i32(0));
         bottom_box.add_css_class("capture-popover-bottom-box");
 
-        let mute_icon_box = Box::new(gtk4::Orientation::Horizontal, 8);
+        let mute_icon_box = Box::new(gtk4::Orientation::Horizontal, utils::scale_size_i32(8));
         mute_icon_box.add_css_class("capture-popover-mute-icon-box");
         let mute_icon = Label::new(Some(""));
         mute_icon.set_margin_end(8);
@@ -165,9 +151,8 @@ impl CapturePopup {
         mute_switch.add_css_class("capture-popover-mute-switch");
         mute_icon_box.append(&mute_icon);
         mute_icon_box.append(&mute_switch);
-        mute_icon_box.set_margin_start(10);
 
-        let mic_icon_box = Box::new(gtk4::Orientation::Horizontal, 8);
+        let mic_icon_box = Box::new(gtk4::Orientation::Horizontal, utils::scale_size_i32(8));
         mic_icon_box.add_css_class("capture-popover-mic-icon-box");
         let mic_icon = Label::new(Some(""));
         mic_icon.add_css_class("capture-popover-mic-icon");
@@ -175,10 +160,9 @@ impl CapturePopup {
         mic_switch.add_css_class("capture-popover-mic-switch");
         mic_icon_box.append(&mic_icon);
         mic_icon_box.append(&mic_switch);
-        mic_icon_box.set_margin_end(10);
 
         // Spacer to push mute_icon_box to the left and mic_icon_box to the right.
-        let spacer = Box::new(gtk4::Orientation::Horizontal, 0);
+        let spacer = Box::new(gtk4::Orientation::Horizontal, utils::scale_size_i32(0));
         spacer.set_hexpand(true);
 
         bottom_box.append(&mute_icon_box);

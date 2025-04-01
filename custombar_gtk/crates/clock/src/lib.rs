@@ -30,7 +30,7 @@ impl Clock {
         // Create labels for the clock icon and time display.
         let label = Label::new(None);
         let clock_icon = Label::new(Some("󰥔"));
-        let container = Box::new(Orientation::Horizontal, 0);
+        let container = Box::new(Orientation::Horizontal, utils::scale_size_i32(0));
 
         // Apply the CSS files
         utils::apply_css_files(&[
@@ -43,10 +43,6 @@ impl Clock {
         label.set_css_classes(&["clock", "clock-label", "primary-color"]);
         clock_icon.set_css_classes(&["clock", "clock-icon", "primary-color"]);
 
-        // Set paddings and margins.
-        clock_icon.set_margin_start(8);
-        clock_icon.set_margin_end(12);
-        label.set_margin_end(8);
         label.set_halign(gtk4::Align::Center);
 
         // Add the icon and label to the container.
