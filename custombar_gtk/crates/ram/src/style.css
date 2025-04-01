@@ -1,0 +1,24 @@
+
+.ram-box {
+    border-radius: 80px;
+    border: 1px solid;
+    min-height: 30px; 
+    min-width: 24px;  
+    border-color: @primary-color;
+    background: @bg-color;
+}
+
+.ram-label {
+    margin-right: 8px;
+    font-size: 12px; 
+    font-weight: bold;
+    color: @primary-color;
+}
+
+.ram-icon {
+    margin-top : 1px;
+    margin-left: 8px;
+    margin-right: 14px;
+    font-size: 16px;
+    color: @primary-color;
+}

@@ -1,33 +1,14 @@
 mod systray_popup;
-mod sbutils;
+mod psutils;
 mod power_popup;
 
-use async_channel::{unbounded, Sender};
 pub use systray_popup::SystrayPopup;
-use sbutils::{systrayAction, VolumeAction};
 pub use power_popup::PowerPopup;
 
-use gtk4::{glib::MainContext, prelude::*, Label, Orientation};
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use gtk4::{prelude::*, Label, Orientation};
+use std::rc::Rc;
 
-pub enum ChannelMessage {
-    VolUp,
-    VolDown,
-    VolMute,
-    powerWidgetUpdate,
-    powerPopupUpdate,
-    powerPopupShow,
-    powerPopupHide,
-    powerPopupShowAutoHide,
-    systrayUp,
-    systrayDown,
-    systrayToggle,
-    systrayWidgetUpdate,
-    systrayPopupUpdate,
-    systrayPopupShow,
-    systrayPopupHide,
-    systrayPopupShowAutoHide,
-}
+
 
 pub struct PowerAndSystray {
     container: gtk4::Box,
@@ -40,7 +21,6 @@ pub struct PowerAndSystray {
 impl PowerAndSystray {
     pub fn new() -> Rc<Self> {
         // Initilise VolumeState
-        sbutils::init_volume_state();
         // Create the channel
 
         let power_icon = Label::new(Some(""));

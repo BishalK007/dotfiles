@@ -1,0 +1,23 @@
+
+.cpu-box {
+    border-radius: 80px;
+    border: 1px solid;
+    min-height: 30px; 
+    min-width: 24px;  
+    border-color: @primary-color;
+    background: @bg-color;
+}
+
+.cpu-label {
+    margin-right: 8px;
+    font-size: 12px; 
+    font-weight: bold;
+    color: @primary-color;
+}
+
+.cpu-icon {
+    margin-left: 8px;
+    margin-right: 12px;
+    font-size: 18px;
+    color: @primary-color;
+}

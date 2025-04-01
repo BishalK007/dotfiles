@@ -6,9 +6,11 @@ members = [
     "crates/calendar",
     "crates/clock",
     "crates/capture",
-    "crates/utils",
+    "crates/cpu",
+    "crates/ram",
     "crates/sound_and_brightness",
     "crates/power_and_systray",
+    "crates/utils",
 ]
 
 [workspace.dependencies]
@@ -31,5 +33,7 @@ home_btn = { path = "crates/home_btn" }
 calendar = { path = "crates/calendar" }
 clock = { path = "crates/clock" }
 capture = { path = "crates/capture" }
+cpu = { path = "crates/cpu" }
+ram = { path = "crates/ram" }
 sound_and_brightness = { path = "crates/sound_and_brightness" }
 power_and_systray = { path = "crates/power_and_systray" }

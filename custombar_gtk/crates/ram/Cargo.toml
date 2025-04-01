@@ -1,0 +1,11 @@
+[package]
+name = "ram"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+chrono = "0.4.39"
+
+utils.workspace = true
+gtk4.workspace = true
+gtk4-layer-shell.workspace = true

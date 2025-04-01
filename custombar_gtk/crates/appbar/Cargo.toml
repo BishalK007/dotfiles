@@ -14,5 +14,7 @@ home_btn.workspace = true
 calendar.workspace = true
 clock.workspace = true
 capture.workspace = true
+cpu.workspace = true
+ram.workspace = true
 sound_and_brightness.workspace = true
 power_and_systray.workspace = true

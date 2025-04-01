@@ -39,10 +39,12 @@ dependencies = [
  "calendar",
  "capture",
  "clock",
+ "cpu",
  "gtk4",
  "gtk4-layer-shell",
  "home_btn",
  "power_and_systray",
+ "ram",
  "sound_and_brightness",
  "utils",
  "workspaces",
@@ -194,6 +196,16 @@ name = "core-foundation-sys"
 version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
+
+[[package]]
+name = "cpu"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "gtk4",
+ "gtk4-layer-shell",
+ "utils",
+]
 
 [[package]]
 name = "crossbeam-utils"
@@ -930,6 +942,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0e4dccaaaf89514f546c693ddc140f729f958c247918a13380cccc6078391acc"
 dependencies = [
  "proc-macro2",
+]
+
+[[package]]
+name = "ram"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "gtk4",
+ "gtk4-layer-shell",
+ "utils",
 ]
 
 [[package]]
