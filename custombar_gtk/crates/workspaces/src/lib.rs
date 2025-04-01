@@ -32,11 +32,11 @@ impl Clone for Workspace {
 impl Workspace {
     pub fn new() -> Self {
         // Create the main horizontal container.
-        let container: Box = gtk4::Box::new(Orientation::Horizontal, 0);
+        let container: Box = gtk4::Box::new(Orientation::Horizontal, utils::scale_size_i32(0));
 
         // Create the workspace number label.
         let workspace_num = Label::new(Some("11"));
-        let workspace_num_inner_box = gtk4::Box::new(Orientation::Horizontal, 0);
+        let workspace_num_inner_box = gtk4::Box::new(Orientation::Horizontal, utils::scale_size_i32(0));
         let workspace_num_box = CenterBox::new();
 
         // Create arrow labels.
