@@ -7,7 +7,7 @@ DOTFILES_REPO_LOCATION="/home/bishal/.config/dotfiles" # -> change this based on
 
 symlinks=(
     "$DOTFILES_REPO_LOCATION/hypr:$HOME/.config/hypr"
-    "$DOTFILES_REPO_LOCATION/eww:$HOME/.config/eww"
+    "$DOTFILES_REPO_LOCATION/eww-rs:$HOME/.config/eww"
     "$DOTFILES_REPO_LOCATION/alacritty:$HOME/.config/alacritty"
     "$DOTFILES_REPO_LOCATION/fastfetch:$HOME/.config/fastfetch"
     "$DOTFILES_REPO_LOCATION/fuzzel:$HOME/.config/fuzzel"
