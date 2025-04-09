@@ -54,8 +54,87 @@ in
     networkmanager.enable = true;
     networkmanager.dns = "default";  # Use "dnsmasq" or "systemd-resolved" if needed.
     nameservers = [ "8.8.8.8" "8.8.4.4" ];  # Google's DNS servers.
-
+    # proxy.httpProxy = "127.0.0.1:3128"; # use the squid cache
+    # proxy.httpsProxy = "127.0.0.1:3128"; # use the squid cache
+    firewall.allowedTCPPorts = [ 
+      139
+      445
+    ];
   };
+
+  services.samba = {
+    enable = true;
+    securityType = "user"; # Or "share" for less secure, passwordless access within your network
+    shares = {
+      network_share = { # This is the name of your share as it will appear on Android
+        path = "/home/share/network_share"; # The directory you want to share
+        readOnly = false; # Set to true if you only want to allow reading
+        guestOk = "no"; # Set to "yes" for passwordless access (less secure)
+        users = "bishal"; # Replace "bishal" with your Linux username or a specific Samba user
+      };
+    };
+  };
+
+
+  
+
+  users.users.jellyfin = {
+    isSystemUser = true;
+    description = "Jellyfin service account";
+    extraGroups = [ "audio" "video" ];  # add any other groups as needed
+    hashedPassword = "$6$Qc2dKuH0sJSZkkFT$8flE6mA70zDk/dEWvW7xf7XNChfZdm4RrKwJMw1qJsMVOmoju5vn.T7oRcLyBxXQzWtXmKcXlnmt/MI9ANWaS0";  # replace with your hash
+  };
+
+  services.jellyfin = {
+    enable = true;
+    openFirewall = true;  # opens port 8096 by default
+    user = "jellyfin";    # run as the dedicated system user
+    # (Any additional Jellyfin options can be added via extraConfig)
+  };
+
+  # fileSystems."/home/share/network_share/mnt" = {
+  #   device = "/dev/disk/by-uuid/7be10710-211a-4cd1-81ff-ea48eeb2b314";
+  #   fsType = "xfs";
+  #   options = [ "defaults" ];
+  # };
+
+
+  #TODO
+  # cache in network
+  # services.squid = {
+  #   enable = true;
+  #   package = pkgs.squid;
+  #   proxyPort = 3128;
+  #   proxyAddress = "127.0.0.1";
+
+  #   extraConfig = ''
+  #     # Allocate 20GB for caching
+  #     cache_dir ufs /var/spool/squid 20000 16 256
+
+  #     # Set the maximum object size to 5GB
+  #     maximum_object_size 5000 MB
+  #     maximum_object_size_in_memory 512 KB
+
+  #     # Increase cache memory (optional, adjust as needed)
+  #     cache_mem 512 MB
+
+  #     # Allow local machine to use the proxy
+  #     acl localnet src 127.0.0.1/32
+  #     http_access allow localnet
+  #     http_access allow localhost
+
+  #     # Store only cacheable large objects
+  #     refresh_pattern -i \.tar\.gz$ 1440 90% 2880 reload-into-ims
+  #     refresh_pattern -i \.iso$ 1440 90% 2880 reload-into-ims
+  #     refresh_pattern -i \.deb$ 1440 90% 2880 reload-into-ims
+  #     refresh_pattern -i \.nix$ 1440 90% 2880 reload-into-ims
+
+  #     # Increase storage efficiency
+  #     cache_swap_low 90
+  #     cache_swap_high 95
+  #   '';
+  # };
+
   #networking.wireguard.enable = true;
 	
   # Set your time zone.
@@ -85,8 +164,16 @@ in
   # Enable the KDE Plasma Desktop Environment.
   # services.displayManager.sddm.enable = true;
   # services.desktopManager.plasma6.enable = true;
-
-
+  
+  # Enable the Gnome Desktop Environment.
+  # services.xserver.displayManager.gdm.enable = true;
+  # services.xserver.desktopManager.gnome.enable = true;
+  
+  # Turn on hyprland
+  programs.hyprland = {
+   enable = true;
+  };
+  environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -130,6 +217,8 @@ in
   hardware.nvidia = {
     modesetting.enable = true;   # Enables NVIDIA modesetting for Wayland.
     package = config.boot.kernelPackages.nvidiaPackages.stable;
+    prime.offload.enable = true;
+    prime.offload.enableOffloadCmd = true;
   };
   # hardware.nvidia-container-toolkit.enable = true; #Enables container toolkit
   # hardware.opengl.setLdLibraryPath = true;  # Ensure OpenGL compatibility.
@@ -149,27 +238,22 @@ in
   # Install firefox.
   programs.firefox.enable = true;
 
-  # Turn on hyprland
-  programs.hyprland = {
-   enable = true;
-  };
-  environment.sessionVariables.NIXOS_OZONE_WL = "1";
-
-
-  
-  
-
-
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
   #Allow unsafe packages
   nixpkgs.config.permittedInsecurePackages = [
         "qbittorrent-4.6.4"
+        "squid-6.10"
   ];
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
+
+
+  nixpkgs.config = {
+    android_sdk.accept_license = true;
+  };
 
   environment.systemPackages = with pkgs; [
   #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
@@ -252,7 +336,14 @@ in
     unstable.awscli2
     wireshark
     obs-studio
-    astral
+    ags_github_package
+    astral_github_package
+    jdk23
+	  android-tools
+    android-studio
+    jellyfin
+    jellyfin-web
+    jellyfin-ffmpeg
 ];
   # Fonts __ 
   fonts.packages = with pkgs; [
@@ -404,6 +495,32 @@ in
 
           #For nix-global path
           export PATH="$HOME/.npm-global/bin:$PATH"
+
+          # cmd to stop and start samba and jellyfin services-
+          ns() {
+            local action="$1"
+            local services=(
+              "samba-nmbd.service"
+              "samba-smbd.service"
+              "samba-winbindd.service"
+              "jellyfin.service"
+            )
+
+            if [[ "$action" == "start" ]]; then
+              for service in "''${services[@]}"; do
+                sudo systemctl start "$service"
+                echo "Started $service"
+              done
+            elif [[ "$action" == "stop" ]]; then
+              for service in "''${services[@]}"; do
+                sudo systemctl stop "$service"
+                echo "Stopped $service"
+              done
+            else
+              echo "Usage: ns/network_share [start|stop]"
+              return 1
+            fi
+          }
         '';
     };
     programs.zoxide = {
@@ -421,79 +538,11 @@ in
       };
     };
 
-
-    # Set GTK environment variables (optional but recommended)
-    # home.environment.variables = {
-    #   GTK_THEME = "Adwaita";
-    #   GTK_PRIMARY_BUTTON_WARPS_SLIDER = "1";
-    # };
-
-    # Create GTK 2.0 settings.ini
-    # home.file.".config/gtk-2.0/settings.ini".text = ''
-    #   [Settings]
-    #   gtk-theme-name=Adwaita:dark
-    #   gtk-application-prefer-dark-theme=true
-    #   gtk-primary-button-warps-slider=true
-    # '';
-
-    # # Create GTK 3.0 settings.ini
-    # home.file.".config/gtk-3.0/settings.ini".text = ''
-    #   [Settings]
-    #   gtk-theme-name=Adwaita:dark
-    #   gtk-application-prefer-dark-theme=true
-    #   gtk-icon-theme-name=Dracula
-    #   gtk-cursor-theme-name=Adwaita
-    #   gtk-cursor-theme-size=25
-    #   gtk-font-name=Noto Sans, 10
-    #   gtk-xft-antialias=1
-    #   gtk-xft-hinting=1
-    #   gtk-xft-hintstyle=hintslight
-    #   gtk-xft-rgba=none
-    #   gtk-xft-dpi=98304
-    #   gtk-overlay-scrolling=true
-    #   gtk-key-theme-name=Default
-    #   gtk-menu-images=true
-    #   gtk-button-images=true
-    #   gtk-primary-button-warps-slider=true
-    # '';
-
-    # # Create GTK 4.0 settings.ini
-    # home.file.".config/gtk-4.0/settings.ini".text = ''
-    #   [Settings]
-    #   gtk-theme-name=Adwaita:dark
-    #   gtk-application-prefer-dark-theme=true
-    #   gtk-icon-theme-name=Dracula
-    #   gtk-cursor-theme-name=Adwaita
-    #   gtk-cursor-theme-size=25
-    #   gtk-font-name=Noto Sans, 10
-    #   gtk-xft-antialias=1
-    #   gtk-xft-hinting=1
-    #   gtk-xft-hintstyle=hintslight
-    #   gtk-xft-rgba=none
-    #   gtk-xft-dpi=98304
-    #   gtk-overlay-scrolling=true
-    #   gtk-primary-button-warps-slider=true
-    # '';
-
-      # The state version is required and should stay at the version you
-      # originally installed.
-      home.stateVersion = "24.05";
-    };
+    # The state version is required and should stay at the version you
+    # originally installed.
+    home.stateVersion = "24.05";
+  };
   
-  
-	
   # ENable flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
-  # # Enable gtk settings-
-  # environment.variables = {
-  #   GTK_THEME = "Adwaita:dark";
-  #   GTK_PRIMARY_BUTTON_WARPS_SLIDER = "1";
-  #   GSETTINGS_SCHEMA_DIR = "${pkgs.glib}/share/glib-2.0/schemas";
-  #   GSETTINGS_SCHEMA_DIR_TEST = "${pkgs.glib}/share/glib-2.0/schemas";
-  #   TEST_ONE = "TEST";
-  # };
-
-	
-  
 }
