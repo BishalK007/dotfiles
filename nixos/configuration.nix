@@ -10,12 +10,12 @@ let
   ]);
   unstable = import <nixos-unstable> { config = { allowUnfree = true; }; };
 
-  eww_flake = builtins.getFlake "github:elkowar/eww";
-  eww_github_package = eww_flake.packages.${builtins.currentSystem}.eww;
-
   home-manager = builtins.fetchTarball {
     url = "https://github.com/nix-community/home-manager/archive/release-24.11.tar.gz";
   };
+
+  eww_flake = builtins.getFlake "github:elkowar/eww";
+  eww_github_package = eww_flake.packages.${builtins.currentSystem}.eww;
   ghostty_flake = builtins.getFlake "github:ghostty-org/ghostty";
   ghostty_github_package = ghostty_flake.packages.${builtins.currentSystem}.default;
 
@@ -318,7 +318,6 @@ in
     telegram-desktop
     audacity
     gimp-with-plugins
-    eww_github_package
     socat
     bc
     unstable.code-cursor
@@ -336,14 +335,17 @@ in
     unstable.awscli2
     wireshark
     obs-studio
-    ags_github_package
-    astral_github_package
     jdk23
 	  android-tools
     android-studio
     jellyfin
     jellyfin-web
     jellyfin-ffmpeg
+
+    # ___ Flakes GO here ____
+    eww_github_package
+    ags_github_package
+    astral_github_package
 ];
   # Fonts __ 
   fonts.packages = with pkgs; [
@@ -540,7 +542,7 @@ in
 
     # The state version is required and should stay at the version you
     # originally installed.
-    home.stateVersion = "24.05";
+    home.stateVersion = "24.11";
   };
   
   # ENable flakes
