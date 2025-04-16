@@ -10,12 +10,12 @@ let
   ]);
   unstable = import <nixos-unstable> { config = { allowUnfree = true; }; };
 
-  eww_flake = builtins.getFlake "github:elkowar/eww";
-  eww_github_package = eww_flake.packages.${builtins.currentSystem}.eww;
-
   home-manager = builtins.fetchTarball {
     url = "https://github.com/nix-community/home-manager/archive/release-24.11.tar.gz";
   };
+
+  eww_flake = builtins.getFlake "github:elkowar/eww";
+  eww_github_package = eww_flake.packages.${builtins.currentSystem}.eww;
   ghostty_flake = builtins.getFlake "github:ghostty-org/ghostty";
   ghostty_github_package = ghostty_flake.packages.${builtins.currentSystem}.default;
 
@@ -174,6 +174,16 @@ in
    enable = true;
   };
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
+  
+  # Enable the Gnome Desktop Environment.
+  # services.xserver.displayManager.gdm.enable = true;
+  # services.xserver.desktopManager.gnome.enable = true;
+  
+  # Turn on hyprland
+  programs.hyprland = {
+   enable = true;
+  };
+  environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -217,6 +227,8 @@ in
   hardware.nvidia = {
     modesetting.enable = true;   # Enables NVIDIA modesetting for Wayland.
     package = config.boot.kernelPackages.nvidiaPackages.stable;
+    prime.offload.enable = true;
+    prime.offload.enableOffloadCmd = true;
   };
   # hardware.nvidia-container-toolkit.enable = true; #Enables container toolkit
   # hardware.opengl.setLdLibraryPath = true;  # Ensure OpenGL compatibility.
@@ -243,10 +255,16 @@ in
   nixpkgs.config.permittedInsecurePackages = [
         "qbittorrent-4.6.4"
         "squid-6.10"
+        "squid-6.10"
   ];
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
+
+
+  nixpkgs.config = {
+    android_sdk.accept_license = true;
+  };
 
 
   nixpkgs.config = {
@@ -316,7 +334,6 @@ in
     telegram-desktop
     audacity
     gimp-with-plugins
-    eww_github_package
     socat
     bc
     unstable.code-cursor
@@ -493,6 +510,32 @@ in
 
           #For nix-global path
           export PATH="$HOME/.npm-global/bin:$PATH"
+
+          # cmd to stop and start samba and jellyfin services-
+          ns() {
+            local action="$1"
+            local services=(
+              "samba-nmbd.service"
+              "samba-smbd.service"
+              "samba-winbindd.service"
+              "jellyfin.service"
+            )
+
+            if [[ "$action" == "start" ]]; then
+              for service in "''${services[@]}"; do
+                sudo systemctl start "$service"
+                echo "Started $service"
+              done
+            elif [[ "$action" == "stop" ]]; then
+              for service in "''${services[@]}"; do
+                sudo systemctl stop "$service"
+                echo "Stopped $service"
+              done
+            else
+              echo "Usage: ns/network_share [start|stop]"
+              return 1
+            fi
+          }
 
           # cmd to stop and start samba and jellyfin services-
           ns() {

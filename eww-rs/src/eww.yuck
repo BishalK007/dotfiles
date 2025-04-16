@@ -39,6 +39,23 @@
       :space-evenly false
       :orientation "h"
       (eventbox :class "restart-eww" :tooltip "Restart EWW bar On Mouse Right Click" :cursor "pointer" :onrightclick " echo \"eww:stop\" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock  && echo \"eww:start\" | socat - UNIX-CONNECT:/tmp/eww_main_socket.sock " "  ")
+      (eventbox 
+        :class "battery-widget" 
+        :tooltip "Battery Status" 
+        :cursor "pointer" 
+        (box 
+          :orientation "horizontal" 
+          :spacing "2" 
+          (label 
+            :text {EWW_BATTERY.BAT1.status == "Charging" ? "󰂄" : "󰂂"}
+            :class "battery-icon"
+          )
+          (label 
+            :text "${EWW_BATTERY.BAT1.capacity}%" 
+            :class "battery-label"
+          )
+        )
+      )
       (capture_button)
       (audio_button)
       (brightness_button)

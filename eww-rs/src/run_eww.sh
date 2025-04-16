@@ -11,8 +11,16 @@ kill_processes() {
 
 # Function to run processes
 run_processes() {
+    # Change directory to where cargo watch will run
+    cd $HOME/.config/eww
+
+    # Show the current rustup configuration for this directory
+    echo "--- rustup configuration for $HOME/.config/eww ---"
+    rustup show
+
+    echo "--- Starting cargo watch ---"
     # Run cargo watch
-    cargo watch -x run --workdir $HOME/.config/eww & 
+    cargo watch -x run &
 
     # Wait for 2 seconds
     sleep 2
