@@ -59,6 +59,12 @@ if [ "$fullscreen" = true ] && [ "$region" = true ]; then
     exit 1
 fi
 
+dir=$(dirname "$file")
+if [ ! -d "$dir" ]; then
+    mkdir -p "$dir"
+    echo "Created directory: $dir"
+fi
+
 # Take screenshot
 if [ "$fullscreen" = true ]; then
     echo "Taking fullscreen screenshot..."
