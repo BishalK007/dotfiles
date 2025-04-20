@@ -1,0 +1,274 @@
+// https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-3-24/gtk/theme/Adwaita/_colors-public.scss
+$primary-color: #0B081B;
+$primary-color-transparent: rgba(11, 8, 27, 0.8);
+$secondary-color: rgba(218, 152, 240, 1);
+
+window.Bar {
+    background: none;
+    background: transparent;
+    padding: 0px;
+    margin: 0px;
+    font-size: 16px;
+
+    >centerbox {
+        background: transparent;
+        border-radius: 10px;
+        margin: 3px;
+    }
+
+    // Common components-
+    button {
+        background: none;
+        border: none;
+        color: $secondary-color;
+        border-radius: 8px;
+        // margin: 2px;
+    }
+
+
+    // 
+    // ____________ Workspace widget stuff here-
+    //
+    .workspace {
+        background: $primary-color;
+        border-radius: 18px;
+        color: $secondary-color;
+        min-width: 100px;
+        min-height: 30px;
+        border: 1px solid $secondary-color;
+    }
+
+    .workspace-back-button-label {
+        font-size: 14px;
+        transform: scale(-1, 1);
+        margin-left: 3px;
+    }
+
+    .workspace-center-label {
+        font-size: 14px;
+        margin: 4px;
+    }
+
+    .workspace-front-button-label {
+        font-size: 14px;
+        margin-right: 3px;
+    }
+
+    //
+    // ____________ Home widget stuff here-
+    //
+    .home-button {
+        background: $primary-color;
+        color: $secondary-color;
+        border-radius: 80px;
+        min-width: 22px;
+        border: 1px solid $secondary-color;
+    }
+
+    .home-button-label {
+        font-size: 14px;
+        margin-right: 6px;
+    }
+
+    //
+    // ____________ Clock widget stuff here-
+    //
+    .clock {
+        background: $primary-color;
+        color: $secondary-color;
+        border-radius: 80px;
+        min-height: 30px;
+        min-width: 24px;
+        border: 1px solid $secondary-color;
+    }
+
+    .clock-label {
+        margin-right: 8px;
+        font-size: 12px;
+        font-weight: bold;
+        color: $secondary-color;
+    }
+
+    .clock-icon {
+        margin-left: 8px;
+        margin-right: 12px;
+        font-size: 18px;
+        color: $secondary-color;
+    }
+
+
+    //
+    // ____________ Calendar widget stuff here-
+    //
+    .calendar-box {
+        border-radius: 80px;
+        border: 1px solid;
+        min-height: 30px;
+        min-width: 36px;
+        border-color: $secondary-color;
+        background: $primary-color;
+    }
+
+    .calendar-icon {
+        margin: 0 12px 0 8px;
+        font-size: 16px;
+        color: $secondary-color;
+    }
+
+    .calendar-day-label {
+        margin: 0 5px 0 0;
+        font-size: 12px;
+        font-weight: bold;
+        color: $secondary-color;
+    }
+
+    .calendar-date-label {
+        margin: 0 8px 0 0;
+        font-size: 12px;
+        font-weight: bold;
+        color: $secondary-color;
+    }
+
+    calendar.calendar-gtk-calendar {
+        min-width: 400px;
+        min-height: 200px;
+        border-radius: 10px;
+        background-color: $primary-color;
+    }
+
+    calendar.calendar-gtk-calendar header.horizontal {
+        padding: 5px;
+    }
+
+    calendar.calendar-gtk-calendar header.horizontal button.image-button {
+        all: unset;
+        background-color: $primary-color;
+        border-color: $primary-color;
+    }
+
+    calendar.calendar-gtk-calendar * {
+        color: $secondary-color;
+        border-color: $secondary-color;
+    }
+
+    //
+    // _________ systray and power widget stuff -
+    //
+    // 
+    //  Bar Styles
+    //
+    .power-and-systray-box {
+        border-radius: 80px;
+        border: 1px solid;
+        min-height: 30px;
+        min-width: 36px;
+        border-color: $secondary-color;
+        background: $primary-color;
+    }
+
+    .power-and-systray-icon {
+        font-size: 16px;
+        color: $secondary-color;
+    }
+
+    .power-icon {
+        font-size: 18px;
+    }
+
+    // 
+    // Popup Styles power Popup
+    //
+    .power-popover,
+    .power-popover contents,
+    .power-popover arrow {
+        all: unset;
+        background: transparent;
+    }
+
+    .power-popover-container {
+        padding: 10px;
+        border-radius: 10px;
+        min-width: 90px;
+        min-height: 30px;
+        background-color: $primary-color;
+    }
+
+    .power-popover-restart-button,
+    .power-popover-power-button,
+    .power-popover-lock-button {
+        min-height: 30px;
+        min-width: 30px;
+        border-radius: 100%;
+        border: 2px solid;
+        border-color: $secondary-color;
+    }
+
+    .power-popover-restart-button:hover,
+    .power-popover-power-button:hover,
+    .power-popover-lock-button:hover {
+        background-color: $secondary-color;
+    }
+
+    .power-popover-restart-button:hover *,
+    .power-popover-power-button:hover *,
+    .power-popover-lock-button:hover * {
+        color: $primary-color;
+    }
+
+    .power-popover-restart-icon,
+    .power-popover-power-icon,
+    .power-popover-lock-icon {
+        font-size: 18px;
+        color: $secondary-color;
+        // padding-top: 10px;
+    }
+
+
+    .power-popover-lock-icon {
+        font-size: 16px;
+    }
+
+    .power-popover-power-icon {
+        margin: 0 4px 0 0;
+    }
+
+    .power-popover-lock-icon {
+        margin: 0 4px 0 0;
+    }
+
+    //
+    // Popup styles Systray popup
+    //
+
+    .systray-popover,
+    .systray-popover contents,
+    .systray-popover arrow {
+        all: unset;
+        background: transparent;
+    }
+
+    .systray-popover-container {
+        padding: 12px 10px 12px 10px;
+        border-radius: 10px;
+        min-width: 180px;
+        min-height: 42px;
+        background-color: $primary-color;
+    }
+    .systray-popover-systray-item {
+    }
+    .systray-popover-systray-item image{
+        -gtk-icon-size: 30px;
+    }
+    
+    .flat  {
+        padding: 5px 0 5px 0;
+    }
+    .systray-popover-menu contents {
+        background-color: $primary-color;
+        border-radius: 10px;
+    }
+
+
+
+
+}
