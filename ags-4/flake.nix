@@ -25,6 +25,7 @@
         astal.packages.${system}.io
         astal.packages.${system}.hyprland
         astal.packages.${system}.tray 
+        astal.packages.${system}.wireplumber 
         # Development dependencies
         vala
         pkg-config

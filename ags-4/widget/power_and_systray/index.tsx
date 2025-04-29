@@ -43,7 +43,7 @@ export default function PowerAndSystray() {
                 <label label="" />
                 <popover
                     cssClasses={["systray-popover"]}
-                    autohide={false}
+                    autohide={true}
                 >
                     <Systray />
                 </popover>

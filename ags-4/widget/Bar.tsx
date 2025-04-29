@@ -1,10 +1,11 @@
 import { App, Astal, Gtk, Gdk } from "astal/gtk4"
 import { GLib, Variable } from "astal"
-import WorkspaceWidget from "./workspace/workspace"
+import WorkspaceWidget from "./workspace"
 import { scaleSizeNumber } from "../utils/utils"
-import Clock from "./clock/clock"
-import CalendarWidget from "./calendar/calendar"
-import PowerAndSystray from "./power_and_systray/power_and_systray"
+import Clock from "./clock"
+import CalendarWidget from "./calendar"
+import PowerAndSystray from "./power_and_systray"
+import SoundAndBrightness from "./sound_and_brightness"
 
 
 const time = Variable("").poll(1000, "date")
@@ -73,6 +74,10 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
                 orientation={Gtk.Orientation.HORIZONTAL}
                 spacing={scaleSizeNumber(5)}
             >
+                {/* 
+                    ************ sound and Brightness Widget ************
+                */}
+                <SoundAndBrightness/>
                 {/* 
                     ************ Power and Systray Widget ************
                 */}

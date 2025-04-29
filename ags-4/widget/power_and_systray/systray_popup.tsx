@@ -53,7 +53,7 @@ function TrayButton({ item }) {
             popover.set_pointing_to(null);
             // popover.set_relative_to(button);
             popover.set_parent(button);
-            popover.set_autohide(false);
+            popover.set_autohide(true);
             popover.popup();
         }
     });
@@ -61,30 +61,7 @@ function TrayButton({ item }) {
 
     return button;
 }
-// export default function Systray() {
-//     return (
-//         <Gtk.ScrolledWindow
-//             vexpand={true}
-//             hexpand={true}
-//             cssClasses={["systray-scroll"]}
-//         >
-//             <Gtk.Grid
-//                 orientation={Gtk.Orientation.HORIZONTAL}
-//                 cssClasses={["systray-popover-grid"]}
-//                 columnSpacing={8}
-//                 rowSpacing={8}
-//             >
-//                 {trayItems(items => {
-//                     const filtered = items.filter(item => item && item.gicon);
-//                     // Arrange items in a grid: 2 per row
-//                     return filtered.map((item, idx) => (
-//                         <TrayButton item={item} />
-//                     ));
-//                 })}
-//             </Gtk.Grid>
-//         </Gtk.ScrolledWindow>
-//     );
-// }
+
 export default function Systray() {
     return (
         <box

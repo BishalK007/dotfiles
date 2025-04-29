@@ -1,0 +1,1 @@
+watchexec -w . --exts js,ts,jsx,tsx,css,scss --restart -- sh -c 'pkill -HUP ags || GTK_DEBUG=interactive ags run --gtk4 -d .'

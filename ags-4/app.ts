@@ -1,7 +1,7 @@
 import { App } from "astal/gtk4"
 import style from "./style.scss"
 import Bar from "./widget/Bar"
-import { scaleSizes } from "./utils/utils"
+import { cssPreprocessor } from "./utils/utils"
 import GLib from "gi://GLib";
 
 // Load .env file into process environment
@@ -37,10 +37,15 @@ function loadEnvFile(filePath: string) {
 }
 
 // Load .env from home config
-loadEnvFile(GLib.build_filenamev([GLib.get_home_dir(), ".config", "ags-4", ".env"]));
+loadEnvFile(GLib.build_filenamev([GLib.get_current_dir(), ".env"]));
+const PROJ_ROOT = GLib.getenv("PROJ_ROOT");
+if (!PROJ_ROOT) {
+    throw new Error("PROJ_ROOT environment variable not set. Aborting startup.");
+}
+const envVars = { PROJ_ROOT };
 
 App.start({
-    css: scaleSizes(style),
+    css: cssPreprocessor(style, envVars),
     main() {
         App.get_monitors().map(Bar)
     },

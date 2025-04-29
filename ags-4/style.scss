@@ -3,6 +3,7 @@ $primary-color: #0B081B;
 $primary-color-transparent: rgba(11, 8, 27, 0.8);
 $secondary-color: rgba(218, 152, 240, 1);
 
+
 window.Bar {
     background: none;
     background: transparent;
@@ -152,6 +153,110 @@ window.Bar {
     }
 
     //
+    // _________ sound and brightness widget stuff -
+    //
+    // 
+    //  Bar Styles
+    //
+    //
+    .sound-and-brightness-box {
+        border-radius: 80px;
+        border: 1px solid;
+        min-height: 30px;
+        min-width: 36px;
+        border-color: $secondary-color;
+        background: $primary-color;
+    }
+
+    .sound-and-brightness-icon {
+        font-size: 16px;
+        color: $secondary-color;
+    }
+
+    .sound-icon {
+        margin-left: -4px;
+    }
+
+    // 
+    // Popup Styles sound Popup
+    //
+    .sound-popover,
+    .sound-popover contents,
+    .sound-popover arrow {
+        all: unset;
+        background: transparent;
+    }
+
+    .sound-popover-container {
+        padding: 10px;
+        border-radius: 10px;
+        min-width: 220px;
+        min-height: 30px;
+        background-color: $primary-color;
+    }
+
+    .sound-popup-sound-icon {
+        color: $secondary-color
+    }
+
+    .sound-popup-sound-icon-color-red {
+        color: red;
+    }
+
+    .sound-popup-slider trough highlight {
+        background-color: $secondary-color;
+        border-radius: 10px;
+        min-height: 8px;
+    }
+
+    .sound-popup-check-placeholder {
+        min-width: 20px;
+    }
+
+    .sound-popup-sound-list-container {
+        min-width: 15px;
+        min-height: 20px;
+    }
+
+
+    //
+    // Popup styles Brightness popup
+    //
+    .brightness-popover,
+    .brightness-popover contents,
+    .brightness-popover arrow {
+        all: unset;
+        background: transparent;
+    }
+
+    .brightness-popover-container {
+        padding: 10px;
+        border-radius: 10px;
+        min-width: 220px;
+        min-height: 30px;
+        background-color: $primary-color;
+    }
+
+    .brightness-popup-icon {
+        color: $secondary-color;
+        font-size: 18px;
+        margin-right: 8px;
+    }
+
+    .brightness-popup-slider trough highlight {
+        background-color: $secondary-color;
+        border-radius: 10px;
+        min-height: 8px;
+    }
+
+    .brightness-popup-label {
+        color: $secondary-color;
+        margin-left: 8px;
+        font-size: 14px;
+    }
+
+
+
     // _________ systray and power widget stuff -
     //
     // 
@@ -172,7 +277,8 @@ window.Bar {
     }
 
     .power-icon {
-        font-size: 18px;
+        margin-left: -4px;
+        font-size: 17px;
     }
 
     // 
@@ -254,18 +360,35 @@ window.Bar {
         min-height: 42px;
         background-color: $primary-color;
     }
-    .systray-popover-systray-item {
-    }
-    .systray-popover-systray-item image{
+
+    .systray-popover-systray-item {}
+
+    .systray-popover-systray-item image {
         -gtk-icon-size: 30px;
     }
-    
-    .flat  {
+
+    .flat {
         padding: 5px 0 5px 0;
     }
+
     .systray-popover-menu contents {
         background-color: $primary-color;
         border-radius: 10px;
+    }
+
+    popover.systray-popover check {
+        -gtk-icon-source: none;
+        -gtk-icon-shadow: none;
+        background: $primary-color;
+        border: 1px solid $secondary-color;
+    }
+
+    popover.systray-popover check:checked {
+        // -gtk-icon-source: url("file:///home/bishal/.config/dotfiles/ags-4/assets/check_icon_135782.png");
+        -gtk-icon-source: url("file://@PROJ_ROOT@/assets/check_icon_135782.png");
+        -gtk-icon-shadow: none;
+        background: $secondary-color;
+        border-radius: 100%;
     }
 
 
