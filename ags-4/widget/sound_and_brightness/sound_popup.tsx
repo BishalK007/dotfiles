@@ -30,7 +30,7 @@ const SpeakerButton = ({ endpoint }: { endpoint: AstalWp.Endpoint }) => {
                                 hexpand={false}
                             >
                                 <label
-                                    label={isDefault ? "✓" : " "}
+                                    label={isDefault ? " " : " "}
                                     cssClasses={["sound-popup-check-placeholder"]}
                                 />
                                 <label label={truncated} />
@@ -81,7 +81,7 @@ const MicButton = ({ endpoint }: { endpoint: AstalWp.Endpoint }) => {
                                 hexpand={false}
                             >
                                 <label
-                                    label={isDefault ? "✓" : " "}
+                                    label={isDefault ? " " : " "}
                                     cssClasses={["sound-popup-check-placeholder"]}
                                 />
                                 <label label={truncated} />

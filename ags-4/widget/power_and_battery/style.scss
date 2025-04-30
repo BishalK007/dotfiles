@@ -1,0 +1,51 @@
+@use "../../colors.scss";
+//  Bar Styles
+//
+.power-and-battery-box {
+    border-radius: 80px;
+    border: 1px solid;
+    min-height: 30px;
+    min-width: 36px;
+    border-color: colors.$secondary-color;
+    background: colors.$primary-color;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.power-and-battery-icon {
+    font-size: 16px;
+    color: colors.$secondary-color;
+}
+
+.power-icon {
+    margin-left: -4px;
+    font-size: 17px;
+}
+.power-and-battery-percentage{
+    font-size: 14px;
+    color: colors.$secondary-color;
+    margin-left: 4px;
+}
+
+//
+// Popover Styles:: Power Popover
+//
+.power-profile-popover,
+.power-profile-popover contents,
+.power-profile-popover arrow {
+    all: unset;
+    background: transparent;
+}
+.power-profile-popover-container {
+    padding: 10px;
+    border-radius: 10px;
+    min-width: 180px;
+    min-height: 30px;
+    background-color: colors.$primary-color;
+} 
+.power-profile-top-label{
+    padding-bottom: 10px;
+}
+.power-profile-button{
+    padding-left: 10px;
+}

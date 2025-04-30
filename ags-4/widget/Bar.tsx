@@ -6,6 +6,7 @@ import Clock from "./clock"
 import CalendarWidget from "./calendar"
 import PowerAndSystray from "./power_and_systray"
 import SoundAndBrightness from "./sound_and_brightness"
+import PowerAndBattery from "./power_and_battery"
 
 
 const time = Variable("").poll(1000, "date")
@@ -74,6 +75,10 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
                 orientation={Gtk.Orientation.HORIZONTAL}
                 spacing={scaleSizeNumber(5)}
             >
+                {/* 
+                    ************ Power Widget ************
+                */}
+                <PowerAndBattery />
                 {/* 
                     ************ sound and Brightness Widget ************
                 */}
