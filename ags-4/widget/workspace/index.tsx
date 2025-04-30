@@ -30,6 +30,8 @@ export default function WorkspaceWidget() {
             spacing={0}
             homogeneous
             cssClasses={["workspace"]}
+            vexpand={false}
+            valign={Gtk.Align.CENTER}
             halign={Gtk.Align.CENTER} >
             <button
                 onClicked={() => { switchToPrevWorkspace() }}

@@ -7,6 +7,8 @@ import CalendarWidget from "./calendar"
 import PowerAndSystray from "./power_and_systray"
 import SoundAndBrightness from "./sound_and_brightness"
 import PowerAndBattery from "./power_and_battery"
+import Cpu from "./cpu"
+import Memory from "./memory"
 
 
 const time = Variable("").poll(1000, "date")
@@ -76,13 +78,21 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
                 spacing={scaleSizeNumber(5)}
             >
                 {/* 
-                    ************ Power Widget ************
+                    ************ Power And Battery Widget ************
                 */}
                 <PowerAndBattery />
                 {/* 
                     ************ sound and Brightness Widget ************
                 */}
                 <SoundAndBrightness/>
+                {/* 
+                    ************ Cpu Widget ************
+                    */}
+                <Cpu />
+                {/* 
+                    ************ Memory Widget ************
+                */}
+                <Memory />
                 {/* 
                     ************ Power and Systray Widget ************
                 */}

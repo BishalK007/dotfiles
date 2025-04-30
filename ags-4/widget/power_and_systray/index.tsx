@@ -11,10 +11,9 @@ export default function PowerAndSystray() {
             cssClasses={[
                 "power-and-systray",
                 "power-and-systray-box",
-                "background-color",
-                "border-color",
             ]}
             valign={Gtk.Align.CENTER}
+            halign={Gtk.Align.END}
         >
             <menubutton
                 valign={Gtk.Align.CENTER}

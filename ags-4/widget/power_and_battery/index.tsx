@@ -58,19 +58,18 @@ export default function PowerAndBattery() {
         <menubutton
             valign={Gtk.Align.CENTER}
             cssClasses={[
-                "power-and-systray",
-                "power-and-systray-icon",
-                "power-icon",
+                // "power-and-systray",
+                // "power-and-systray-icon",
+                // "power-icon",
+                "power-and-battery",
+                "power-and-battery-box",
             ]}
         >
 
             <box
                 orientation={Gtk.Orientation.HORIZONTAL}
                 spacing={0}
-                cssClasses={[
-                    "power-and-battery",
-                    "power-and-battery-box",
-                ]}
+                cssClasses={[]}
                 valign={Gtk.Align.CENTER}
             >
                 <label
@@ -81,7 +80,6 @@ export default function PowerAndBattery() {
                     ]}
                     valign={Gtk.Align.CENTER}
                     halign={Gtk.Align.CENTER}
-                    marginEnd={0}
                 />
                 <label
                     label={battery_percentage()}
@@ -91,15 +89,13 @@ export default function PowerAndBattery() {
                     ]}
                     valign={Gtk.Align.CENTER}
                     halign={Gtk.Align.CENTER}
-                    marginStart={0}
-                    marginEnd={0}
                     visible={bind(battery_device, "is-present")}
                 />
             </box>
             <popover
                 cssClasses={["power-profile-popover"]}
             >
-            <PowerProfilesPopup />
+                <PowerProfilesPopup />
             </popover>
         </menubutton>
     )
