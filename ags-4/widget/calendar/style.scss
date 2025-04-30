@@ -1,0 +1,51 @@
+@use "../../colors.scss";
+.calendar-box {
+    border-radius: 80px;
+    border: 1px solid;
+    min-height: 30px;
+    min-width: 36px;
+    border-color: colors.$secondary-color;
+    background: colors.$primary-color;
+}
+
+.calendar-icon {
+    margin: 0 12px 0 8px;
+    font-size: 16px;
+    color: colors.$secondary-color;
+}
+
+.calendar-day-label {
+    margin: 0 5px 0 0;
+    font-size: 12px;
+    font-weight: bold;
+    color: colors.$secondary-color;
+}
+
+.calendar-date-label {
+    margin: 0 8px 0 0;
+    font-size: 12px;
+    font-weight: bold;
+    color: colors.$secondary-color;
+}
+
+calendar.calendar-gtk-calendar {
+    min-width: 400px;
+    min-height: 200px;
+    border-radius: 10px;
+    background-color: colors.$primary-color;
+}
+
+calendar.calendar-gtk-calendar header.horizontal {
+    padding: 5px;
+}
+
+calendar.calendar-gtk-calendar header.horizontal button.image-button {
+    all: unset;
+    background-color: colors.$primary-color;
+    border-color: colors.$primary-color;
+}
+
+calendar.calendar-gtk-calendar * {
+    color: colors.$secondary-color;
+    border-color: colors.$secondary-color;
+}

@@ -1,0 +1,131 @@
+@use "../../colors.scss";
+//  Bar Styles
+//
+.power-and-systray-box {
+    border-radius: 80px;
+    border: 1px solid;
+    min-height: 30px;
+    min-width: 36px;
+    border-color: colors.$secondary-color;
+    background: colors.$primary-color;
+}
+
+.power-and-systray-icon {
+    font-size: 16px;
+    color: colors.$secondary-color;
+}
+
+.power-icon {
+    margin-left: -4px;
+    font-size: 17px;
+}
+
+// 
+// Popup Styles power Popup
+//
+.power-popover,
+.power-popover contents,
+.power-popover arrow {
+    all: unset;
+    background: transparent;
+}
+
+.power-popover-container {
+    padding: 10px;
+    border-radius: 10px;
+    min-width: 90px;
+    min-height: 30px;
+    background-color: colors.$primary-color;
+}
+
+.power-popover-restart-button,
+.power-popover-power-button,
+.power-popover-lock-button {
+    min-height: 30px;
+    min-width: 30px;
+    border-radius: 100%;
+    border: 2px solid;
+    border-color: colors.$secondary-color;
+}
+
+.power-popover-restart-button:hover,
+.power-popover-power-button:hover,
+.power-popover-lock-button:hover {
+    background-color: colors.$secondary-color;
+}
+
+.power-popover-restart-button:hover *,
+.power-popover-power-button:hover *,
+.power-popover-lock-button:hover * {
+    color: colors.$primary-color;
+}
+
+.power-popover-restart-icon,
+.power-popover-power-icon,
+.power-popover-lock-icon {
+    font-size: 18px;
+    color: colors.$secondary-color;
+    // padding-top: 10px;
+}
+
+
+.power-popover-lock-icon {
+    font-size: 16px;
+}
+
+.power-popover-power-icon {
+    margin: 0 4px 0 0;
+}
+
+.power-popover-lock-icon {
+    margin: 0 4px 0 0;
+}
+
+//
+// Popup styles Systray popup
+//
+
+.systray-popover,
+.systray-popover contents,
+.systray-popover arrow {
+    all: unset;
+    background: transparent;
+}
+
+.systray-popover-container {
+    padding: 12px 10px 12px 10px;
+    border-radius: 10px;
+    min-width: 180px;
+    min-height: 42px;
+    background-color: colors.$primary-color;
+}
+
+.systray-popover-systray-item {}
+
+.systray-popover-systray-item image {
+    -gtk-icon-size: 30px;
+}
+
+.flat {
+    padding: 5px 0 5px 0;
+}
+
+.systray-popover-menu contents {
+    background-color: colors.$primary-color;
+    border-radius: 10px;
+}
+
+popover.systray-popover check {
+    -gtk-icon-source: none;
+    -gtk-icon-shadow: none;
+    background: colors.$primary-color;
+    border: 1px solid colors.$secondary-color;
+}
+
+popover.systray-popover check:checked {
+    // -gtk-icon-source: url("file:///home/bishal/.config/dotfiles/ags-4/assets/check_icon_135782.png");
+    -gtk-icon-source: url("file://@PROJ_ROOT@/assets/check_icon_135782.png");
+    -gtk-icon-shadow: none;
+    background: colors.$secondary-color;
+    border-radius: 100%;
+}

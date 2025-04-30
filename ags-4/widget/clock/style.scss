@@ -1,0 +1,23 @@
+@use '../../colors.scss';
+.clock {
+    background: colors.$primary-color;
+    color: colors.$secondary-color;
+    border-radius: 80px;
+    min-height: 30px;
+    min-width: 24px;
+    border: 1px solid colors.$secondary-color;
+}
+
+.clock-label {
+    margin-right: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    color: colors.$secondary-color;
+}
+
+.clock-icon {
+    margin-left: 8px;
+    margin-right: 12px;
+    font-size: 18px;
+    color: colors.$secondary-color;
+}

@@ -1,0 +1,25 @@
+@use '../../colors.scss';
+.workspace {
+    background: colors.$primary-color;
+    border-radius: 18px;
+    color: colors.$secondary-color;
+    min-width: 100px;
+    min-height: 30px;
+    border: 1px solid colors.$secondary-color;
+}
+
+.workspace-back-button-label {
+    font-size: 14px;
+    transform: scale(-1, 1);
+    margin-left: 3px;
+}
+
+.workspace-center-label {
+    font-size: 14px;
+    margin: 4px;
+}
+
+.workspace-front-button-label {
+    font-size: 14px;
+    margin-right: 3px;
+}

@@ -1,0 +1,99 @@
+@use "../../colors.scss";
+// 
+//  Bar Styles
+//
+.sound-and-brightness-box {
+    border-radius: 80px;
+    border: 1px solid;
+    min-height: 30px;
+    min-width: 36px;
+    border-color: colors.$secondary-color;
+    background: colors.$primary-color;
+}
+
+.sound-and-brightness-icon {
+    font-size: 16px;
+    color: colors.$secondary-color;
+}
+
+.sound-icon {
+    margin-left: -4px;
+}
+
+// 
+// Popup Styles:: Sound Popup
+//
+.sound-popover,
+.sound-popover contents,
+.sound-popover arrow {
+    all: unset;
+    background: transparent;
+}
+
+.sound-popover-container {
+    padding: 10px;
+    border-radius: 10px;
+    min-width: 220px;
+    min-height: 30px;
+    background-color: colors.$primary-color;
+}
+
+.sound-popup-sound-icon {
+    color: colors.$secondary-color
+}
+
+.sound-popup-sound-icon-color-red {
+    color: red;
+}
+
+.sound-popup-slider trough highlight {
+    background-color: colors.$secondary-color;
+    border-radius: 10px;
+    min-height: 8px;
+}
+
+.sound-popup-check-placeholder {
+    min-width: 20px;
+}
+
+.sound-popup-sound-list-container {
+    min-width: 15px;
+    min-height: 20px;
+}
+
+
+//
+// Popup Styles:: Brightness popup
+//
+.brightness-popover,
+.brightness-popover contents,
+.brightness-popover arrow {
+    all: unset;
+    background: transparent;
+}
+
+.brightness-popover-container {
+    padding: 10px;
+    border-radius: 10px;
+    min-width: 220px;
+    min-height: 30px;
+    background-color: colors.$primary-color;
+}
+
+.brightness-popup-icon {
+    color: colors.$secondary-color;
+    font-size: 18px;
+    margin-right: 8px;
+}
+
+.brightness-popup-slider trough highlight {
+    background-color: colors.$secondary-color;
+    border-radius: 10px;
+    min-height: 8px;
+}
+
+.brightness-popup-label {
+    color: colors.$secondary-color;
+    margin-left: 8px;
+    font-size: 14px;
+}

@@ -41,8 +41,6 @@ export default function SoundAndBrightness() {
             cssClasses={[
                 "sound-and-brightness",
                 "sound-and-brightness-box",
-                "background-color",
-                "border-color",
             ]}
             valign={Gtk.Align.CENTER}
         >
