@@ -55,8 +55,6 @@ export default function SoundAndBrightness() {
                 <label label={soundIcon()} />
                 <popover
                     cssClasses={["sound-popover"]}
-                    autohide={false}
-
                 >
                     <SoundPopup />
                 </popover>
