@@ -115,7 +115,7 @@ const soundIcon = Variable.derive(
         bind(bind(audio, "default-speaker").get(), "mute"),
     ],
     (volume: number, mute: boolean) => {
-        print(`Volume: ${volume}, Mute: ${mute}`);
+        // print(`Volume: ${volume}, Mute: ${mute}`);
         if (mute) return "";
         if (volume <= 0.33) return "";
         if (volume <= 0.66) return "";

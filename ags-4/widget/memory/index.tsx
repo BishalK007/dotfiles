@@ -19,7 +19,6 @@ function parseMemInfo(meminfo: string) {
 
 // Format number to 'digits' significant digits, remove trailing zeros and dot
 function formatUsage(num: number, digits: number) {
-    print("num:: ", num);
     digits = digits > 3 ? digits : 3;
     let str = num.toString().substring(0, digits + 1);
     if (num >= 100){

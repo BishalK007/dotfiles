@@ -6,7 +6,7 @@ import AstalPowerProfiles from "gi://AstalPowerProfiles";
 const power_profiles = AstalPowerProfiles.get_default() as AstalPowerProfiles.PowerProfiles;
 
 export default function PowerProfilesPopup() {
-    print("profiles:: ", power_profiles.get_profiles());
+    // print("profiles:: ", power_profiles.get_profiles());
     return (
         <box
             orientation={Gtk.Orientation.VERTICAL}
