@@ -47,8 +47,7 @@ const battery_percentage = Variable.derive(
         bind(battery_device, "percentage"),
     ],
     (percentage: number) => {
-        return percentage * 100 + "%";
-
+        return Math.ceil(percentage * 100) + "%";
     }
 );
 

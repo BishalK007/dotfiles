@@ -78,6 +78,7 @@ export default function CalendarWidget({
         <menubutton
             valign={Gtk.Align.CENTER}
             cssClasses={["calendar", "calendar-box", "background-color", "border-color"]}
+            vexpand={false}
         >
             <box
                 orientation={Gtk.Orientation.HORIZONTAL}

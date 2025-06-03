@@ -1,0 +1,47 @@
+@use '../../colors.scss';
+//
+// ________ Bar Styles ________
+//
+.bluetooth-box {
+    background: colors.$primary-color;
+    color: colors.$secondary-color;
+    border-radius: 80px;
+    min-height: 30px;
+    min-width: 24px;
+    border: 1px solid colors.$secondary-color;
+}
+
+.bluetooth-icon {
+    margin-left: 8px;
+    margin-right: 12px;
+    font-size: 16px;
+    color: colors.$secondary-color;
+}
+.bluetooth-status-label {
+    padding-right: 8px;
+}
+
+//
+// ________ Popup Styles ________
+//
+.bluetooth-popover ,
+.bluetooth-popover contents,
+.bluetooth-popover arrow {
+    all: unset;
+    background: transparent;
+}
+
+.bluetooth-popover-container {
+    padding: 10px;
+    border-radius: 10px;
+    min-width: 180px;
+    min-height: 30px;
+    background-color: colors.$primary-color;
+} 
+.bluetooth-top-label{
+    color: colors.$secondary-color;
+    padding-bottom: 10px;
+}
+.bluetooth-button{
+    padding-left: 10px;
+}

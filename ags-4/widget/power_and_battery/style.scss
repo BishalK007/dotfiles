@@ -14,15 +14,15 @@
     min-width: 16px;
     font-size: 16px;
     color: colors.$secondary-color;
+    padding: 0 0 0 5px;
 }
 
-.power-icon {
-    font-size: 17px;
-}
+
 .power-and-battery-percentage{
     font-size: 14px;
     color: colors.$secondary-color;
-    padding-left: 4px;
+    padding-left: 8px;
+    padding-right: 5px;
 }
 
 //

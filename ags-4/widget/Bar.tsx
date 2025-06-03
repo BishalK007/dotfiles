@@ -9,6 +9,7 @@ import SoundAndBrightness from "./sound_and_brightness"
 import PowerAndBattery from "./power_and_battery"
 import Cpu from "./cpu"
 import Memory from "./memory"
+import Bluetooth from "./bluetooth"
 
 
 const time = Variable("").poll(1000, "date")
@@ -77,6 +78,10 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
                 orientation={Gtk.Orientation.HORIZONTAL}
                 spacing={scaleSizeNumber(5)}
             >
+                {/* 
+                    ************ Bluetooth Widget ************
+                */}
+                <Bluetooth />
                 {/* 
                     ************ Power And Battery Widget ************
                 */}

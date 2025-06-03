@@ -5,6 +5,7 @@
 @use './widget/calendar/style.scss' as calendarStyle;
 @use './widget/cpu/style.scss' as cpuStyle;
 @use './widget/memory/style.scss' as memoryStyle;
+@use './widget/bluetooth/style.scss' as bluetoothStyle;
 @use './widget/power_and_battery/style.scss' as powerAndBatteryStyle;
 @use './widget/sound_and_brightness/style.scss' as soundAndBrightnessStyle;
 @use './widget/power_and_systray/style.scss' as powerAndSystrayStyle;
@@ -25,6 +26,7 @@ window.Bar {
 
     // Common components-
     button {
+        all: unset;
         background: none;
         border: none;
         color: colors.$secondary-color;
@@ -39,7 +41,8 @@ window.Bar {
         background: colors.$primary-color;
         color: colors.$secondary-color;
         border-radius: 80px;
-        min-width: 22px;
+        min-width: 36px;
+        min-height: 30px;
         border: 1px solid colors.$secondary-color;
     }
 

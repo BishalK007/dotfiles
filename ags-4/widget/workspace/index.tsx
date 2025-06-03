@@ -33,23 +33,28 @@ export default function WorkspaceWidget() {
             vexpand={false}
             valign={Gtk.Align.CENTER}
             halign={Gtk.Align.CENTER} >
-            <button
+             <button
                 onClicked={() => { switchToPrevWorkspace() }}
+                vexpand={false}
                 halign={Gtk.Align.START}
                 valign={Gtk.Align.CENTER}>
-                <label label="" cssClasses={["workspace-back-button-label"]} /> 
+                <label label="" cssClasses={["workspace-back-button-label", "workspace-button"]} /> 
             </button>
             <label
                 label={currWorkspaceNumber(id => `${id}`)}
                 cssClasses={["workspace-center-label"]}
+                vexpand={false}
                 halign={Gtk.Align.CENTER} 
                 valign={Gtk.Align.CENTER} />
             <button
                 onClicked={() => { switchToNextWorkspace() }}
+                vexpand={false}
                 halign={Gtk.Align.END}
                 valign={Gtk.Align.CENTER}>
-                <label label="" cssClasses={["workspace-front-button-label"]} />
-            </button>
+                <label label="" cssClasses={["workspace-front-button-label", "workspace-button"]} vexpand={false}/>
+            </button> 
+                {/*
+            */}
         </box>
     )
 }
