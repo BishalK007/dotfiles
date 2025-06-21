@@ -1,4 +1,4 @@
-import { execAsync } from "astal";
+import { execAsync, Binding} from "astal";
 
 // Reads the scale from environment variable WAYLAND_MONITOR_SCALE, defaults to 1.0
 function getScale(): number {
@@ -57,4 +57,51 @@ export async function sh(cmd: string | string[]): Promise<string> {
         console.error(typeof cmd === 'string' ? cmd : cmd.join(' '), err);
         return '';
     });
+}
+
+/**
+ * Merges two bindings or subscribables/connectables into a new Binding.
+ * The merged binding emits a tuple [a, b] or you can provide a custom merge function.
+ */
+
+export interface Subscribable<T = unknown> {
+    subscribe(callback: (value: T) => void): () => void
+    get(): T
+    [key: string]: any
+}
+
+export interface Connectable {
+    connect(signal: string, callback: (...args: any[]) => unknown): number
+    disconnect(id: number): void
+    [key: string]: any
+}
+
+
+export function mergeBindings<T extends any[], R = T>(
+    bindings: { [K in keyof T]: Binding<T[K]> | Subscribable<T[K]> | Connectable },
+    mergeFn?: (...values: T) => R
+): Binding<R> {
+    const bindingList = bindings.map(b => b instanceof Binding ? b : Binding.bind(b as any));
+
+    const getMerged = () => {
+        const values = bindingList.map(b => b.get()) as T;
+        return mergeFn ? mergeFn(...values) : values as unknown as R;
+    };
+
+    let callback: ((v: R) => void) | null = null;
+    const subscribable: Subscribable<R> = {
+        get: getMerged,
+        subscribe(cb: (v: R) => void) {
+            callback = cb;
+            const unsubs = bindingList.map(b =>
+                b.subscribe(() => callback && callback(getMerged()))
+            );
+            return () => {
+                unsubs.forEach(unsub => unsub());
+                callback = null;
+            };
+        }
+    };
+
+    return Binding.bind(subscribable);
 }

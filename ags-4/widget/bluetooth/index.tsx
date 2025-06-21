@@ -39,6 +39,7 @@ export default function Bluetooth() {
             </box>
             <popover
                 cssClasses={["bluetooth-popover"]}
+                autohide={false}
             >
                 <BluetoothPopup />
             </popover>

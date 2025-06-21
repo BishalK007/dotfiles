@@ -1,16 +1,14 @@
-import { Variable } from "astal";
+import { Variable, Utils } from "astal";
 import Binding, { bind } from "astal/binding";
 import { Gtk } from "astal/gtk4";
 import AstalBluetooth from "gi://AstalBluetooth";
-import { scaleSizeNumber } from "../../utils/utils";
+import { mergeBindings, scaleSizeNumber } from "../../utils/utils";
 
 const bt = AstalBluetooth.get_default() as AstalBluetooth.Bluetooth;
 
 const handleBluetoothToggle = () => {
     bt.toggle();
 }
-
-
 
 export default function BluetoothPopup() {
     return (
@@ -48,9 +46,9 @@ export default function BluetoothPopup() {
                         cssClasses={["bluetooth-top-label-icon"]}
                         label={bind(bt, "is-powered").as((isTurnrdOn) => {
                             if (isTurnrdOn) {
-                                return "  On"
+                                return "ON   "
                             }
-                            return "  Off"
+                            return "OFF   "
                         })}
                     />
                 </button>
@@ -78,12 +76,28 @@ export default function BluetoothPopup() {
                             />]
                         );
                     }
-                    
+
                     return devices.map((device: AstalBluetooth.Device, index: number) => (
                         <button
                             cssClasses={["bluetooth-device-item-button"]}
                             onClicked={() => {
-                                device.connect_device();
+                                if (device.get_connected()) {
+                                    device.disconnect_device((_, res) => {
+                                        try {
+                                            device.disconnect_device_finish(res);
+                                        } catch (e) {
+                                            console.error(e);
+                                        }
+                                    });
+                                } else {
+                                    device.connect_device((_, res) => {
+                                        try {
+                                            device.connect_device_finish(res);
+                                        } catch (e) {
+                                            console.error(e);
+                                        }
+                                    });
+                                }
                             }}
                         >
                             <box
@@ -100,9 +114,25 @@ export default function BluetoothPopup() {
                                     halign={Gtk.Align.START}
                                 />
                                 <label
-                                    label={device.address + device.get_connected()}
-                                    cssClasses={["bluetooth-device-address"]}
-                                    hexpand={true}
+                                    label={mergeBindings(
+                                        [bind(device, "connected"),
+                                        bind(device, "connecting"),
+                                        bind(device, "battery-percentage")],
+                                        (is_connected: boolean, is_connecting: boolean, battery_percentage: string) => {
+                                            return is_connecting
+                                                ? "󱥸 "
+                                                : is_connected
+                                                ? `${Number(battery_percentage) * 100.0}%   `
+                                                : " ";
+                                        }
+                                    )}
+
+
+                                    cssClasses={[
+                                        "bluetooth-device-status",
+                                        device.is_connected ? "connected" : "not-connected"
+                                    ]}
+                                    hexpand={false}
                                     halign={Gtk.Align.END}
                                 />
                             </box>
