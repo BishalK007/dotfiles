@@ -30,9 +30,9 @@ export default function Bluetooth() {
                     cssClasses={["bluetooth-status-label"]}
                     label={bind(bt, "is-powered").as((isTurnrdOn) => {
                         if (isTurnrdOn) {
-                            return "On"
+                            return "ON"
                         }
-                        return "Off"
+                        return "OFF"
                     })}
                 />
 

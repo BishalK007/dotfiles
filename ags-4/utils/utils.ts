@@ -1,4 +1,4 @@
-import { execAsync, Binding} from "astal";
+import { execAsync, Binding, bind } from "astal";
 
 // Reads the scale from environment variable WAYLAND_MONITOR_SCALE, defaults to 1.0
 function getScale(): number {
@@ -105,3 +105,129 @@ export function mergeBindings<T extends any[], R = T>(
 
     return Binding.bind(subscribable);
 }
+
+/**
+ * Creates a chained binding that follows a path of properties with full reactivity.
+ * Each level in the chain creates a new binding that updates when that property changes.
+ * When an intermediate object changes, the entire chain from that point is re-established.
+ * 
+ * @param source - The initial bindable object
+ * @param chain - Array of property names to follow in sequence
+ * @returns A binding that follows the property chain and updates on any change
+ * 
+ * @example
+ * // chainedBinding(bt, ["adapter", "discovering"])
+ * // Creates: bind(bt, "adapter") -> when adapter changes -> bind(newAdapter, "discovering")
+ * // Both adapter changes and discovering changes will trigger updates
+ */
+export function chainedBinding<T = any>(
+    source: any,
+    chain: string[]
+): Binding<T> {
+    if (chain.length === 0) {
+        throw new Error("chainedBinding requires at least one property in the chain");
+    }
+    
+    if (chain.length === 1) {
+        // Simple case: just bind to the single property
+        return bind(source, chain[0]);
+    }
+    
+    // For multiple properties, we need to create a dynamic binding
+    const subscribable: Subscribable<T> = {
+        get(): T {
+            let current = source;
+            for (const prop of chain) {
+                if (current == null) {
+                    return undefined as T;
+                }
+                current = current[prop];
+            }
+            return current as T;
+        },
+        
+        subscribe(callback: (value: T) => void): () => void {
+            let currentSubs: Array<() => void> = [];
+            
+            const rebuildChain = () => {
+                // Clean up existing subscriptions
+                currentSubs.forEach(unsub => unsub());
+                currentSubs = [];
+                
+                let current = source;
+                let chainIndex = 0;
+                
+                const subscribeToLevel = (obj: any, propIndex: number) => {
+                    if (propIndex >= chain.length || obj == null) {
+                        // End of chain or null object, call callback with final value
+                        callback(subscribable.get());
+                        return;
+                    }
+                    
+                    const prop = chain[propIndex];
+                    
+                    try {
+                        // Create binding for this level
+                        const levelBinding = bind(obj, prop);
+                        
+                        // Subscribe to changes at this level
+                        const unsub = levelBinding.subscribe((newValue: any) => {
+                            // When this level changes, rebuild the rest of the chain
+                            rebuildChain();
+                        });
+                        
+                        currentSubs.push(unsub);
+                        
+                        // Continue to next level with current value
+                        const currentValue = levelBinding.get();
+                        subscribeToLevel(currentValue, propIndex + 1);
+                        
+                    } catch (e) {
+                        // If we can't bind to this object, just call callback with current value
+                        callback(subscribable.get());
+                    }
+                };
+                
+                // Start the chain
+                subscribeToLevel(source, 0);
+            };
+            
+            rebuildChain();
+            
+            // Return cleanup function
+            return () => {
+                currentSubs.forEach(unsub => unsub());
+                currentSubs = [];
+            };
+        }
+    };
+    
+    return Binding.bind(subscribable);
+}
+
+/**
+ * Alternative simpler version for when you know the chain depth at compile time.
+ * Provides better type safety for common use cases.
+ */
+export function chainedBinding2<S, P1 extends keyof S>(
+    source: Binding<S> | S,
+    prop1: P1
+): Binding<S[P1]>;
+
+export function chainedBinding2<S, P1 extends keyof S, P2 extends keyof S[P1]>(
+    source: Binding<S> | S,
+    prop1: P1,
+    prop2: P2
+): Binding<S[P1][P2]>;
+
+export function chainedBinding2<S, P1 extends keyof S, P2 extends keyof S[P1], P3 extends keyof S[P1][P2]>(
+    source: Binding<S> | S,
+    prop1: P1,
+    prop2: P2,
+    prop3: P3
+): Binding<S[P1][P2][P3]>;
+
+export function chainedBinding2(source: any, ...props: string[]): Binding<any> {
+    return chainedBinding(source, props) as Binding<any>;
+}
+
