@@ -1,0 +1,345 @@
+# Yazi Configuration File
+# Documentation: https://yazi-rs.github.io/docs/configuration/yazi
+
+# ==============================================================================
+# Manager Settings
+# ==============================================================================
+[mgr]
+# Layout ratio [parent, current, preview] - 3-element array
+# Set to 0 to hide a panel, but at least one must be visible
+ratio = [1, 3, 4]
+
+# File sorting method
+# Options: "none", "mtime", "btime", "extension", "alphabetical", "natural", "size", "random"
+sort_by = "natural"
+
+# Sort case-sensitively
+sort_sensitive = false
+
+# Display files in reverse order
+sort_reverse = false
+
+# Display directories first
+sort_dir_first = true
+
+# Transliterate filenames for sorting (useful for special characters)
+sort_translit = false
+
+# Line mode: display information on the right side of file list
+# Options: "none", "size", "btime", "mtime", "permissions", "owner"
+linemode = "size"
+
+# Show hidden files
+show_hidden = false
+
+# Show symlink paths after filename
+show_symlink = true
+
+# Number of files to keep above/below cursor (scrolloff)
+# Large values (>200) will center the cursor
+scrolloff = 5
+
+# Mouse events that can be received by the plugin system
+mouse_events = ["click", "scroll", "touch", "move"]
+
+# Terminal title format
+# Available placeholders: {cwd}
+title_format = "Yazi: {cwd}"
+
+# ==============================================================================
+# Preview Settings
+# ==============================================================================
+[preview]
+# Wrap long lines in code preview
+wrap = "no"
+
+# Tab character width in spaces
+tab_size = 2
+
+# Maximum preview dimensions for images
+max_width = 600
+max_height = 900
+
+# Image preview delay in milliseconds
+# Helps with performance when scrolling quickly
+image_delay = 30
+
+# Image downscaling filter
+# Options: "nearest", "triangle", "catmull-rom", "lanczos3"
+# Arranged from fast/poor to slow/good quality
+image_filter = "triangle"
+
+# Image quality for pre-caching (50-90)
+# Higher = better quality but slower/larger cache
+image_quality = 75
+
+# Cache directory (uses system cache by default)
+# cache_dir = ""
+
+# Ueberzug settings for image display (if using Ueberzug++)
+# ueberzug_scale = 1.0
+# ueberzug_offset = [0.0, 0.0, 0.0, 0.0]
+
+# ==============================================================================
+# File Openers
+# ==============================================================================
+[opener]
+# Text editor
+edit = [
+    { run = 'vi "$@"', desc = "Edit with Vi (Neovim)", block = true, for = "unix" },
+]
+
+# Media player
+play = [
+    { run = 'vlc "$@"', desc = "Play with VLC", orphan = true, for = "unix" },
+    { run = 'mpv "$@"', desc = "Play", orphan = true, for = "unix" },
+]
+
+# Image viewer
+view = [
+    { run = 'imv "$@"', desc = "View", orphan = true, for = "unix" },
+    { run = 'feh "$@"', desc = "View with Feh", orphan = true, for = "unix" },
+]
+
+# PDF viewer
+pdf = [
+    { run = 'google-chrome-stable "$@"', desc = "Open in Chrome", orphan = true, for = "unix" },
+    { run = 'chromium "$@"', desc = "Open in Chromium", orphan = true, for = "unix" },
+    { run = 'firefox "$@"', desc = "Open in Firefox", orphan = true, for = "unix" },
+]
+
+# Archive extractor
+extract = [
+    { run = 'for file in "$@"; do basename="${file%.*}"; mkdir -p "$basename" && unar "$file" -o "$basename"; done', desc = "Extract with unar into folder", for = "unix" },
+]
+
+# Web browser
+browse = [
+    { run = 'google-chrome-stable "$@"', desc = "Open in Chrome", orphan = true, for = "unix" },
+    { run = 'chromium "$@"', desc = "Open in Chromium", orphan = true, for = "unix" },
+    { run = 'firefox "$@"', desc = "Open in Firefox", orphan = true, for = "unix" },
+]
+
+# System default opener
+open = [
+    { run = 'xdg-open "$@"', desc = "Open", orphan = true, for = "unix" },
+]
+
+# Reveal in file manager
+reveal = [
+    { run = 'xdg-open "$(dirname "$0")"', desc = "Reveal", orphan = true, for = "unix" },
+]
+
+# ==============================================================================
+# File Opening Rules
+# ==============================================================================
+[open]
+# Rules for opening specific file types
+# You can use either prepend_rules/append_rules or rules to define them
+
+prepend_rules = [
+    # Text files
+    { name = "*.txt", use = "edit" },
+    { name = "*.md", use = "edit" },
+    { name = "*.json", use = "edit" },
+    { name = "*.yaml", use = "edit" },
+    { name = "*.yml", use = "edit" },
+    { name = "*.toml", use = "edit" },
+    { name = "*.xml", use = "edit" },
+    { name = "*.csv", use = "edit" },
+    
+    # Config files
+    { name = "*.conf", use = "edit" },
+    { name = "*.config", use = "edit" },
+    { name = "*.ini", use = "edit" },
+    
+    # Code files
+    { name = "*.rs", use = "edit" },
+    { name = "*.py", use = "edit" },
+    { name = "*.js", use = "edit" },
+    { name = "*.ts", use = "edit" },
+    { name = "*.html", use = ["browse", "edit"] },
+    { name = "*.css", use = "edit" },
+    { name = "*.scss", use = "edit" },
+    { name = "*.c", use = "edit" },
+    { name = "*.cpp", use = "edit" },
+    { name = "*.h", use = "edit" },
+    { name = "*.hpp", use = "edit" },
+    { name = "*.go", use = "edit" },
+    { name = "*.java", use = "edit" },
+    { name = "*.kt", use = "edit" },
+    { name = "*.swift", use = "edit" },
+    { name = "*.sh", use = "edit" },
+    { name = "*.bash", use = "edit" },
+    { name = "*.zsh", use = "edit" },
+    { name = "*.fish", use = "edit" },
+    
+    # Images
+    { mime = "image/*", use = "view" },
+    
+    # Videos
+    { mime = "video/*", use = "play" },
+    
+    # Audio
+    { mime = "audio/*", use = "play" },
+    
+    # PDFs
+    { mime = "application/pdf", use = "pdf" },
+    
+    # Archives
+    { mime = "application/zip", use = "extract" },
+    { mime = "application/x-tar", use = "extract" },
+    { mime = "application/x-bzip2", use = "extract" },
+    { mime = "application/x-gzip", use = "extract" },
+    { mime = "application/x-rar-compressed", use = "extract" },
+    { mime = "application/x-7z-compressed", use = "extract" },
+]
+
+append_rules = [
+    # Fallback rule - use system default
+    { name = "*", use = "open" },
+]
+
+# ==============================================================================
+# Task Management
+# ==============================================================================
+[tasks]
+# Maximum number of concurrent micro-tasks
+micro_workers = 10
+
+# Maximum number of concurrent macro-tasks
+macro_workers = 25
+
+# Maximum retries for bizarre failures
+bizarre_retry = 5
+
+# Exclude preload tasks from task list
+suppress_preload = false
+
+# Maximum memory allocation for decoding a single image (0 = unlimited)
+image_alloc = 536870912  # 512MB
+
+# Maximum image size [width, height] for decoding (0 = unlimited)
+image_bound = [0, 0]
+
+# ==============================================================================
+# Plugin Configuration
+# ==============================================================================
+[plugin]
+# Custom previewers can be added here
+prepend_previewers = [
+    # Example: Custom previewer for HEIC images
+    # { mime = "image/heic", run = "heic" },
+]
+
+append_previewers = [
+    # Fallback previewer
+    # { name = "*", run = "binary" },
+]
+
+# Custom preloaders can be added here
+prepend_preloaders = [
+    # Example: Custom preloader for HEIC images
+    # { mime = "image/heic", run = "heic" },
+]
+
+append_preloaders = [
+    # Additional preloaders can be added here
+]
+
+# ==============================================================================
+# Input Component Settings
+# ==============================================================================
+[input]
+# Cursor blinking
+cursor_blink = true
+
+# CD command input
+cd_title = "Change directory:"
+cd_origin = "top-center"
+cd_offset = [0, 2, 50, 3]
+
+# Create file/directory input
+create_title = ["Create:", "Create directory:"]
+create_origin = "top-center"
+create_offset = [0, 2, 50, 3]
+
+# Rename input
+rename_title = "Rename:"
+rename_origin = "hovered"
+rename_offset = [0, 1, 50, 3]
+
+# Copy path input
+copy_title = "Copy path of:"
+copy_origin = "hovered"
+copy_offset = [0, 1, 50, 3]
+
+# Filter input
+filter_title = "Filter:"
+filter_origin = "top-center"
+filter_offset = [0, 2, 50, 3]
+
+# Find input
+find_title = ["Find next:", "Find previous:"]
+find_origin = "top-center"
+find_offset = [0, 2, 50, 3]
+
+# Search input
+search_title = "Search with {n}:"
+search_origin = "top-center"
+search_offset = [0, 2, 50, 3]
+
+# Shell command input
+shell_title = ["Shell:", "Shell (block):"]
+shell_origin = "top-center"
+shell_offset = [0, 2, 50, 3]
+
+# ==============================================================================
+# Confirmation Dialog Settings
+# ==============================================================================
+[confirm]
+# Trash confirmation
+trash_title = "Move {n} selected file(s) to trash?"
+trash_origin = "top-center"
+trash_offset = [0, 2, 50, 3]
+
+# Delete confirmation
+delete_title = "Delete {n} selected file(s) permanently?"
+delete_origin = "top-center"
+delete_offset = [0, 2, 50, 3]
+
+# Overwrite confirmation
+overwrite_title = "Overwrite an existing file?"
+overwrite_origin = "top-center"
+overwrite_offset = [0, 2, 50, 3]
+
+# Quit confirmation
+quit_title = "Do you want to quit Yazi?"
+quit_origin = "top-center"
+quit_offset = [0, 2, 50, 3]
+
+# ==============================================================================
+# File Picker Settings
+# ==============================================================================
+[pick]
+# Open with picker
+open_title = "Open with:"
+open_origin = "hovered"
+open_offset = [0, 1, 50, 12]
+
+# ==============================================================================
+# Which-key Style Menu Settings
+# ==============================================================================
+[which]
+# Candidate sorting method
+# Options: "none", "key", "desc"
+sort_by = "key"
+
+# Sort case-sensitively
+sort_sensitive = false
+
+# Display candidates in reverse order
+sort_reverse = false
+
+# Transliterate for sorting
+sort_translit = false
