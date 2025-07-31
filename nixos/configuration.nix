@@ -1,8 +1,9 @@
 # Edit this configuration file to define what should be installed on
+# Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 let
   gdk = pkgs.google-cloud-sdk.withExtraComponents( with pkgs.google-cloud-sdk.components; [
@@ -11,7 +12,7 @@ let
   unstable = import <nixos-unstable> { config = { allowUnfree = true; }; };
 
   home-manager = builtins.fetchTarball {
-    url = "https://github.com/nix-community/home-manager/archive/release-24.11.tar.gz";
+    url = "https://github.com/nix-community/home-manager/archive/release-25.05.tar.gz";
   };
 
   eww_flake = builtins.getFlake "github:elkowar/eww";
@@ -24,6 +25,20 @@ let
 
   astral_flake = builtins.getFlake "github:aylur/astal";
   astral_github_package = astral_flake.packages.${builtins.currentSystem}.default;
+
+  hyprpanel_flake = builtins.getFlake "github:Jas-SinghFSU/HyprPanel";
+  hyprpanel_github_package = hyprpanel_flake.packages.${builtins.currentSystem}.default;
+
+  # Downgraded v4l2 pkg
+  my_v4l2 = pkgs.linuxPackages.v4l2loopback.overrideAttrs (old: {
+    version = "0.13.2-manual";
+    src = pkgs.fetchFromGitHub {
+      owner = "umlaeute";
+      repo = "v4l2loopback";
+      rev = "v0.13.2";
+      sha256 = "rcwgOXnhRPTmNKUppupfe/2qNUBDUqVb3TeDbrP5pnU=";
+    };
+  });
   
 in
 
@@ -31,6 +46,7 @@ in
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+	  ./lanzaboote.nix
       (import "${home-manager}/nixos")
     ];
   #___ OVERLAY IMPORTS ____#
@@ -40,7 +56,34 @@ in
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.configurationLimit = 5;
   boot.loader.efi.canTouchEfiVariables = true;
+  # Enable file systems on boot 
+  boot.supportedFilesystems = [ "ntfs" ];
+
+  #   boot.kernelPackages = pkgs.linuxPackagesFor (pkgs.linux_6_15.override {
+  #   argsOverride = rec {
+  #     src = pkgs.fetchurl {
+  #       url = "mirror://kernel/linux/kernel/v6.x/linux-${version}.tar.xz";
+  #       sha256 = "1dc8qrwvvy34s5lgm43j295ipwaqm8wd8x4qchr14hqlkj9hg9rc";
+  #     };
+  #     version = "6.15.5";
+  #     modDirVersion = "6.15.5";
+  #   };
+  # });
+  # boot.kernelPackages = pkgs.linuxPackages_latest;
+  
+  boot.initrd.kernelModules = [ "amdgpu" ];
+  boot.kernelParams = [ "amdgpu.si_support=1" "amdgpu.cik_support=1" ];
+
+  # Fake cam
+  # boot.extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
+  boot.extraModulePackages = [ my_v4l2 ];
+  boot.kernelModules = [ "v4l2loopback" ];
+  boot.extraModprobeConfig = ''
+    options v4l2loopback devices=1 video_nr=10 card_label="WebCam" exclusive_caps=1
+  '';
+
 
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -62,40 +105,61 @@ in
     ];
   };
 
-  services.samba = {
-    enable = true;
-    securityType = "user"; # Or "share" for less secure, passwordless access within your network
-    shares = {
-      network_share = { # This is the name of your share as it will appear on Android
-        path = "/home/share/network_share"; # The directory you want to share
-        readOnly = false; # Set to true if you only want to allow reading
-        guestOk = "no"; # Set to "yes" for passwordless access (less secure)
-        users = "bishal"; # Replace "bishal" with your Linux username or a specific Samba user
-      };
+  # services.samba = {
+  #   enable = true;
+  #   securityType = "user"; # Or "share" for less secure, passwordless access within your network
+  #   shares = {
+  #     network_share = { # This is the name of your share as it will appear on Android
+  #       path = "/home/share/network_share"; # The directory you want to share
+  #       readOnly = false; # Set to true if you only want to allow reading
+  #       guestOk = "no"; # Set to "yes" for passwordless access (less secure)
+  #       users = "bishal"; # Replace "bishal" with your Linux username or a specific Samba user
+  #     };
+  #   };
+  # };
+  services.samba.settings = {
+  shares = {
+    myshare = {
+      path = "/home/share/network_share";
+      browseable = true;
+      writable = true;
     };
   };
+  global.security = "user";
+};
 
+  # services.tlp.enable = true;
+  services.upower.enable = true;
+  services.power-profiles-daemon.enable = true;
 
   
 
-  users.users.jellyfin = {
-    isSystemUser = true;
-    description = "Jellyfin service account";
-    extraGroups = [ "audio" "video" ];  # add any other groups as needed
-    hashedPassword = "$6$Qc2dKuH0sJSZkkFT$8flE6mA70zDk/dEWvW7xf7XNChfZdm4RrKwJMw1qJsMVOmoju5vn.T7oRcLyBxXQzWtXmKcXlnmt/MI9ANWaS0";  # replace with your hash
-  };
+  # users.users.jellyfin = {
+  #   isSystemUser = true;
+  #   description = "Jellyfin service account";
+  #   extraGroups = [ "audio" "video" ];  # add any other groups as needed
+  #   hashedPassword = "$6$Qc2dKuH0sJSZkkFT$8flE6mA70zDk/dEWvW7xf7XNChfZdm4RrKwJMw1qJsMVOmoju5vn.T7oRcLyBxXQzWtXmKcXlnmt/MI9ANWaS0";  # replace with your hash
+  # };
 
-  services.jellyfin = {
-    enable = true;
-    openFirewall = true;  # opens port 8096 by default
-    user = "jellyfin";    # run as the dedicated system user
-    # (Any additional Jellyfin options can be added via extraConfig)
-  };
+  # services.jellyfin = {
+  #   enable = true;
+  #   openFirewall = true;  # opens port 8096 by default
+  #   user = "jellyfin";    # run as the dedicated system user
+  #   # (Any additional Jellyfin options can be added via extraConfig)
+  # };
 
-  fileSystems."/home/share/network_share/mnt" = {
-    device = "/dev/disk/by-uuid/7be10710-211a-4cd1-81ff-ea48eeb2b314";
-    fsType = "xfs";
-    options = [ "defaults" ];
+  fileSystems."/home/share/drive0" = {
+   device = "/dev/disk/by-uuid/9685a37a-b5ab-902c-2e8e-19ab784ae74f";
+    fsType = "btrfs";
+    options = [ "rw" "defaults" "compress=zstd" "noatime" ];
+  };
+  systemd.tmpfiles.rules = [
+    "d /home/share/drive0 0755 bishal users -"
+  ];
+  fileSystems."/home/share/drive1" = {
+    device = "/dev/disk/by-uuid/3E02C6CE02C689FB";
+    fsType = "ntfs-3g";
+    options = [ "defaults" "rw" "uid=1000" "gid=100" "dmask=027" "fmask=137" ];
   };
 
 
@@ -158,22 +222,12 @@ in
   # Enable the X11 windowing system.
   # You can disable this if you're only using the Wayland session.
   services.xserver.enable = true;
-  # services.displayManager.autoLogin.enable = true;
-  # services.displayManager.autoLogin.user = "bishal";
+  services.displayManager.autoLogin.enable = true;
+  services.displayManager.autoLogin.user = "bishal";
 
   # Enable the KDE Plasma Desktop Environment.
   # services.displayManager.sddm.enable = true;
   # services.desktopManager.plasma6.enable = true;
-  
-  # Enable the Gnome Desktop Environment.
-  # services.xserver.displayManager.gdm.enable = true;
-  # services.xserver.desktopManager.gnome.enable = true;
-  
-  # Turn on hyprland
-  programs.hyprland = {
-   enable = true;
-  };
-  environment.sessionVariables.NIXOS_OZONE_WL = "1";
   
   # Enable the Gnome Desktop Environment.
   # services.xserver.displayManager.gdm.enable = true;
@@ -196,7 +250,7 @@ in
 
   
   # Enable sound with pipewire.
-  hardware.pulseaudio.enable = false;
+  # services.pulseaudio.enable = true; # <- using pipewire
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -221,18 +275,46 @@ in
   # Enable OpenGL
   hardware.graphics = {
     enable = true;
+    enable32Bit = true;
+    extraPackages = with pkgs; [
+      nvidia-vaapi-driver
+      vaapiVdpau
+      nv-codec-headers
+    ];
   };
 
+  services.xserver.videoDrivers = [
+    "nvidia"
+    "modesetting"
+    "fbdev"
+  ];
   # Enable nvidia gpu
   hardware.nvidia = {
+    open = true;
     modesetting.enable = true;   # Enables NVIDIA modesetting for Wayland.
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
-    prime.offload.enable = true;
-    prime.offload.enableOffloadCmd = true;
+    # chech here: https://github.com/NixOS/nixpkgs/blob/nixos-unstable/pkgs/os-specific/linux/nvidia-x11/default.nix
+    # package = config.boot.kernelPackages.nvidiaPackages.stable;
+    # package = config.boot.kernelPackages.nvidiaPackages.mkDriver {
+    #   version = "570.172.08";
+    #   sha256_64bit = "sha256-xctt4TPRlOJ6r5S54h5W6PT6/3Zy2R4ASNFPu8TSHKM=";
+    #   sha256_aarch64 = "sha256-xctt4TPRlOJ6r5S54h5W6PT6/3Zy2R4ASNFPu8TSHKM=";
+    #   openSha256 = "sha256-ZpuVZybW6CFN/gz9rx+UJvQ715FZnAOYfHn5jt5Z2C8=";
+    #   settingsSha256 = "sha256-ZpuVZybW6CFN/gz9rx+UJvQ715FZnAOYfHn5jt5Z2C8=";
+    #   persistencedSha256 = lib.fakeSha256;
+    # };
+    package = config.boot.kernelPackages.nvidiaPackages.beta;
+    prime = {
+      offload.enable = true;
+      offload.enableOffloadCmd = true;
+      nvidiaBusId = "PCI:01:00:0"; # Your NVIDIA GPU's bus ID
+      amdgpuBusId = "PCI:66:00:0"; # Your AMD integrated GPU's bus ID
+    };
+    nvidiaSettings = true;
+    powerManagement.finegrained = true;
   };
-  # hardware.nvidia-container-toolkit.enable = true; #Enables container toolkit
-  # hardware.opengl.setLdLibraryPath = true;  # Ensure OpenGL compatibility.
+  hardware.nvidia-container-toolkit.enable = true; #Enables container toolkit
 
+  hardware.xpad-noone.enable = true;
   # Define a user account. Don't forget to set a password with ‘passwd’.
 
   users.users.bishal = {
@@ -255,16 +337,10 @@ in
   nixpkgs.config.permittedInsecurePackages = [
         "qbittorrent-4.6.4"
         "squid-6.10"
-        "squid-6.10"
   ];
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-
-
-  nixpkgs.config = {
-    android_sdk.accept_license = true;
-  };
 
 
   nixpkgs.config = {
@@ -317,6 +393,10 @@ in
     networkmanagerapplet
     blueman
     xfce.thunar
+    xfce.thunar-volman
+    xfce.thunar-vcs-plugin
+    xfce.thunar-archive-plugin
+    xfce.thunar-media-tags-plugin
     btop
     themechanger
     hyprcursor
@@ -350,23 +430,46 @@ in
     brightnessctl
     unstable.awscli2
     wireshark
-    obs-studio
-    ags_github_package
-    astral_github_package
+    (obs-studio.override {
+      ffmpeg = ffmpeg_6-full;
+    })
     jdk23
 	  android-tools
-    android-studio
+    # android-studio
     jellyfin
     jellyfin-web
     jellyfin-ffmpeg
+    sbctl
+    niv
+    rclone
+    desktop-file-utils
+    gperftools
+    pkg-config-unwrapped
+    # android-studio-full
+    yazi
+    yaziPlugins.git
+    yaziPlugins.sudo
+    yaziPlugins.ouch
+    yaziPlugins.chmod
+    yaziPlugins.vcs-files
+
+    unar
+
+    # ___ Flakes GO here ____
+    # eww_github_package
+    hyprpanel_github_package
+    ags_github_package
+    astral_github_package
 ];
   # Fonts __ 
   fonts.packages = with pkgs; [
-    (nerdfonts.override { fonts = [ "FiraCode" "DroidSansMono" ]; })
+    nerd-fonts.fira-code
+    nerd-fonts.droid-sans-mono
     noto-fonts
     noto-fonts-cjk-sans
     noto-fonts-emoji
   ];
+
 
   # 1. Enable gnome-keyring
   services.gnome.gnome-keyring ={
@@ -537,31 +640,21 @@ in
             fi
           }
 
-          # cmd to stop and start samba and jellyfin services-
-          ns() {
-            local action="$1"
-            local services=(
-              "samba-nmbd.service"
-              "samba-smbd.service"
-              "samba-winbindd.service"
-              "jellyfin.service"
-            )
-
-            if [[ "$action" == "start" ]]; then
-              for service in "''${services[@]}"; do
-                sudo systemctl start "$service"
-                echo "Started $service"
-              done
-            elif [[ "$action" == "stop" ]]; then
-              for service in "''${services[@]}"; do
-                sudo systemctl stop "$service"
-                echo "Stopped $service"
-              done
-            else
-              echo "Usage: ns/network_share [start|stop]"
+          # For syncing rclone backups
+          rclone-backup() {
+            echo "Make sure u have rclone installed and logged in to GDrive and remote name is GdriveRcloneBackup"
+            echo "we use GdriveRcloneBackup:/rclone_backups/ as the backup folder"
+            local var="$1" # Assign the first argument to the local variable 'var'
+            if [[ -z "$var" ]]; then
+              echo "Error: Please provide a folder path to backup."
               return 1
             fi
+            rclone sync "$var" GdriveRcloneBackup:rclone_backups/
           }
+          # Enable bash autocompletion for the first argument of the rclone-backup function
+          # complete -F _filedir rclone-backup
+
+          
         '';
     };
     programs.zoxide = {
@@ -581,7 +674,7 @@ in
 
     # The state version is required and should stay at the version you
     # originally installed.
-    home.stateVersion = "24.05";
+    home.stateVersion = "24.11";
   };
   
   # ENable flakes
