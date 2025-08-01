@@ -5,6 +5,20 @@ import Brightness from "../../libraries/Brightness";
 
 const brightness = Brightness.get_default();
 
+// Debounced brightness handler
+let brightnessDebounceTimeout: any = null;
+
+function debouncedBrightnessChange(value: number, delay: number = 100) {
+    if (brightnessDebounceTimeout) {
+        clearTimeout(brightnessDebounceTimeout);
+    }
+    
+    brightnessDebounceTimeout = setTimeout(() => {
+        brightness.screen = value;
+        brightnessDebounceTimeout = null;
+    }, delay);
+}
+
 const brightnessIcon = Variable.derive(
     [bind(brightness, "screen")],
     (level: number) => {
@@ -33,7 +47,7 @@ export default function BrightnessPopup() {
                 cssClasses={["brightness-popup-slider"]}
                 value={bind(brightness, "screen")}
                 onChangeValue={self => {
-                    brightness.screen = self.value;
+                    debouncedBrightnessChange(self.value);
                 }}
                 hexpand={true}
                 min={0.05}
