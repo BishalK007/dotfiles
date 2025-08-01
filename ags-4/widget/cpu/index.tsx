@@ -73,16 +73,7 @@ export default function Cpu({
                 cssClasses={["cpu-icon"]}
                 valign={Gtk.Align.CENTER}
             />
-            {cpuLabel} 
-            <button
-                cssClasses={["cpu-button"]}
-                valign={Gtk.Align.CENTER}
-                onClicked={() => {
-                    // Handle button click if needed
-                    OSDManager.handleOSDVisibleToggle();
-                }}
-                child={<label label="Refresh" />}
-            />
+            {cpuLabel}
         </box>
     );
 }
