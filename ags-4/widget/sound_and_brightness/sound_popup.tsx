@@ -3,6 +3,7 @@ import { bind } from "astal/binding";
 import { Gtk, Widget } from "astal/gtk4";
 import { scaleSizeNumber } from "../../utils/utils";
 import AstalWp from "gi://AstalWp";
+import { OSDManager } from "../../services/OSDManager";
 
 const wireplumber = AstalWp.get_default() as AstalWp.Wp;
 const audio = wireplumber.audio;
@@ -184,6 +185,8 @@ export default function SoundPopup() {
                     onChangeValue={(self) => {
                         const endpoint = bind(audio, "default-speaker").get();
                         if (endpoint) {
+                            // Block OSD updates for 1 second when changing volume from popup
+                            OSDManager.blockOSDUpdateAutoResume(1000);
                             endpoint.volume = self.value;
                         }
                     }}
@@ -241,6 +244,8 @@ export default function SoundPopup() {
                     onChangeValue={(self) => {
                         const endpoint = bind(audio, "default-microphone").get();
                         if (endpoint) {
+                            // Block OSD updates for 1 second when changing microphone volume from popup
+                            OSDManager.blockOSDUpdateAutoResume(1000);
                             endpoint.volume = self.value;
                         }
                     }}

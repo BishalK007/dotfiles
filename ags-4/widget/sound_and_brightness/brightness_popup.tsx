@@ -2,6 +2,7 @@ import { Variable } from "astal";
 import { bind } from "astal/binding";
 import { Gtk } from "astal/gtk4";
 import Brightness from "../../libraries/Brightness";
+import { OSDManager } from "../../services/OSDManager";
 
 const brightness = Brightness.get_default();
 
@@ -12,6 +13,9 @@ function debouncedBrightnessChange(value: number, delay: number = 100) {
     if (brightnessDebounceTimeout) {
         clearTimeout(brightnessDebounceTimeout);
     }
+    
+    // Block OSD updates immediately when starting brightness change from popup
+    OSDManager.blockOSDUpdateAutoResume(1000);
     
     brightnessDebounceTimeout = setTimeout(() => {
         brightness.screen = value;

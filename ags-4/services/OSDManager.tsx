@@ -18,6 +18,10 @@ class OSDManagerClass {
     // Track animation state to handle interruptions
     private isAnimating = false;
     private animationTimeout: any = null;
+    
+    // OSD blocking mechanism
+    private isBlocked = false;
+    private blockUntilTimestamp: number | null = null;
 
     constructor() {
         // Start the background timer thread
@@ -88,8 +92,38 @@ class OSDManagerClass {
     }
 
     showOSD = (content: OSDContent) => {
+        // Check if OSD updates are currently blocked
+        if (this.isOSDBlocked()) {
+            return; // Don't show OSD when blocked
+        }
+        
         this.OSDContent.set(content);
         this.handleOSDVisibleAutoHide();
+    }
+
+    blockOSDUpdateAutoResume = (duration: number = 1000) => {
+        const currentTime = Date.now();
+        this.blockUntilTimestamp = currentTime + duration;
+        this.isBlocked = true;
+        
+        console.log(`OSD blocked for ${duration}ms`);
+    }
+
+    private isOSDBlocked = (): boolean => {
+        if (!this.isBlocked || this.blockUntilTimestamp === null) {
+            return false;
+        }
+        
+        const currentTime = Date.now();
+        if (currentTime >= this.blockUntilTimestamp) {
+            // Block period has expired
+            this.isBlocked = false;
+            this.blockUntilTimestamp = null;
+            console.log("OSD unblocked");
+            return false;
+        }
+        
+        return true;
     }
 
     private startHideTimer = () => {
@@ -104,6 +138,9 @@ class OSDManagerClass {
                 }
                 this.hideTimestamp.set(null);
             }
+            
+            // Also check if we need to unblock OSD updates
+            this.isOSDBlocked(); // This will auto-unblock if time has expired
         }, 100);
     }
 
