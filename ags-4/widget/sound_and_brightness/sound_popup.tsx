@@ -7,38 +7,6 @@ import AstalWp from "gi://AstalWp";
 const wireplumber = AstalWp.get_default() as AstalWp.Wp;
 const audio = wireplumber.audio;
 
-// Debounced volume handlers
-let speakerVolumeDebounceTimeout: any = null;
-let micVolumeDebounceTimeout: any = null;
-
-function debouncedSpeakerVolumeChange(value: number, delay: number = 50) {
-    if (speakerVolumeDebounceTimeout) {
-        clearTimeout(speakerVolumeDebounceTimeout);
-    }
-    
-    speakerVolumeDebounceTimeout = setTimeout(() => {
-        const endpoint = bind(audio, "default-speaker").get();
-        if (endpoint) {
-            endpoint.volume = value;
-        }
-        speakerVolumeDebounceTimeout = null;
-    }, delay);
-}
-
-function debouncedMicVolumeChange(value: number, delay: number = 50) {
-    if (micVolumeDebounceTimeout) {
-        clearTimeout(micVolumeDebounceTimeout);
-    }
-    
-    micVolumeDebounceTimeout = setTimeout(() => {
-        const endpoint = bind(audio, "default-microphone").get();
-        if (endpoint) {
-            endpoint.volume = value;
-        }
-        micVolumeDebounceTimeout = null;
-    }, delay);
-}
-
 // SpeakerButton component that binds to is-default
 const SpeakerButton = ({ endpoint }: { endpoint: AstalWp.Endpoint }) => {
     return (
@@ -214,7 +182,10 @@ export default function SoundPopup() {
                     cssClasses={["sound-popup-slider"]}
                     value={bind(bind(audio, "default-speaker").get(), "volume")}
                     onChangeValue={(self) => {
-                        debouncedSpeakerVolumeChange(self.value);
+                        const endpoint = bind(audio, "default-speaker").get();
+                        if (endpoint) {
+                            endpoint.volume = self.value;
+                        }
                     }}
                     hexpand={true}
                     min={0}
@@ -268,7 +239,10 @@ export default function SoundPopup() {
                     cssClasses={["sound-popup-slider"]}
                     value={bind(bind(audio, "default-microphone").get(), "volume")}
                     onChangeValue={(self) => {
-                        debouncedMicVolumeChange(self.value);
+                        const endpoint = bind(audio, "default-microphone").get();
+                        if (endpoint) {
+                            endpoint.volume = self.value;
+                        }
                     }}
                     hexpand={true}
                 />

@@ -67,7 +67,7 @@ class VolListenerService {
             
             this.showVolumeOSD({
                 device: 'speaker',
-                volume: Math.round(volume * 150), // Convert to 150% scale
+                volume: Math.round(volume * 100),
                 isMuted: mute,
                 deviceName: description
             });
@@ -82,7 +82,7 @@ class VolListenerService {
             
             this.showVolumeOSD({
                 device: 'microphone',
-                volume: Math.round(volume * 150), // Convert to 150% scale
+                volume: Math.round(volume * 100),
                 isMuted: mute,
                 deviceName: description
             });
