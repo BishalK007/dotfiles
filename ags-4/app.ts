@@ -3,6 +3,8 @@ import style from "./style.scss"
 import Bar from "./widget/Bar"
 import { cssPreprocessor } from "./utils/utils"
 import GLib from "gi://GLib";
+import OSD from "./widget/osd";
+import { VolListener } from "./services/VolListener";
 
 // Load .env file into process environment
 function loadEnvFile(filePath: string) {
@@ -48,5 +50,7 @@ App.start({
     css: cssPreprocessor(style, envVars),
     main() {
         App.get_monitors().map(Bar)
+        App.get_monitors().map(OSD)
+        VolListener
     },
 })

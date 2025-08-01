@@ -1,6 +1,7 @@
 import { Gtk, Widget } from "astal/gtk4";
 import { readFileAsync } from "astal";
 import { scaleSizeNumber } from "../../utils/utils";
+import { OSDManager } from "../../services/OSDManager";
 
 function parseCpuStat(line: string) {
     // Example: cpu  4705 0 2257 136239 0 0 0 0 0 0
@@ -72,7 +73,16 @@ export default function Cpu({
                 cssClasses={["cpu-icon"]}
                 valign={Gtk.Align.CENTER}
             />
-            {cpuLabel}
+            {cpuLabel} 
+            <button
+                cssClasses={["cpu-button"]}
+                valign={Gtk.Align.CENTER}
+                onClicked={() => {
+                    // Handle button click if needed
+                    OSDManager.handleOSDVisibleToggle();
+                }}
+                child={<label label="Refresh" />}
+            />
         </box>
     );
 }

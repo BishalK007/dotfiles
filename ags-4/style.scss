@@ -9,6 +9,7 @@
 @use './widget/power_and_battery/style.scss' as powerAndBatteryStyle;
 @use './widget/sound_and_brightness/style.scss' as soundAndBrightnessStyle;
 @use './widget/power_and_systray/style.scss' as powerAndSystrayStyle;
+@use './widget/osd/style.scss' as osdStyle;
 
 
 window.Bar {
