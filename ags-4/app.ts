@@ -5,6 +5,7 @@ import { cssPreprocessor } from "./utils/utils"
 import GLib from "gi://GLib";
 import OSD from "./widget/osd";
 import { VolListener } from "./services/VolListener";
+import { BrightnessListener } from "./services/BrightnessListener";
 
 // Load .env file into process environment
 function loadEnvFile(filePath: string) {
@@ -51,6 +52,9 @@ App.start({
     main() {
         App.get_monitors().map(Bar)
         App.get_monitors().map(OSD)
-        VolListener
+        
+        // Initialize listeners
+        VolListener;
+        BrightnessListener;
     },
 })
