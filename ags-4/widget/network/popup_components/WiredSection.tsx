@@ -26,9 +26,22 @@ export default function WiredSection({ network }: WiredSectionProps) {
                 return "Connected";
             case AstalNetwork.DeviceState.PREPARE:
             case AstalNetwork.DeviceState.CONFIG:
+            case AstalNetwork.DeviceState.NEED_AUTH:
+            case AstalNetwork.DeviceState.IP_CONFIG:
+            case AstalNetwork.DeviceState.IP_CHECK:
+            case AstalNetwork.DeviceState.SECONDARIES:
                 return "Connecting...";
             case AstalNetwork.DeviceState.DISCONNECTED:
                 return "Disconnected";
+            case AstalNetwork.DeviceState.UNMANAGED:
+                return "Unmanaged";
+            case AstalNetwork.DeviceState.UNAVAILABLE:
+                return "Unavailable";
+            case AstalNetwork.DeviceState.DEACTIVATING:
+                return "Disconnecting...";
+            case AstalNetwork.DeviceState.FAILED:
+                return "Failed";
+            case AstalNetwork.DeviceState.UNKNOWN:
             default:
                 return "Unknown";
         }
@@ -44,9 +57,22 @@ export default function WiredSection({ network }: WiredSectionProps) {
                 return [baseClass, "connected"];
             case AstalNetwork.DeviceState.PREPARE:
             case AstalNetwork.DeviceState.CONFIG:
+            case AstalNetwork.DeviceState.NEED_AUTH:
+            case AstalNetwork.DeviceState.IP_CONFIG:
+            case AstalNetwork.DeviceState.IP_CHECK:
+            case AstalNetwork.DeviceState.SECONDARIES:
                 return [baseClass, "connecting"];
             case AstalNetwork.DeviceState.DISCONNECTED:
                 return [baseClass, "disconnected"];
+            case AstalNetwork.DeviceState.UNMANAGED:
+                return [baseClass, "unmanaged"];
+            case AstalNetwork.DeviceState.UNAVAILABLE:
+                return [baseClass, "unavailable"];
+            case AstalNetwork.DeviceState.DEACTIVATING:
+                return [baseClass, "deactivating"];
+            case AstalNetwork.DeviceState.FAILED:
+                return [baseClass, "failed"];
+            case AstalNetwork.DeviceState.UNKNOWN:
             default:
                 return [baseClass, "unknown"];
         }
