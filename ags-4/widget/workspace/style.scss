@@ -12,6 +12,7 @@
     font-size: 14px;
     transform: scale(-1, 1);
     margin-left: 3px;
+    transition: all 0.2s ease;
 }
 
 .workspace-center-label {
@@ -24,4 +25,13 @@
 .workspace-front-button-label {
     font-size: 14px;
     margin-right: 3px;
+    transition: all 0.2s ease;
+}
+
+.workspace-front-button-label:hover {
+    transform: scale(1.1);
+}
+
+.workspace-back-button-label:hover {
+    transform: scale(-1.1, 1.1);
 }

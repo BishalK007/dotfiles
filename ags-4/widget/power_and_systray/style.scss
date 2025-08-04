@@ -15,11 +15,19 @@
     font-size: 16px;
     color: colors.$secondary-color;
     padding: 0 10px;
+    transition: all 0.2s ease;
 }
 
 .power-icon {
     margin-left: -4px;
     font-size: 17px;
+    transition: all 0.2s ease;
+}
+.systray-icon:hover {
+    transform: scale(1.1);
+}
+.power-icon:hover {
+    transform: scale(1.1);
 }
 
 // 
@@ -48,6 +56,7 @@
     border-radius: 100%;
     border: 2px solid;
     border-color: colors.$secondary-color;
+    transition: all 0.2s ease;
 }
 
 .power-popover-restart-button:hover,

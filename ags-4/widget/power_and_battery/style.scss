@@ -8,7 +8,13 @@
     min-width: 36px;
     border-color: colors.$secondary-color;
     background: colors.$primary-color;
+    transition: all 0.2s ease;
 }
+.power-and-battery-box:hover {
+    background: color-mix(in srgb, colors.$primary-color 90%, colors.$secondary-color 10%);
+    transform: scale(1.02);
+}
+
 
 .power-and-battery-icon {
     min-width: 16px;

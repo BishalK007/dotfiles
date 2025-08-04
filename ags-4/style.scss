@@ -46,10 +46,16 @@ window.Bar {
         min-width: 36px;
         min-height: 30px;
         border: 1px solid colors.$secondary-color;
+        transition: all 0.2s ease;
+    }
+    .home-button:hover {
+        background: color-mix(in srgb, colors.$primary-color 90%, colors.$secondary-color 10%);
+        transform: scale(1.02);
     }
 
     .home-button-label {
         font-size: 14px;
         margin-right: 6px;
     }
+
 }
