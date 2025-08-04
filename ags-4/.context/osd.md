@@ -1,3 +1,4 @@
+# From HyprPanel
 I'll provide a comprehensive explanation of how the OSD functionality works in this codebase by tracing through the complete execution flow.
 
 ## 1. OSD Architecture Overview

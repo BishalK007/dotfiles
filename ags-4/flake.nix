@@ -29,6 +29,7 @@
         astal.packages.${system}.battery 
         astal.packages.${system}.powerprofiles 
         astal.packages.${system}.bluetooth
+        astal.packages.${system}.network
         # Development dependencies
         vala
         pkg-config

@@ -1,3 +1,4 @@
+# From HyprPanel
 # Technical Report: Event-Driven Architecture for OSD Triggers
 
 ## 1. Event Source Analysis
