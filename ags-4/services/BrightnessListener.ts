@@ -53,7 +53,8 @@ class BrightnessListenerService {
         
         OSDManager.showOSD({
             widget,
-            timeout: 2000
+            timeout: 2000,
+            type: 'brightness'
         });
     }
 

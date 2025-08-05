@@ -11,6 +11,7 @@ import Cpu from "./cpu"
 import Memory from "./memory"
 import Bluetooth from "./bluetooth"
 import Network from "./network"
+import Notification from "./notification"
 
 
 const time = Variable("").poll(1000, "date")
@@ -79,6 +80,9 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
                 orientation={Gtk.Orientation.HORIZONTAL}
                 spacing={scaleSizeNumber(5)}
             >
+                {/* 
+                    ************ Network Widget ************
+                */}
                 <Network />
                 {/* 
                     ************ Bluetooth Widget ************
@@ -104,6 +108,10 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
                     ************ Power and Systray Widget ************
                 */}
                 <PowerAndSystray />
+                {/* 
+                    ************ Notification Widget ************
+                */}
+                <Notification />
 
             </box>
 

@@ -2,8 +2,9 @@ import { Variable } from "astal";
 import { Gtk } from "astal/gtk4";
 
 export interface OSDContent {
-    widget: JSX.Element; // Changed to JSX.Element
+    widget: JSX.Element;
     timeout: number;
+    type: 'volume' | 'brightness' | 'notification'; // Add content type
 }
 
 class OSDManagerClass {
@@ -158,4 +159,5 @@ class OSDManagerClass {
     }
 }
 
+export { OSDManagerClass };
 export const OSDManager = new OSDManagerClass();

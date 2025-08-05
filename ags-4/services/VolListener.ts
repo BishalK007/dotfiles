@@ -99,7 +99,8 @@ class VolListenerService {
         
         OSDManager.showOSD({
             widget,
-            timeout: 2000
+            timeout: 2000,
+            type: 'volume'
         });
     }
 

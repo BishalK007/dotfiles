@@ -30,6 +30,7 @@
         astal.packages.${system}.powerprofiles 
         astal.packages.${system}.bluetooth
         astal.packages.${system}.network
+        astal.packages.${system}.notifd
         # Development dependencies
         vala
         pkg-config

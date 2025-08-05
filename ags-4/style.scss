@@ -7,11 +7,11 @@
 @use './widget/memory/style.scss' as memoryStyle;
 @use './widget/bluetooth/style.scss' as bluetoothStyle;
 @use './widget/network/style.scss' as networkStyle;
+@use './widget/notification/style.scss' as notificationStyle;
 @use './widget/power_and_battery/style.scss' as powerAndBatteryStyle;
 @use './widget/sound_and_brightness/style.scss' as soundAndBrightnessStyle;
 @use './widget/power_and_systray/style.scss' as powerAndSystrayStyle;
 @use './widget/osd/style.scss' as osdStyle;
-
 
 window.Bar {
     background: none;
