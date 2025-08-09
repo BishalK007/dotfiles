@@ -1,6 +1,6 @@
 import { Variable } from "astal";
 import { bind } from "astal";
-import { OSDManager } from "./OSDManager";
+import { SoundBrightnessOSDManager } from "../widget/osd/SoundAndBrightnessOSD";
 import BrightnessOSD, { BrightnessOSDProps } from "../widget/sound_and_brightness/brightness_osd";
 import Brightness from "../libraries/Brightness";
 
@@ -51,7 +51,7 @@ class BrightnessListenerService {
             brightness: change.brightness
         });
         
-        OSDManager.showOSD({
+        SoundBrightnessOSDManager.showOSD({
             widget,
             timeout: 2000,
             type: 'brightness'

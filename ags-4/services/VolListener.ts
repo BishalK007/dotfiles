@@ -1,7 +1,7 @@
 import { Variable } from "astal";
 import { bind } from "astal";
 import AstalWp from "gi://AstalWp";
-import { OSDManager } from "./OSDManager";
+import { SoundBrightnessOSDManager } from "../widget/osd/SoundAndBrightnessOSD";
 import VolumeOSD, { VolumeOSDProps } from "../widget/sound_and_brightness/volume_osd";
 
 export interface VolumeChange {
@@ -97,7 +97,7 @@ class VolListenerService {
             deviceName: change.deviceName
         });
         
-        OSDManager.showOSD({
+        SoundBrightnessOSDManager.showOSD({
             widget,
             timeout: 2000,
             type: 'volume'

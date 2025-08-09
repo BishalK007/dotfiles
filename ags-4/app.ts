@@ -3,7 +3,8 @@ import style from "./style.scss"
 import Bar from "./widget/Bar"
 import { cssPreprocessor } from "./utils/utils"
 import GLib from "gi://GLib";
-import OSD from "./widget/osd";
+import SoundAndBrightnessOSD from "./widget/osd/SoundAndBrightnessOSD";
+import NotificationOSD from "./widget/osd/NotificationOSD";
 import { VolListener } from "./services/VolListener";
 import { BrightnessListener } from "./services/BrightnessListener";
 import { notificationListener } from "./services/NotificationListener";
@@ -52,7 +53,8 @@ App.start({
     css: cssPreprocessor(style, envVars),
     main() {
         App.get_monitors().map(Bar)
-        App.get_monitors().map(OSD) // Single OSD window handles all content types
+        App.get_monitors().map(SoundAndBrightnessOSD)
+        App.get_monitors().map(NotificationOSD)
         
         // Initialize listeners
         VolListener;

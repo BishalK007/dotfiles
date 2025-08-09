@@ -1,5 +1,5 @@
 import AstalNotifd from "gi://AstalNotifd";
-import { OSDManager } from "./OSDManager";
+import { NotificationOSDManager } from "../widget/osd/NotificationOSD";
 import NotificationOSD from "../widget/notification/notification_osd";
 
 class NotificationListener {
@@ -79,9 +79,9 @@ class NotificationListener {
             timeout = 2000; // 2 seconds for low priority
         }
 
-        OSDManager.showOSD({
-            widget,
-            timeout,
+        NotificationOSDManager.showOSD({
+            widget: NotificationOSD({ notification }),
+            timeout: 4000,
             type: 'notification'
         });
     }
