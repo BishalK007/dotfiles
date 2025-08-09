@@ -595,3 +595,17 @@
     margin-top: 50px; /* 50px down from the top */
     margin-right: 8px; /* Small margin from right edge */
 }
+
+// Dynamic notification icon
+// Common in BAR and OSD
+
+.notification-app-icon-label,
+.notification-app-icon-img {
+    min-width: 22px;
+    min-height: 22px;
+    padding: 10px 0 0 0;
+    font-size: 26px;
+}
+.notification-app-icon-label {
+    padding: 10px 5px 0 0;
+}

@@ -3,91 +3,16 @@ import { Gtk } from "astal/gtk4";
 import AstalNotifd from "gi://AstalNotifd";
 import { chainedBinding, mergeBindings, scaleSizeNumber } from "../../utils/utils";
 import { Scrollable } from "../../custom-widgets/scrollable";
+import { 
+    getUrgencyCssClass,
+    getAppIconFallback,
+    getUrgencyText,
+    getAppIcon,
+    formatTime,
+} from "./notification_utils";
+
 
 const notifd = AstalNotifd.get_default() as AstalNotifd.Notifd;
-
-/**
- * Get urgency level text
- */
-const getUrgencyText = (urgency: AstalNotifd.Urgency): string => {
-    switch (urgency) {
-        case AstalNotifd.Urgency.LOW:
-            return "Low";
-        case AstalNotifd.Urgency.NORMAL:
-            return "Normal";
-        case AstalNotifd.Urgency.CRITICAL:
-            return "Critical";
-        default:
-            return "Normal";
-    }
-};
-
-/**
- * Get urgency CSS class
- */
-const getUrgencyCssClass = (urgency: AstalNotifd.Urgency): string => {
-    switch (urgency) {
-        case AstalNotifd.Urgency.LOW:
-            return "notification-urgency-low";
-        case AstalNotifd.Urgency.NORMAL:
-            return "notification-urgency-normal";
-        case AstalNotifd.Urgency.CRITICAL:
-            return "notification-urgency-critical";
-        default:
-            return "notification-urgency-normal";
-    }
-};
-
-/**
- * Format time for display
- */
-const formatTime = (timestamp: number): string => {
-    const date = new Date(timestamp * 1000);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-
-    // Less than a minute
-    if (diff < 60000) {
-        return "now";
-    }
-    // Less than an hour
-    if (diff < 3600000) {
-        const minutes = Math.floor(diff / 60000);
-        return `${minutes}m ago`;
-    }
-    // Less than a day
-    if (diff < 86400000) {
-        const hours = Math.floor(diff / 3600000);
-        return `${hours}h ago`;
-    }
-    // Show time
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-};
-
-/**
- * Get app icon or fallback
- */
-const getAppIcon = (notification: AstalNotifd.Notification): string => {
-    const appIcon = notification.app_icon;
-    if (appIcon && appIcon.length > 0) {
-        return appIcon;
-    }
-
-    // Fallback icons based on app name
-    const appName = notification.app_name?.toLowerCase() || "";
-    if (appName.includes("discord")) return "󰙯";
-    if (appName.includes("telegram")) return "󰔁";
-    if (appName.includes("firefox")) return "󰈹";
-    if (appName.includes("chrome")) return "󰊯";
-    if (appName.includes("spotify")) return "󰓇";
-    if (appName.includes("mail")) return "󰇮";
-    if (appName.includes("calendar")) return "󰃭";
-    if (appName.includes("volume") || appName.includes("audio")) return "󰕾";
-    if (appName.includes("battery")) return "󰁹";
-    if (appName.includes("network") || appName.includes("wifi")) return "󰤨";
-
-    return "󰂞"; // Default notification icon
-};
 
 /**
  * Comprehensive Notification Management System
@@ -272,11 +197,7 @@ function NotificationItem({ notification }: { notification: AstalNotifd.Notifica
                     cssClasses={["notification-item-header"]}
                     spacing={scaleSizeNumber(8)}
                 >
-                    <label
-                        label={chainedBinding(notification, ["app_icon", "app_name"]).as(() => getAppIcon(notification))}
-                        cssClasses={["notification-app-icon"]}
-                        valign={Gtk.Align.START}
-                    />
+                    {getAppIcon(notification)}
                     <box
                         orientation={Gtk.Orientation.VERTICAL}
                         cssClasses={["notification-content"]}
