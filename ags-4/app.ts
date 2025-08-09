@@ -5,9 +5,11 @@ import { cssPreprocessor } from "./utils/utils"
 import GLib from "gi://GLib";
 import SoundAndBrightnessOSD from "./widget/osd/SoundAndBrightnessOSD";
 import NotificationOSD from "./widget/osd/NotificationOSD";
+import BatteryWarningOSD from "./widget/osd/BatteryWarningOSD";
 import { VolListener } from "./services/VolListener";
 import { BrightnessListener } from "./services/BrightnessListener";
 import { notificationListener } from "./services/NotificationListener";
+import { batteryWarningListener } from "./services/BatteryListener";
 
 // Load .env file into process environment
 function loadEnvFile(filePath: string) {
@@ -55,10 +57,12 @@ App.start({
         App.get_monitors().map(Bar)
         App.get_monitors().map(SoundAndBrightnessOSD)
         App.get_monitors().map(NotificationOSD)
+        App.get_monitors().map(BatteryWarningOSD)
         
         // Initialize listeners
         VolListener;
         BrightnessListener;
         notificationListener;
+        batteryWarningListener;
     },
 })

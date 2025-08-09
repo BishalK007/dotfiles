@@ -2,6 +2,8 @@ import { bind, Variable } from 'astal';
 import { App, Gtk, Widget } from 'astal/gtk4';
 import AstalBattery from "gi://AstalBattery";
 import PowerProfilesPopup from './power_profiles_popup';
+import { BatteryWarningOSDManager } from '../osd/BatteryWarningOSD';
+import PowerAndSystrayOSD from '../power_and_systray/power_and_systray_osd';
 
 const battery_device = AstalBattery.get_default() as AstalBattery.Battery;
 const icon = Variable.derive(
@@ -54,48 +56,75 @@ const battery_percentage = Variable.derive(
 export default function PowerAndBattery() {
 
     return (
-        <menubutton
-            valign={Gtk.Align.CENTER}
-            cssClasses={[
-                // "power-and-systray",
-                // "power-and-systray-icon",
-                // "power-icon",
-                "power-and-battery",
-                "power-and-battery-box",
-            ]}
-        >
+        <box>
+            {/* Test Button for Battery OSD */}
+            <button
+                cssClasses={["power-and-battery-test-button"]}
+                onClicked={() => {
+                    // print("Test battery OSD toggle");
+                    // // Show a test battery warning OSD
+                    // const testWidget = PowerAndSystrayOSD({
+                    //     level: {
+                    //         percentage: 75,
+                    //         isCritical: true
+                    //     },
+                    //     currentPercentage: 75
+                    // });
 
-            <box
-                orientation={Gtk.Orientation.HORIZONTAL}
-                spacing={0}
-                cssClasses={[]}
+                    // BatteryWarningOSDManager.showOSD({
+                    //     widget: testWidget,
+                    //     timeout: 5000,
+                    //     type: 'battery-warning'
+                    // });
+                }}
+                child={
+                    <label
+                        // label="Test Battery OSD"
+                        label=""
+                    />
+                }
+            />
+            <menubutton
                 valign={Gtk.Align.CENTER}
+                cssClasses={[
+                    // "power-and-systray",
+                    // "power-and-systray-icon",
+                    // "power-icon",
+                    "power-and-battery",
+                    "power-and-battery-box",
+                ]}
             >
-                <label
-                    label={icon()}
-                    cssClasses={[
-                        "power-and-battery",
-                        "power-and-battery-icon",
-                    ]}
+                <box
+                    orientation={Gtk.Orientation.HORIZONTAL}
+                    spacing={0}
+                    cssClasses={[]}
                     valign={Gtk.Align.CENTER}
-                    halign={Gtk.Align.CENTER}
+                >
+                    <label
+                        label={icon()}
+                        cssClasses={[
+                            "power-and-battery",
+                            "power-and-battery-icon",
+                        ]}
+                        valign={Gtk.Align.CENTER}
+                        halign={Gtk.Align.CENTER}
+                    />
+                    <label
+                        label={battery_percentage()}
+                        cssClasses={[
+                            "power-and-battery",
+                            "power-and-battery-percentage",
+                        ]}
+                        valign={Gtk.Align.CENTER}
+                        halign={Gtk.Align.CENTER}
+                        visible={bind(battery_device, "is-present")}
+                    />
+                </box>
+                <popover
+                    cssClasses={["power-profile-popover"]}
+                    child={<PowerProfilesPopup />}
                 />
-                <label
-                    label={battery_percentage()}
-                    cssClasses={[
-                        "power-and-battery",
-                        "power-and-battery-percentage",
-                    ]}
-                    valign={Gtk.Align.CENTER}
-                    halign={Gtk.Align.CENTER}
-                    visible={bind(battery_device, "is-present")}
-                />
-            </box>
-            <popover
-                cssClasses={["power-profile-popover"]}
-            >
-                <PowerProfilesPopup />
-            </popover>
-        </menubutton>
+            </menubutton>
+        </box>
     )
 };
