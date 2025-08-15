@@ -1,15 +1,28 @@
 # Edit this configuration file to define what should be installed on
 # Edit this configuration file to define what should be installed on
+# Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 let
-  gdk = pkgs.google-cloud-sdk.withExtraComponents( with pkgs.google-cloud-sdk.components; [
-    gke-gcloud-auth-plugin
-  ]);
-  unstable = import <nixos-unstable> { config = { allowUnfree = true; }; };
+  gdk = pkgs.google-cloud-sdk.withExtraComponents (
+    with pkgs.google-cloud-sdk.components;
+    [
+      gke-gcloud-auth-plugin
+    ]
+  );
+  unstable = import <nixos-unstable> {
+    config = {
+      allowUnfree = true;
+    };
+  };
 
   home-manager = builtins.fetchTarball {
     url = "https://github.com/nix-community/home-manager/archive/release-25.05.tar.gz";
@@ -29,6 +42,9 @@ let
   hyprpanel_flake = builtins.getFlake "github:Jas-SinghFSU/HyprPanel";
   hyprpanel_github_package = hyprpanel_flake.packages.${builtins.currentSystem}.default;
 
+  hyprlock_flake = builtins.getFlake "github:hyprwm/hyprlock";
+  hyprlock_github_package = hyprlock_flake.packages.${builtins.currentSystem}.default;
+
   # Downgraded v4l2 pkg
   my_v4l2 = pkgs.linuxPackages.v4l2loopback.overrideAttrs (old: {
     version = "0.13.2-manual";
@@ -39,16 +55,16 @@ let
       sha256 = "rcwgOXnhRPTmNKUppupfe/2qNUBDUqVb3TeDbrP5pnU=";
     };
   });
-  
+
 in
 
 {
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-	  ./lanzaboote.nix
-      (import "${home-manager}/nixos")
-    ];
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+    ./lanzaboote.nix
+    (import "${home-manager}/nixos")
+  ];
   #___ OVERLAY IMPORTS ____#
   nixpkgs.overlays = [
     (import /etc/nixos/overlays/repototxt-overlay.nix)
@@ -58,7 +74,7 @@ in
   boot.loader.systemd-boot.enable = true;
   boot.loader.systemd-boot.configurationLimit = 5;
   boot.loader.efi.canTouchEfiVariables = true;
-  # Enable file systems on boot 
+  # Enable file systems on boot
   boot.supportedFilesystems = [ "ntfs" ];
 
   #   boot.kernelPackages = pkgs.linuxPackagesFor (pkgs.linux_6_15.override {
@@ -72,9 +88,12 @@ in
   #   };
   # });
   # boot.kernelPackages = pkgs.linuxPackages_latest;
-  
+
   boot.initrd.kernelModules = [ "amdgpu" ];
-  boot.kernelParams = [ "amdgpu.si_support=1" "amdgpu.cik_support=1" ];
+  boot.kernelParams = [
+    "amdgpu.si_support=1"
+    "amdgpu.cik_support=1"
+  ];
 
   # Fake cam
   # boot.extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
@@ -83,7 +102,23 @@ in
   boot.extraModprobeConfig = ''
     options v4l2loopback devices=1 video_nr=10 card_label="WebCam" exclusive_caps=1
   '';
-
+  # Will do after kernel 6.14
+  #   boot.kernelPatches = let
+  #   version = config.boot.kernelPackages.kernel.version;
+  # in [
+  #   {
+  #     name = "asus-armoury";
+  #     patch = builtins.fetchurl {
+  #       url = "https://gitlab.com/asus-linux/fedora-kernel/-/raw/rog-${lib.versions.majorMinor version}/asus-patch-series.patch";
+  #     };
+  #     extraStructuredConfig = with lib.kernel; {
+  #       ASUS_ARMOURY = module;
+  #     };
+  #     extraMeta = {
+  #       branch = lib.versions.majorMinor version;
+  #     };
+  #   }
+  # ];
 
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -95,11 +130,14 @@ in
   # Enable networking
   networking = {
     networkmanager.enable = true;
-    networkmanager.dns = "default";  # Use "dnsmasq" or "systemd-resolved" if needed.
-    nameservers = [ "8.8.8.8" "8.8.4.4" ];  # Google's DNS servers.
+    networkmanager.dns = "default"; # Use "dnsmasq" or "systemd-resolved" if needed.
+    nameservers = [
+      "8.8.8.8"
+      "8.8.4.4"
+    ]; # Google's DNS servers.
     # proxy.httpProxy = "127.0.0.1:3128"; # use the squid cache
     # proxy.httpsProxy = "127.0.0.1:3128"; # use the squid cache
-    firewall.allowedTCPPorts = [ 
+    firewall.allowedTCPPorts = [
       139
       445
     ];
@@ -118,21 +156,88 @@ in
   #   };
   # };
   services.samba.settings = {
-  shares = {
-    myshare = {
-      path = "/home/share/network_share";
-      browseable = true;
-      writable = true;
+    shares = {
+      myshare = {
+        path = "/home/share/network_share";
+        browseable = true;
+        writable = true;
+      };
     };
+    global.security = "user";
   };
-  global.security = "user";
-};
 
   # services.tlp.enable = true;
   services.upower.enable = true;
   services.power-profiles-daemon.enable = true;
 
-  
+  # Service of asusd
+  services.asusd = {
+    enable = true;
+    enableUserService = true;
+    # Make sure you have your asusctl package defined, like you already do
+    package = unstable.asusctl;
+    # This is where you define the fan curves
+    fanCurvesConfig = {
+      text = ''
+        (
+          profiles: (
+                quiet: [
+                    (
+                        fan: CPU,
+                        pwm: (0, 13, 26, 38, 64, 89, 115, 140),
+                        temp: (30, 40, 50, 60, 70, 80, 90, 100),
+                        enabled: true,
+                    ),
+                    (
+                        fan: GPU,
+                        pwm: (0, 13, 26, 38, 64, 89, 115, 140),
+                        temp: (30, 40, 50, 60, 70, 80, 90, 100),
+                        enabled: true,
+                    ),
+                ],
+                balanced: [
+                    (
+                        fan: CPU,
+                        pwm: (13, 26, 51, 77, 115, 153, 191, 217),
+                        temp: (30, 40, 50, 60, 70, 80, 90, 100),
+                        enabled: true,
+                    ),
+                    (
+                        fan: GPU,
+                        pwm: (13, 26, 51, 77, 115, 153, 191, 217),
+                        temp: (30, 40, 50, 60, 70, 80, 90, 100),
+                        enabled: true,
+                    ),
+                ],
+                performance: [
+                    (
+                        fan: CPU,
+                        pwm: (40, 70, 100, 120, 150, 220, 250, 250),
+                        temp: (30, 40, 50, 60, 70, 80, 90, 100),
+                        enabled: true,
+                    ),
+                    (
+                        fan: GPU,
+                        pwm: (55, 100, 150, 200, 250, 255, 255, 255),
+                        temp: (30, 40, 50, 60, 70, 80, 90, 100),
+                        enabled: true,
+                    ),
+                ],
+                custom: [],
+            ),
+        )
+      '';
+     # source = "/etc/asusd/fan_curves.ron";
+    };
+  };
+
+  # Force asusd to restart when fan curves config changes
+  systemd.services.asusd = {
+    restartTriggers = [ config.services.asusd.fanCurvesConfig.text ];
+  };
+
+  # Enable the supergfxctl daemon for MUX switch control
+  services.supergfxd.enable = true;
 
   # users.users.jellyfin = {
   #   isSystemUser = true;
@@ -149,9 +254,14 @@ in
   # };
 
   fileSystems."/home/share/drive0" = {
-   device = "/dev/disk/by-uuid/9685a37a-b5ab-902c-2e8e-19ab784ae74f";
+    device = "/dev/disk/by-uuid/9685a37a-b5ab-902c-2e8e-19ab784ae74f";
     fsType = "btrfs";
-    options = [ "rw" "defaults" "compress=zstd" "noatime" ];
+    options = [
+      "rw"
+      "defaults"
+      "compress=zstd"
+      "noatime"
+    ];
   };
   systemd.tmpfiles.rules = [
     "d /home/share/drive0 0755 bishal users -"
@@ -159,9 +269,15 @@ in
   fileSystems."/home/share/drive1" = {
     device = "/dev/disk/by-uuid/3E02C6CE02C689FB";
     fsType = "ntfs-3g";
-    options = [ "defaults" "rw" "uid=1000" "gid=100" "dmask=027" "fmask=137" ];
+    options = [
+      "defaults"
+      "rw"
+      "uid=1000"
+      "gid=100"
+      "dmask=027"
+      "fmask=137"
+    ];
   };
-
 
   #TODO
   # cache in network
@@ -200,7 +316,7 @@ in
   # };
 
   #networking.wireguard.enable = true;
-	
+
   # Set your time zone.
   time.timeZone = "Asia/Kolkata";
 
@@ -228,16 +344,29 @@ in
   # Enable the KDE Plasma Desktop Environment.
   # services.displayManager.sddm.enable = true;
   # services.desktopManager.plasma6.enable = true;
-  
+
   # Enable the Gnome Desktop Environment.
   # services.xserver.displayManager.gdm.enable = true;
   # services.xserver.desktopManager.gnome.enable = true;
-  
+
   # Turn on hyprland
   programs.hyprland = {
-   enable = true;
+    enable = true;
   };
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
+
+  # enable xdg portal-
+  xdg.portal.enable = true;
+  xdg.portal.extraPortals = with pkgs; [
+    xdg-desktop-portal-hyprland
+    xdg-desktop-portal-gtk
+  ];
+
+  # Make Hyprland the default portal backend (gtk only for file chooser)
+  xdg.portal.config = {
+    common.default = [ "hyprland" "gtk" ];
+  };
+
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -248,7 +377,6 @@ in
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
-  
   # Enable sound with pipewire.
   # services.pulseaudio.enable = true; # <- using pipewire
   security.rtkit.enable = true;
@@ -267,10 +395,8 @@ in
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
- 
 
-	services.cloudflare-warp.enable = true;
-
+  services.cloudflare-warp.enable = true;
 
   # Enable OpenGL
   hardware.graphics = {
@@ -291,7 +417,7 @@ in
   # Enable nvidia gpu
   hardware.nvidia = {
     open = true;
-    modesetting.enable = true;   # Enables NVIDIA modesetting for Wayland.
+    modesetting.enable = true; # Enables NVIDIA modesetting for Wayland.
     # chech here: https://github.com/NixOS/nixpkgs/blob/nixos-unstable/pkgs/os-specific/linux/nvidia-x11/default.nix
     # package = config.boot.kernelPackages.nvidiaPackages.stable;
     # package = config.boot.kernelPackages.nvidiaPackages.mkDriver {
@@ -311,8 +437,9 @@ in
     };
     nvidiaSettings = true;
     powerManagement.finegrained = true;
+    nvidiaPersistenced = true;
   };
-  hardware.nvidia-container-toolkit.enable = true; #Enables container toolkit
+  hardware.nvidia-container-toolkit.enable = true; # Enables container toolkit
 
   hardware.xpad-noone.enable = true;
   # Define a user account. Don't forget to set a password with ‘passwd’.
@@ -320,10 +447,15 @@ in
   users.users.bishal = {
     isNormalUser = true;
     description = "Bishal Karmakar";
-    extraGroups = [ "networkmanager" "wheel" "docker" "libvirtd" ]; # ____ Added docker group ______ #
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+      "docker"
+      "libvirtd"
+    ]; # ____ Added docker group ______ #
     packages = with pkgs; [
       kdePackages.kate
-    #  thunderbird
+      #  thunderbird
     ];
   };
 
@@ -335,22 +467,21 @@ in
 
   #Allow unsafe packages
   nixpkgs.config.permittedInsecurePackages = [
-        "qbittorrent-4.6.4"
-        "squid-6.10"
+    "qbittorrent-4.6.4"
+    "squid-6.10"
   ];
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-
 
   nixpkgs.config = {
     android_sdk.accept_license = true;
   };
 
   environment.systemPackages = with pkgs; [
-  #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     wget
-    # neovim ## Later as enable 
+    # neovim ## Later as enable
     xclip
     google-chrome
     unstable.vscode
@@ -369,7 +500,7 @@ in
     go
     # ffmpeg
     nodejs_22
-    gnupg 
+    gnupg
     pass
     docker-credential-helpers
     dig
@@ -389,7 +520,8 @@ in
     river
     dracula-icon-theme
     hyprpaper
-    fuzzel 
+    
+    fuzzel
     networkmanagerapplet
     blueman
     xfce.thunar
@@ -402,9 +534,8 @@ in
     hyprcursor
     grim
     wf-recorder
-    hyprlock
     slurp
-    playerctl 
+    playerctl
     libsForQt5.qt5.qtwayland
     qbittorrent
     vlc
@@ -434,7 +565,7 @@ in
       ffmpeg = ffmpeg_6-full;
     })
     jdk23
-	  android-tools
+    android-tools
     # android-studio
     jellyfin
     jellyfin-web
@@ -452,16 +583,18 @@ in
     yaziPlugins.ouch
     yaziPlugins.chmod
     yaziPlugins.vcs-files
-
+    qpwgraph
     unar
+    nixfmt-rfc-style
 
     # ___ Flakes GO here ____
     # eww_github_package
     hyprpanel_github_package
     ags_github_package
     astral_github_package
-];
-  # Fonts __ 
+    hyprlock_github_package
+  ];
+  # Fonts __
   fonts.packages = with pkgs; [
     nerd-fonts.fira-code
     nerd-fonts.droid-sans-mono
@@ -470,9 +603,8 @@ in
     noto-fonts-emoji
   ];
 
-
   # 1. Enable gnome-keyring
-  services.gnome.gnome-keyring ={
+  services.gnome.gnome-keyring = {
     enable = true;
   };
   security.pam.services.login.enableGnomeKeyring = true;
@@ -496,7 +628,7 @@ in
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
-   
+
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It‘s perfectly fine and recommended to leave
@@ -505,13 +637,13 @@ in
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "24.05"; # Did you read the comment?
 
-
   ##_________MY CONFIGS ____________________##
-   
-  programs.bash.shellAliases = { # __ Aliases __ #
-    vi = "nvim"; 
+
+  programs.bash.shellAliases = {
+    # __ Aliases __ #
+    vi = "nvim";
     vim = "nvim";
-    svi = "sudo nvim";  # sudo versions of the alias
+    svi = "sudo nvim"; # sudo versions of the alias
     svim = "sudo nvim";
 
     c = "sudo nvim /etc/nixos/configuration.nix";
@@ -522,7 +654,7 @@ in
     ## __________ Miscellaneous ________________##
     btop = "btop --utf-force";
   };
-  
+
   # virtualisation.docker.enable = true; # __ Install Docker __ #
   virtualisation.docker = {
     enable = true;
@@ -535,64 +667,64 @@ in
 
   ## __________ NEOVIM _______________________ ##
   programs.neovim = {
-  enable = true;
+    enable = true;
 
-  configure = {
-    customRC = ''
-      set number
-      set autoindent
+    configure = {
+      customRC = ''
+        set number
+        set autoindent
 
-      set tabstop=4
-      set shiftwidth=4
+        set tabstop=4
+        set shiftwidth=4
 
-      set smarttab
-      set softtabstop=4
+        set smarttab
+        set softtabstop=4
 
-      set mouse=a
+        set mouse=a
 
-      set clipboard=unnamedplus
-    '';
+        set clipboard=unnamedplus
+      '';
 
-    # Add wl-clipboard to the packages available to Neovim
-    packages.myVimPackage = with pkgs.vimPlugins; {
-      start = [ ctrlp ];
+      # Add wl-clipboard to the packages available to Neovim
+      packages.myVimPackage = with pkgs.vimPlugins; {
+        start = [ ctrlp ];
+      };
     };
   };
-};
 
   # __ FOR QEMU __ #
   virtualisation.libvirtd.enable = true;
   virtualisation.libvirtd.qemu.package = pkgs.qemu_kvm;
 
- 
   # Enable Bluetooth
   hardware.bluetooth.enable = true; # enables support for Bluetooth
   hardware.bluetooth.powerOnBoot = true; # powers up the default Bluetooth controller on boot
   hardware.bluetooth.settings = {
-	General = {
-		Experimental = true;
-	};
+    General = {
+      Experimental = true;
+    };
   };
   services.blueman.enable = true;
 
-  
   home-manager.backupFileExtension = "backup";
-  home-manager.users.bishal = { pkgs, ... }: {
-    home.packages = [ 
-      pkgs.atool 
-      pkgs.httpie
-	    pkgs.shared-mime-info
-      # pkgs.gtk4
-      # pkgs.gtk-layer-shell
-    ];
-    # home.sessionVariables = {
-    #   GDK_BACKEND = "wayland";
-    #   CLUTTER_BACKEND = "wayland";
-    #   SDL_VIDEODRIVER = "wayland";
-    #   MOZ_ENABLE_WAYLAND = "1";
-    # };
-    programs.bash = {
-      enable = true;
+  home-manager.users.bishal =
+    { pkgs, ... }:
+    {
+      home.packages = [
+        pkgs.atool
+        pkgs.httpie
+        pkgs.shared-mime-info
+        # pkgs.gtk4
+        # pkgs.gtk-layer-shell
+      ];
+      # home.sessionVariables = {
+      #   GDK_BACKEND = "wayland";
+      #   CLUTTER_BACKEND = "wayland";
+      #   SDL_VIDEODRIVER = "wayland";
+      #   MOZ_ENABLE_WAYLAND = "1";
+      # };
+      programs.bash = {
+        enable = true;
         # Set GTK environment variables (optional but recommended)
         sessionVariables = {
           GTK_THEME = "Nordic:darker";
@@ -654,29 +786,32 @@ in
           # Enable bash autocompletion for the first argument of the rclone-backup function
           # complete -F _filedir rclone-backup
 
-          
+
         '';
-    };
-    programs.zoxide = {
-      enable = true;
-      enableBashIntegration = true;
-      options = [
-        "--cmd cd"
-      ];
-    };
-    gtk = {
-      enable = true;
-      theme = {
-        package = pkgs.nordic;
-        name = "Nordic-darker";
       };
+      programs.zoxide = {
+        enable = true;
+        enableBashIntegration = true;
+        options = [
+          "--cmd cd"
+        ];
+      };
+      gtk = {
+        enable = true;
+        theme = {
+          package = pkgs.nordic;
+          name = "Nordic-darker";
+        };
+      };
+
+      # The state version is required and should stay at the version you
+      # originally installed.
+      home.stateVersion = "24.11";
     };
 
-    # The state version is required and should stay at the version you
-    # originally installed.
-    home.stateVersion = "24.11";
-  };
-  
   # ENable flakes
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 }
