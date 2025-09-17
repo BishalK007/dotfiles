@@ -1,0 +1,3 @@
+$primary-color: #0B081B;
+$primary-color-transparent: rgba(11, 8, 27, 0.8);
+$secondary-color: rgba(218, 152, 240, 1);

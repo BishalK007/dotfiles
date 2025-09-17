@@ -28,7 +28,7 @@ fi
 if [[ "$@" == *"--kill"* ]]; then
     echo "Killing existing AGS processes..."
     ps aux | grep ags | grep -v grep | awk '{print $2}' | xargs -r kill -9
-    sleep 1
+    sleep 1 
 fi
 
 # Run AGS based on debug and disown flags
