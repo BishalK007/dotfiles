@@ -1,3 +1,4 @@
+@use "sass:color";
 @use "../../colors.scss";
 
 // 
@@ -152,9 +153,9 @@
 }
 
 .osd-volume-progress trough {
-    background-color: transparentize(colors.$secondary-color, 0.8);
+    background-color: color.scale(colors.$secondary-color, $alpha: -80%);
     border-radius: 4px;
-    border: 1px solid transparentize(colors.$secondary-color, 0.7);
+    border: 1px solid color.scale(colors.$secondary-color, $alpha: -70%);
 }
 
 .osd-volume-progress trough .filled {
@@ -163,11 +164,11 @@
 }
 
 .osd-volume-progress.osd-volume-overamplified trough .filled {
-    border-color: mix(colors.$secondary-color, #ff6600, 50%);
-    background-color: mix(colors.$secondary-color, #ff6600, 50%);
+    border-color: color.mix(colors.$secondary-color, #ff6600, $weight: 50%);
+    background-color: color.mix(colors.$secondary-color, #ff6600, $weight: 50%);
 }
 .osd-volume-progress.osd-volume-overamplified trough {
-    border: 1px solid mix(colors.$secondary-color, #ff6600, 50%);
+    border: 1px solid color.mix(colors.$secondary-color, #ff6600, $weight: 50%);
 }
 
 
@@ -183,27 +184,27 @@
 }
 
 .osd-volume-percentage.osd-volume-overamplified-text {
-    color: mix(colors.$secondary-color, #ff6600, 50%);
+    color: color.mix(colors.$secondary-color, #ff6600, $weight: 50%);
 }
 
 .osd-volume-muted-indicator {
-    color: mix(colors.$secondary-color, #ff0000, 40%);
+    color: color.mix(colors.$secondary-color, #ff0000, $weight: 40%);
     font-size: 11px;
     font-weight: 700;
-    background-color: transparentize(mix(colors.$secondary-color, #ff0000, 40%), 0.8);
+    background-color: color.scale(color.mix(colors.$secondary-color, #ff0000, $weight: 40%), $alpha: -80%);
     padding: 2px 8px;
     border-radius: 12px;
-    border: 1px solid transparentize(mix(colors.$secondary-color, #ff0000, 40%), 0.6);
+    border: 1px solid color.scale(color.mix(colors.$secondary-color, #ff0000, $weight: 40%), $alpha: -60%);
 }
 
 .osd-volume-amplified-indicator {
-    color: mix(colors.$secondary-color, #ff6600, 50%);
+    color: color.mix(colors.$secondary-color, #ff6600, $weight: 50%);
     font-size: 11px;
     font-weight: 700;
-    background-color: transparentize(mix(colors.$secondary-color, #ff6600, 50%), 0.8);
+    background-color: color.scale(color.mix(colors.$secondary-color, #ff6600, $weight: 50%), $alpha: -80%);
     padding: 2px 8px;
     border-radius: 12px;
-    border: 1px solid transparentize(mix(colors.$secondary-color, #ff6600, 50%), 0.6);
+    border: 1px solid color.scale(color.mix(colors.$secondary-color, #ff6600, $weight: 50%), $alpha: -60%);
 }
 
 //
@@ -244,9 +245,9 @@
 }
 
 .osd-brightness-progress trough {
-    background-color: transparentize(colors.$secondary-color, 0.8);
+    background-color: color.scale(colors.$secondary-color, $alpha: -80%);
     border-radius: 4px;
-    border: 1px solid transparentize(colors.$secondary-color, 0.7);
+    border: 1px solid color.scale(colors.$secondary-color, $alpha: -70%);
 }
 
 .osd-brightness-progress trough .filled {

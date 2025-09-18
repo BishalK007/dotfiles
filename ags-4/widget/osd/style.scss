@@ -1,4 +1,8 @@
 @use "../../colors.scss";
+@use "sass:color";
+// Derived accents
+$accent-red: color.adjust(colors.$secondary-color, $hue: -100deg, $saturation: 20%);
+$accent-warn: color.adjust(colors.$secondary-color, $hue: -60deg, $saturation: 15%);
 
 .osd-window {
     background-color: transparent;
@@ -44,8 +48,8 @@
 
 // Battery OSD card styling
 .battery-osd-card {
-    background-color: mix(colors.$primary-color, colors.$secondary-color, 95%);
-    border: 2px solid mix(colors.$secondary-color, transparent, 70%);
+    background-color: color.mix(colors.$primary-color, colors.$secondary-color, $weight: 95%);
+    border: 2px solid color.scale(colors.$secondary-color, $alpha: -70%);
     border-radius: 12px;
     padding: 16px;
     margin: 8px;
@@ -55,13 +59,13 @@
 
 .battery-osd-card.battery-urgency-critical {
     animation: battery-warning-critical-pulse 2s infinite;
-    border-color: mix(#ef4444, colors.$secondary-color, 70%);
-    background-color: mix(colors.$primary-color, #ef4444, 90%);
+    border-color: color.mix($accent-red, colors.$secondary-color, $weight: 70%);
+    background-color: color.mix(colors.$primary-color, $accent-red, $weight: 90%);
 }
 
 .battery-osd-card.battery-urgency-normal {
-    border-color: mix(#ffc107, colors.$secondary-color, 70%);
-    background-color: mix(colors.$primary-color, #ffc107, 95%);
+    border-color: color.mix($accent-warn, colors.$secondary-color, $weight: 70%);
+    background-color: color.mix(colors.$primary-color, $accent-warn, $weight: 95%);
 }
 
 // Battery OSD icon
@@ -84,13 +88,13 @@
 .battery-osd-title {
     font-size: 16px;
     font-weight: 600;
-    color: mix(white, colors.$secondary-color, 80%);
+    color: color.mix(white, colors.$secondary-color, $weight: 80%);
 }
 
 // Battery OSD time
 .battery-osd-time {
     font-size: 12px;
-    color: mix(colors.$secondary-color, transparent, 70%);
+    color: color.scale(colors.$secondary-color, $alpha: -70%);
     opacity: 0.8;
 }
 
@@ -105,7 +109,7 @@
 // Battery OSD message
 .battery-osd-message {
     font-size: 13px;
-    color: mix(white, colors.$secondary-color, 70%);
+    color: color.mix(white, colors.$secondary-color, $weight: 70%);
     line-height: 1.4;
 }
 
@@ -113,11 +117,11 @@
     0%, 100% {
         opacity: 1;
         transform: scale(1);
-        box-shadow: 0 6px 25px mix(#ef4444, colors.$secondary-color, 60%);
+    box-shadow: 0 6px 25px color.mix($accent-red, colors.$secondary-color, $weight: 60%);
     }
     50% {
         opacity: 0.95;
         transform: scale(1.01);
-        box-shadow: 0 8px 30px mix(#ef4444, colors.$secondary-color, 40%);
+    box-shadow: 0 8px 30px color.mix($accent-red, colors.$secondary-color, $weight: 40%);
     }
 }
