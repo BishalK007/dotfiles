@@ -18,6 +18,9 @@ show_help() {
     echo "  $0 --kill --debug --disown Kill existing processes, run in debug mode in background"
 }
 
+# Resolve and reuse the AGS config directory once
+WATCH_DIR="$(realpath /home/bishal/.config/ags)"
+
 # Check for help flag
 if [[ "$@" == *"--help"* ]]; then
     show_help
@@ -27,25 +30,30 @@ fi
 # Kill existing AGS processes if --kill flag is present
 if [[ "$@" == *"--kill"* ]]; then
     echo "Killing existing AGS processes..."
-    ps aux | grep ags | grep -v grep | awk '{print $2}' | xargs -r kill -9
-    sleep 1 
+    # Kill AGS itself (exact name) and any gjs process running ags
+    pkill -9 -x ags 2>/dev/null || true
+    pkill -9 -f 'gjs.*ags' 2>/dev/null || true
+    # Kill any watchexec that would respawn AGS (matches watch dir or spawn command)
+    pkill -9 -f "watchexec .* ${WATCH_DIR}" 2>/dev/null || true
+    pkill -9 -f 'watchexec.*ags run --gtk 4 -d' 2>/dev/null || true
+    sleep 1
 fi
 
 # Run AGS based on debug and disown flags
 if [[ "$@" == *"--disown"* ]]; then
     if [[ "$@" == *"--debug"* ]]; then
         echo "Running AGS in debug mode in background..."
-        watchexec -w $(realpath /home/bishal/.config/ags) --exts js,ts,jsx,tsx,css,scss --restart -- sh -c 'pkill -HUP ags || GTK_DEBUG=interactive ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)' > /dev/null 2>&1 &
+    watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c 'pkill -HUP ags || GTK_DEBUG=interactive ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)' > /dev/null 2>&1 &
     else
         echo "Running AGS in background..."
-        watchexec -w $(realpath /home/bishal/.config/ags) --exts js,ts,jsx,tsx,css,scss --restart -- sh -c 'pkill -HUP ags || ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)' > /dev/null 2>&1 &
+    watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c 'pkill -HUP ags || ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)' > /dev/null 2>&1 &
     fi
     disown
     echo "AGS is now running in the background. You can safely close this terminal."
 else
     if [[ "$@" == *"--debug"* ]]; then
-        watchexec -w $(realpath /home/bishal/.config/ags) --exts js,ts,jsx,tsx,css,scss --restart -- sh -c 'pkill -HUP ags || GTK_DEBUG=interactive ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)'
+    watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c 'pkill -HUP ags || GTK_DEBUG=interactive ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)'
     else
-        watchexec -w $(realpath /home/bishal/.config/ags) --exts js,ts,jsx,tsx,css,scss --restart -- sh -c 'pkill -HUP ags || ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)'
+    watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c 'pkill -HUP ags || ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)'
     fi
 fi

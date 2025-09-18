@@ -3,6 +3,7 @@ import style from "./style.scss"
 import Bar from "./widget/Bar"
 import { cssPreprocessor } from "./utils/utils"
 import GLib from "gi://GLib";
+import Gio from "gi://Gio";
 import SoundAndBrightnessOSD from "./widget/osd/SoundAndBrightnessOSD";
 import NotificationOSD from "./widget/osd/NotificationOSD";
 import BatteryWarningOSD from "./widget/osd/BatteryWarningOSD";
@@ -45,15 +46,84 @@ function loadEnvFile(filePath: string) {
 
 // Load .env from home config
 loadEnvFile(GLib.build_filenamev([GLib.get_current_dir(), ".env"]));
-const PROJ_ROOT = GLib.getenv("PROJ_ROOT");
-if (!PROJ_ROOT) {
-    throw new Error("PROJ_ROOT environment variable not set. Aborting startup.");
-}
+const PROJ_ROOT = GLib.getenv("PROJ_ROOT") || GLib.get_current_dir();
 const envVars = { PROJ_ROOT };
+
+// --- Runtime theming: recompile SCSS and apply at runtime when colors.scss changes ---
+let colorsMonitor: Gio.FileMonitor | null = null;
+let debounceId: number | null = null;
+
+function getProjectPath(...parts: string[]) {
+    return GLib.build_filenamev([GLib.get_current_dir(), ...parts]);
+}
+
+function compileScssToCss(inScssPath: string): string | null {
+    try {
+        const proc = Gio.Subprocess.new([
+            "sass", "--no-source-map", inScssPath,
+        ], Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE);
+        // Read stdout (compiled CSS) in-memory
+        const result = (proc as any).communicate_utf8(null, null);
+        const ok: boolean = result[0];
+        const stdout: string = result[1] ?? "";
+        const stderr: string = result[2] ?? "";
+        if (!ok) {
+            print(`sass compile failed: ${stderr}`);
+            return null;
+        }
+        return stdout;
+    } catch (e) {
+        print(`sass compile error: ${e}`);
+        return null;
+    }
+}
+
+function readFileText(path: string): string | null {
+    try {
+        const [ok, bytes] = GLib.file_get_contents(path);
+        if (ok && bytes) return new TextDecoder().decode(bytes);
+    } catch (e) {
+        print(`read error ${path}: ${e}`);
+    }
+    return null;
+}
+
+function applyCompiledCssOverlay() {
+    const inScss = getProjectPath("style.scss");
+    const compiled = compileScssToCss(inScss);
+    if (!compiled) return;
+    const processed = cssPreprocessor(compiled, envVars);
+    // Reset previously applied runtime styles and apply fresh overlay
+    App.reset_css();
+    App.apply_css(processed);
+    print("Applied runtime stylesheet overlay from compiled SCSS");
+}
+
+function initColorsWatcher() {
+    const colorsPath = getProjectPath("colors.scss");
+    try {
+        const file = Gio.File.new_for_path(colorsPath);
+        colorsMonitor = file.monitor_file(Gio.FileMonitorFlags.NONE, null);
+        colorsMonitor.connect("changed", () => {
+            if (debounceId) return; // debounce
+            debounceId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 120, () => {
+                applyCompiledCssOverlay();
+                debounceId = null;
+                return GLib.SOURCE_REMOVE;
+            });
+        });
+        // Apply once on startup as overlay
+        applyCompiledCssOverlay();
+    } catch (e) {
+        print(`Failed to watch colors.scss: ${e}`);
+    }
+}
 
 App.start({
     css: cssPreprocessor(style, envVars),
     main() {
+    // watch for palette changes and apply at runtime
+    initColorsWatcher();
         App.get_monitors().map(Bar)
         App.get_monitors().map(SoundAndBrightnessOSD)
         App.get_monitors().map(NotificationOSD)
