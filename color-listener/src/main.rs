@@ -4,6 +4,7 @@ mod watchers;
 use watchers::HyprpaperWatcher;
 mod processor; // assuming processor.rs is in src root
 use processor::Processor;
+mod applier;
 // std fs/io helpers no longer needed; Processor handles writing
 
 #[derive(Debug, Clone, Copy)]
@@ -22,12 +23,16 @@ impl Watcher {
 #[derive(Debug, Clone, Copy)]
 enum Applier {
     Ags,
+    Hyprland,
+    Kitty,
 }
 
 impl Applier {
     fn from_str(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "ags" => Some(Applier::Ags),
+            "hyprland" => Some(Applier::Hyprland),
+            "kitty" => Some(Applier::Kitty),
             _ => None,
         }
     }
@@ -46,13 +51,17 @@ async fn main() -> Result<()> {
     let default_watchfile: &str = "~/.config/hypr/hyprpaper.conf";
     let default_colorfile: &str = "~/.config/dotfiles/colors.scss";
     let default_ags_colorfile: &str = "~/.config/dotfiles/ags-4/colors.scss";
+    let default_hypr_colors: &str = "~/.config/dotfiles/hypr/colors.conf";
+    let default_kitty_conf: &str = "~/.config/dotfiles/kitty/kitty.conf";
     let mut watcher = Watcher::Hyprpaper;
-    let mut appliers: Vec<Applier> = vec![Applier::Ags];
+    let mut appliers: Vec<Applier> = vec![Applier::Ags, Applier::Hyprland, Applier::Kitty];
 
     // Working copies (expand ~ lazily after arg parsing)
     let mut watchfile = default_watchfile.to_string();
     let mut colorfile = default_colorfile.to_string();
     let mut ags_colorfile = default_ags_colorfile.to_string();
+    let mut hypr_colors = default_hypr_colors.to_string();
+    let mut kitty_conf = default_kitty_conf.to_string();
 
     let mut args = env::args().skip(1);
     while let Some(arg) = args.next() {
@@ -81,6 +90,8 @@ async fn main() -> Result<()> {
             "--watchfile" => { if let Some(val) = args.next() { watchfile = val; } }
             "--colorfile" => { if let Some(val) = args.next() { colorfile = val; } }
             "--ags-colorfile" => { if let Some(val) = args.next() { ags_colorfile = val; } }
+            "--hypr-colors" => { if let Some(val) = args.next() { hypr_colors = val; } }
+            "--kitty-conf" => { if let Some(val) = args.next() { kitty_conf = val; } }
             _ => {}
         }
     }
@@ -89,11 +100,15 @@ async fn main() -> Result<()> {
     watchfile = expand_tilde(&watchfile);
     colorfile = expand_tilde(&colorfile);
     ags_colorfile = expand_tilde(&ags_colorfile);
+    hypr_colors = expand_tilde(&hypr_colors);
+    kitty_conf = expand_tilde(&kitty_conf);
 
     println!("Using watcher: {:?}", watcher);
     println!("Watching file: {}", watchfile);
     println!("Color file: {}", colorfile);
     println!("AGS color file: {}", ags_colorfile);
+    println!("Hypr colors file: {}", hypr_colors);
+    println!("Kitty conf: {}", kitty_conf);
 
     // Start selected watcher and spawn receiver loop
     match watcher {
@@ -102,6 +117,7 @@ async fn main() -> Result<()> {
             let colorfile_path = colorfile.clone();
             let ags_colorfile_path = ags_colorfile.clone();
             let appliers_vec = appliers.clone();
+            let kitty_conf_path = kitty_conf.clone();
             tokio::spawn(async move {
                 let mut rx = rx;
                 while let Some(ev) = rx.recv().await {
@@ -113,10 +129,24 @@ async fn main() -> Result<()> {
                             for ap in &appliers_vec {
                                 match ap {
                                     Applier::Ags => {
-                                        if let Err(e) = apply_ags(&ags_colorfile_path, &p, &s) {
+                                        if let Err(e) = applier::ags::apply(&ags_colorfile_path, &p, &s) {
                                             eprintln!("[applier:ags] error: {e}");
                                         } else {
                                             println!("[applier:ags] updated {}", ags_colorfile_path);
+                                        }
+                                    }
+                                    Applier::Hyprland => {
+                                        if let Err(e) = applier::hyprland::apply(&hypr_colors, &p, &s) {
+                                            eprintln!("[applier:hyprland] error: {e}");
+                                        } else {
+                                            println!("[applier:hyprland] updated {}", hypr_colors);
+                                        }
+                                    }
+                                    Applier::Kitty => {
+                                        if let Err(e) = applier::kitty::apply(&kitty_conf_path, &p, &s) {
+                                            eprintln!("[applier:kitty] error: {e}");
+                                        } else {
+                                            println!("[applier:kitty] updated include in {}", kitty_conf_path);
                                         }
                                     }
                                 }
@@ -137,29 +167,4 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-// Local file writing helpers removed; responsibility moved into Processor
-
-fn apply_ags(path: &str, primary_hex: &str, secondary_hex: &str) -> Result<()> {
-    use std::fs;
-    use std::io::Write;
-    let rgba = |hex: &str, alpha: f32| -> String {
-        if hex.len()==7 && hex.starts_with('#') {
-            if let (Ok(r),Ok(g),Ok(b)) = (
-                u8::from_str_radix(&hex[1..3],16),
-                u8::from_str_radix(&hex[3..5],16),
-                u8::from_str_radix(&hex[5..7],16)) { return format!("rgba({}, {}, {}, {:.2})", r,g,b,alpha); }
-        }
-        format!("rgba(0,0,0,{:.2})", alpha)
-    };
-    let transparent = rgba(primary_hex, 0.80);
-    let tmp = format!("{}{}", path, ".tmp");
-    let contents = format!(
-        "$primary-color: {p};\n$primary-color-transparent: {pt};\n$secondary-color: {s};\n",
-        p=primary_hex, pt=transparent, s=secondary_hex
-    );
-    {
-        let mut f = fs::File::create(&tmp)?; f.write_all(contents.as_bytes())?; f.sync_all()?;
-    }
-    fs::rename(&tmp, path)?;
-    Ok(())
-}
+// Local file writing helpers removed; responsibility moved into Processor and appliers
