@@ -1,1 +1,6 @@
 eww-rs/target
+colors.scss
+shell-colors.sh
+ags-4/colors.scss
+hypr/colors.conf
+kitty/colors-generated.conf
