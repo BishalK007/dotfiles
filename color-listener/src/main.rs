@@ -25,6 +25,7 @@ enum Applier {
     Ags,
     Hyprland,
     Kitty,
+    Ps1,
 }
 
 impl Applier {
@@ -33,6 +34,7 @@ impl Applier {
             "ags" => Some(Applier::Ags),
             "hyprland" => Some(Applier::Hyprland),
             "kitty" => Some(Applier::Kitty),
+            "ps1" => Some(Applier::Ps1),
             _ => None,
         }
     }
@@ -54,7 +56,7 @@ async fn main() -> Result<()> {
     let default_hypr_colors: &str = "~/.config/dotfiles/hypr/colors.conf";
     let default_kitty_conf: &str = "~/.config/dotfiles/kitty/kitty.conf";
     let mut watcher = Watcher::Hyprpaper;
-    let mut appliers: Vec<Applier> = vec![Applier::Ags, Applier::Hyprland, Applier::Kitty];
+    let mut appliers: Vec<Applier> = vec![Applier::Ags, Applier::Hyprland, Applier::Kitty, Applier::Ps1];
 
     // Working copies (expand ~ lazily after arg parsing)
     let mut watchfile = default_watchfile.to_string();
@@ -62,6 +64,8 @@ async fn main() -> Result<()> {
     let mut ags_colorfile = default_ags_colorfile.to_string();
     let mut hypr_colors = default_hypr_colors.to_string();
     let mut kitty_conf = default_kitty_conf.to_string();
+    let default_bashrc: &str = "~/.bashrc";
+    let mut bashrc = default_bashrc.to_string();
 
     let mut args = env::args().skip(1);
     while let Some(arg) = args.next() {
@@ -92,6 +96,7 @@ async fn main() -> Result<()> {
             "--ags-colorfile" => { if let Some(val) = args.next() { ags_colorfile = val; } }
             "--hypr-colors" => { if let Some(val) = args.next() { hypr_colors = val; } }
             "--kitty-conf" => { if let Some(val) = args.next() { kitty_conf = val; } }
+            "--bashrc" => { if let Some(val) = args.next() { bashrc = val; } }
             _ => {}
         }
     }
@@ -102,6 +107,7 @@ async fn main() -> Result<()> {
     ags_colorfile = expand_tilde(&ags_colorfile);
     hypr_colors = expand_tilde(&hypr_colors);
     kitty_conf = expand_tilde(&kitty_conf);
+    bashrc = expand_tilde(&bashrc);
 
     println!("Using watcher: {:?}", watcher);
     println!("Watching file: {}", watchfile);
@@ -109,6 +115,7 @@ async fn main() -> Result<()> {
     println!("AGS color file: {}", ags_colorfile);
     println!("Hypr colors file: {}", hypr_colors);
     println!("Kitty conf: {}", kitty_conf);
+    println!("Bash rc: {}", bashrc);
 
     // Start selected watcher and spawn receiver loop
     match watcher {
@@ -118,6 +125,7 @@ async fn main() -> Result<()> {
             let ags_colorfile_path = ags_colorfile.clone();
             let appliers_vec = appliers.clone();
             let kitty_conf_path = kitty_conf.clone();
+            let bashrc_path = bashrc.clone();
             tokio::spawn(async move {
                 let mut rx = rx;
                 while let Some(ev) = rx.recv().await {
@@ -147,6 +155,13 @@ async fn main() -> Result<()> {
                                             eprintln!("[applier:kitty] error: {e}");
                                         } else {
                                             println!("[applier:kitty] updated include in {}", kitty_conf_path);
+                                        }
+                                    }
+                                    Applier::Ps1 => {
+                                        if let Err(e) = applier::ps1::apply(&bashrc_path, &p, &s) {
+                                            eprintln!("[applier:ps1] error: {e}");
+                                        } else {
+                                            println!("[applier:ps1] updated PS1 theme and loader in {}", bashrc_path);
                                         }
                                     }
                                 }
