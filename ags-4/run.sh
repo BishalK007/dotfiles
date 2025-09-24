@@ -30,12 +30,7 @@ fi
 # Kill existing AGS processes if --kill flag is present
 if [[ "$@" == *"--kill"* ]]; then
     echo "Killing existing AGS processes..."
-    # Kill AGS itself (exact name) and any gjs process running ags
-    pkill -9 -x ags 2>/dev/null || true
-    pkill -9 -f 'gjs.*ags' 2>/dev/null || true
-    # Kill any watchexec that would respawn AGS (matches watch dir or spawn command)
-    pkill -9 -f "watchexec .* ${WATCH_DIR}" 2>/dev/null || true
-    pkill -9 -f 'watchexec.*ags run --gtk 4 -d' 2>/dev/null || true
+    kill $(ps aux | grep ags | grep -v grep | awk '{print $2}') 2>/dev/null || true
     sleep 1
 fi
 
@@ -43,17 +38,17 @@ fi
 if [[ "$@" == *"--disown"* ]]; then
     if [[ "$@" == *"--debug"* ]]; then
         echo "Running AGS in debug mode in background..."
-    watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c 'pkill -HUP ags || GTK_DEBUG=interactive ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)' > /dev/null 2>&1 &
+    watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c \'GTK_DEBUG=interactive ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)\' > /dev/null 2>&1 &
     else
         echo "Running AGS in background..."
-    watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c 'pkill -HUP ags || ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)' > /dev/null 2>&1 &
+    watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c \'ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)\' > /dev/null 2>&1 &
     fi
     disown
     echo "AGS is now running in the background. You can safely close this terminal."
 else
     if [[ "$@" == *"--debug"* ]]; then
-    watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c 'pkill -HUP ags || GTK_DEBUG=interactive ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)'
+    watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c \'GTK_DEBUG=interactive ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)\'
     else
-    watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c 'pkill -HUP ags || ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)'
+    watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c \'ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)\'
     fi
 fi
