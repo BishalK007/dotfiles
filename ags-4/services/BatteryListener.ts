@@ -2,6 +2,7 @@ import AstalBattery from "gi://AstalBattery";
 import { BatteryWarningOSDManager } from "../widget/osd/BatteryWarningOSD";
 import { Variable } from "astal";
 import PowerAndSystrayOSD from "../widget/power_and_systray/power_and_systray_osd";
+import { SoundService } from "./SoundService";
 
 export interface BatteryWarningLevel {
     percentage: number;
@@ -126,6 +127,14 @@ class BatteryWarningServiceClass {
             timeout,
             type: 'battery-warning'
         });
+
+        // Play warning sound (longer duration when critical)
+        try {
+            const duration = level.isCritical ? 2 : 1; // seconds override
+            SoundService.sendSoundRequest(`warning:${duration}`);
+        } catch (e) {
+            console.log(`BatteryWarning sound error: ${e}`);
+        }
     }
 
     // Public methods for testing
