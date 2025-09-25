@@ -2,7 +2,7 @@
 # Edit this configuration file to define what should be installed on
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
+# and in the NixOS manual (accessible by running 'nixos-help').
 
 {
   config,
@@ -42,8 +42,25 @@ let
   hyprpanel_flake = builtins.getFlake "github:Jas-SinghFSU/HyprPanel";
   hyprpanel_github_package = hyprpanel_flake.packages.${builtins.currentSystem}.default;
 
+  hypridle_flake = builtins.getFlake "github:hyprwm/hypridle";
+  hypridle_github_package = hypridle_flake.packages.${builtins.currentSystem}.default;
+
   hyprlock_flake = builtins.getFlake "github:hyprwm/hyprlock";
   hyprlock_github_package = hyprlock_flake.packages.${builtins.currentSystem}.default;
+
+  hyprpaper_forked_flake = builtins.getFlake "github:bishalk007/hyprpaper";
+  hyprpaper_forked_github_package = hyprpaper_forked_flake.packages.${builtins.currentSystem}.default;
+
+  # Greetd configuration for Hyprland
+  # hyprGreeterConf = pkgs.writeText "greetd-hyprland.conf" ''
+  #   # run the greeter inside Hyprland
+  #   exec-once = ${pkgs.greetd.gtkgreet}/bin/gtkgreet -l
+
+  #   # when the greeter exits, quit this Hyprland instance
+  #   # (so greetd can hand off to the user session)
+  #   exec-once = sh -lc 'wait $(pgrep -n gtkgreet); hyprctl dispatch exit'
+  #   # ^ ensures hyprctl runs *after* gtkgreet closes
+  # '';
 
   # Downgraded v4l2 pkg
   my_v4l2 = pkgs.linuxPackages.v4l2loopback.overrideAttrs (old: {
@@ -227,7 +244,7 @@ in
             ),
         )
       '';
-     # source = "/etc/asusd/fan_curves.ron";
+      # source = "/etc/asusd/fan_curves.ron";
     };
   };
 
@@ -238,6 +255,33 @@ in
 
   # Enable the supergfxctl daemon for MUX switch control
   services.supergfxd.enable = true;
+
+  # Hypridle service
+  services.hypridle = {
+    enable = true;
+    package = hypridle_github_package;
+    # settings = {
+    #   general = {
+    #     after_sleep_cmd = "hyprctl dispatch dpms on";
+    #     ignore_dbus_inhibit = false;
+    #     # lock_cmd = "hyprlock";
+    #     lock_cmd = "bash \$(realpath /home/bishal/.config/hypr)/scripts/hyprlock.sh --from-hyprpaper --hyprpaper-conf";
+    #   };
+
+    #   listener = [
+    #     {
+    #       timeout = 30;
+    #       # on-timeout = "hyprlock";
+    #       on-timeout = "bash \$(realpath /home/bishal/.config/hypr)/scripts/hyprlock.sh --from-hyprpaper --hyprpaper-conf";
+    #     }
+    #     {
+    #       timeout = 1200;
+    #       on-timeout = "hyprctl dispatch dpms off";
+    #       on-resume = "hyprctl dispatch dpms on";
+    #     }
+    #   ];
+    # };
+  };
 
   # users.users.jellyfin = {
   #   isSystemUser = true;
@@ -337,9 +381,27 @@ in
 
   # Enable the X11 windowing system.
   # You can disable this if you're only using the Wayland session.
-  services.xserver.enable = true;
+  services.xserver = {
+    enable = true;
+  };
   services.displayManager.autoLogin.enable = true;
   services.displayManager.autoLogin.user = "bishal";
+
+  # # Configure greetd login manager with gtkgreet
+  # services.greetd = {
+  #   enable = true;
+  #   settings = {
+  #     default_session = {
+  #       command = "${pkgs.hyprland}/bin/hyprland --config ${hyprGreeterConf}";
+  #     };
+  #   };
+  # };
+
+  # # Define available environments for greetd
+  # environment.etc."greetd/environments".text = ''
+  #   Hyprland
+  #   bash
+  # '';
 
   # Enable the KDE Plasma Desktop Environment.
   # services.displayManager.sddm.enable = true;
@@ -355,18 +417,21 @@ in
   };
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
-  # enable xdg portal-
-  xdg.portal.enable = true;
-  xdg.portal.extraPortals = with pkgs; [
-    xdg-desktop-portal-hyprland
-    xdg-desktop-portal-gtk
-  ];
-
-  # Make Hyprland the default portal backend (gtk only for file chooser)
-  xdg.portal.config = {
-    common.default = [ "hyprland" "gtk" ];
+  # xdg-desktop-portal configuration
+  xdg.portal = {
+    enable = true;
+    # Use GTK portal for settings; Hyprland portal can be added if needed for screencast
+    extraPortals = [
+      pkgs.xdg-desktop-portal-hyprland
+      pkgs.xdg-desktop-portal-gtk
+    ];
+    config = {
+      common.default = [ 
+        "hyprland" 
+        "gtk" 
+      ];
+    };
   };
-
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -436,8 +501,11 @@ in
       amdgpuBusId = "PCI:66:00:0"; # Your AMD integrated GPU's bus ID
     };
     nvidiaSettings = true;
-    powerManagement.finegrained = true;
+    # powerManagement.finegrained = true;
+    powerManagement.enable = true;
+    powerManagement.finegrained = false;
     nvidiaPersistenced = true;
+    dynamicBoost.enable = true;
   };
   hardware.nvidia-container-toolkit.enable = true; # Enables container toolkit
 
@@ -461,6 +529,25 @@ in
 
   # Install firefox.
   programs.firefox.enable = true;
+
+  # Install Thunar
+  programs.thunar = {
+    enable = true;
+    plugins = with pkgs.xfce; [
+      thunar-archive-plugin
+      thunar-volman
+      thunar-vcs-plugin
+      thunar-media-tags-plugin
+    ];
+  };
+  # If xfce is not used as desktop and therefore xfconf is not enabled, preference changes are discarded.
+  # In that case enable the xfconf program manually to be able to save preferences
+  programs.xfconf.enable = true;
+
+  # programs.dconf.enable was introduced for Adwaita tweaks; reverting
+  # You can extend Thunar's functionalities by adding these:
+  services.gvfs.enable = true; # Mount, trash, and other functionalities
+  services.tumbler.enable = true; # Thumbnail support for images
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
@@ -519,16 +606,18 @@ in
     # nerdfonts -- used nix-env
     river
     dracula-icon-theme
-    hyprpaper
-    
+    nordic
+    # hyprpaper <- below from flake
+
     fuzzel
     networkmanagerapplet
     blueman
-    xfce.thunar
-    xfce.thunar-volman
-    xfce.thunar-vcs-plugin
-    xfce.thunar-archive-plugin
-    xfce.thunar-media-tags-plugin
+    # Thunar is done by programs.thunar
+    # xfce.thunar
+    # xfce.thunar-volman
+    # xfce.thunar-vcs-plugin
+    # xfce.thunar-archive-plugin
+    # xfce.thunar-media-tags-plugin
     btop
     themechanger
     hyprcursor
@@ -585,7 +674,17 @@ in
     yaziPlugins.vcs-files
     qpwgraph
     unar
+    # qtgreet
     nixfmt-rfc-style
+    gst_all_1.gstreamer
+    gst_all_1.gst-vaapi
+    gst_all_1.gst-plugins-bad
+    gst_all_1.gst-plugins-ugly
+    gst_all_1.gst-plugins-good
+    gst_all_1.gst-plugins-base
+    zip
+    unzip
+    nix-index
 
     # ___ Flakes GO here ____
     # eww_github_package
@@ -593,6 +692,7 @@ in
     ags_github_package
     astral_github_package
     hyprlock_github_package
+    hyprpaper_forked_github_package
   ];
   # Fonts __
   fonts.packages = with pkgs; [
@@ -608,7 +708,25 @@ in
     enable = true;
   };
   security.pam.services.login.enableGnomeKeyring = true;
+  # security.pam.services.hyprlock.enableGnomeKeyring = true;
+  # security.pam.services.greetd.enableGnomeKeyring = true;
   programs.seahorse.enable = true;
+
+  # Required PAM service for gtklock authentication
+  security.pam.services.gtklock = {
+    unixAuth = true;
+    enableGnomeKeyring = true;
+    text = lib.readFile "${pkgs.gtklock}/etc/pam.d/gtklock";
+  };
+
+  programs.gtklock = {
+    enable = true;
+    modules = with pkgs; [
+      gtklock-playerctl-module
+      gtklock-powerbar-module
+      gtklock-userinfo-module
+    ];
+  };
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -725,7 +843,7 @@ in
       # };
       programs.bash = {
         enable = true;
-        # Set GTK environment variables (optional but recommended)
+        # Session variables for GTK are managed by the gtk module below.
         sessionVariables = {
           GTK_THEME = "Nordic:darker";
           GTK_PRIMARY_BUTTON_WARPS_SLIDER = "1";
@@ -740,8 +858,19 @@ in
               fi
           }
 
-          # Export the customized PS1 with proper colors and spacing
-          export PS1="\[\e[38;5;135m\]\u@\h \[\e[38;5;183m\]\w \[\e[38;5;135m\]\$(parse_git_branch)\[\e[38;5;183m\]\$ "
+          # Color listener: load shell color variables and hot-reload every prompt
+          CL_PS1_THEME="$HOME/.config/dotfiles/shell-colors.sh"
+          [[ -f "$CL_PS1_THEME" ]] && . "$CL_PS1_THEME"
+          __cl_ps1_reload() {
+            # Re-source colors and rebuild PS1 each prompt so changes apply to long-lived shells
+            [[ -f "$CL_PS1_THEME" ]] && . "$CL_PS1_THEME"
+            export PS1="$CL_FG_PRIMARY\u@\h $CL_FG_SECONDARY\w $CL_FG_PRIMARY\$(parse_git_branch)$CL_FG_SECONDARY\$ $CL_RESET"
+          }
+          if [[ -n "$PROMPT_COMMAND" ]]; then
+            PROMPT_COMMAND="$PROMPT_COMMAND; __cl_ps1_reload"
+          else
+            PROMPT_COMMAND="__cl_ps1_reload"
+          fi
 
           #For nix-global path
           export PATH="$HOME/.npm-global/bin:$PATH"
@@ -792,16 +921,24 @@ in
       programs.zoxide = {
         enable = true;
         enableBashIntegration = true;
-        options = [
-          "--cmd cd"
-        ];
+        options = [ "--cmd cd" ];
       };
+      # Restore GTK theme to Nordic dark via Home Manager
       gtk = {
         enable = true;
         theme = {
           package = pkgs.nordic;
           name = "Nordic-darker";
         };
+        gtk3.extraCss = ''
+          /* Override GTK3 theme to use custom CSS generated by color-listener */ 
+          @import url("file:///home/bishal/.config/dotfiles/color-listener/.generated/gtk3.css");
+        '';
+        gtk4.extraCss = ''
+          /* Override GTK4 theme to use custom CSS generated by color-listener */ 
+          @import url("file:///home/bishal/.config/dotfiles/color-listener/.generated/gtk4.css");
+        '';
+
       };
 
       # The state version is required and should stay at the version you
