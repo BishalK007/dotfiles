@@ -23,9 +23,11 @@
     font-size: 17px;
     transition: all 0.2s ease;
 }
+
 .systray-icon:hover {
     transform: scale(1.1);
 }
+
 .power-icon:hover {
     transform: scale(1.1);
 }
@@ -50,7 +52,10 @@
 
 .power-popover-restart-button,
 .power-popover-power-button,
-.power-popover-lock-button {
+.power-popover-lock-button,
+.power-popover-sudo-restart-button, // added
+.power-popover-sudo-poweroff-button {
+    // added
     min-height: 30px;
     min-width: 30px;
     border-radius: 100%;
@@ -61,24 +66,31 @@
 
 .power-popover-restart-button:hover,
 .power-popover-power-button:hover,
-.power-popover-lock-button:hover {
+.power-popover-lock-button:hover,
+.power-popover-sudo-restart-button:hover, // added
+.power-popover-sudo-poweroff-button:hover {
+    // added
     background-color: colors.$secondary-color;
 }
 
 .power-popover-restart-button:hover *,
 .power-popover-power-button:hover *,
-.power-popover-lock-button:hover * {
+.power-popover-lock-button:hover *,
+.power-popover-sudo-restart-button:hover *, // added
+.power-popover-sudo-poweroff-button:hover * {
+    // added
     color: colors.$primary-color;
 }
 
 .power-popover-restart-icon,
 .power-popover-power-icon,
-.power-popover-lock-icon {
+.power-popover-lock-icon,
+.power-popover-sudo-restart-icon, // added
+.power-popover-sudo-poweroff-icon {
+    // added
     font-size: 18px;
     color: colors.$secondary-color;
-    // padding-top: 10px;
 }
-
 
 .power-popover-lock-icon {
     font-size: 16px;
@@ -95,7 +107,6 @@
 //
 // Popup styles Systray popup
 //
-
 .systray-popover,
 .systray-popover contents,
 .systray-popover arrow {
