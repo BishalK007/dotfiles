@@ -6,26 +6,24 @@
 @use './widget/cpu/style.scss' as cpuStyle;
 @use './widget/memory/style.scss' as memoryStyle;
 @use './widget/bluetooth/style.scss' as bluetoothStyle;
+@use './widget/my_device/style.scss' as myDeviceStyle;
 @use './widget/network/style.scss' as networkStyle;
 @use './widget/notification/style.scss' as notificationStyle;
 @use './widget/power_and_battery/style.scss' as powerAndBatteryStyle;
 @use './widget/sound_and_brightness/style.scss' as soundAndBrightnessStyle;
 @use './widget/power_and_systray/style.scss' as powerAndSystrayStyle;
 @use './widget/osd/style.scss' as osdStyle;
-
 window.Bar {
     background: none;
     background: transparent;
     padding: 0px;
     margin: 0px;
     font-size: 16px;
-
     >centerbox {
         background: transparent;
         border-radius: 10px;
         margin: 3px;
     }
-
     // Common components-
     button {
         all: unset;
@@ -35,7 +33,6 @@ window.Bar {
         border-radius: 8px;
         // margin: 2px;
     }
-
     //
     // ____________ Home widget stuff here-
     //
@@ -52,10 +49,8 @@ window.Bar {
         background: color-mix(in srgb, colors.$primary-color 90%, colors.$secondary-color 10%);
         transform: scale(1.02);
     }
-
     .home-button-label {
         font-size: 14px;
         margin-right: 6px;
     }
-
 }

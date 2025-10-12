@@ -12,6 +12,7 @@ import { BrightnessListener } from "./services/BrightnessListener";
 import { notificationListener } from "./services/NotificationListener";
 import { batteryWarningListener } from "./services/BatteryListener";
 import { soundService, SoundService } from "./services/SoundService";
+import { NvidiaService } from "./services/NvidiaService";
 
 // Load .env file into process environment
 function loadEnvFile(filePath: string) {
@@ -138,5 +139,8 @@ App.start({
         
         // Initialize sound service
         soundService;
+
+    // Initialize Nvidia service
+    NvidiaService;
     },
 })

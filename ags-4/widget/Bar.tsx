@@ -12,6 +12,7 @@ import Memory from "./memory"
 import Bluetooth from "./bluetooth"
 import Network from "./network"
 import Notification from "./notification"
+import MyDevice from "./my_device"
 
 
 const time = Variable("").poll(1000, "date")
@@ -80,6 +81,10 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
                 orientation={Gtk.Orientation.HORIZONTAL}
                 spacing={scaleSizeNumber(5)}
             >
+                {/* 
+                    ************ My Device Widget ************
+                */}
+                <MyDevice />
                 {/* 
                     ************ Network Widget ************
                 */}
