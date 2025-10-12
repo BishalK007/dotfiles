@@ -56,7 +56,6 @@ case "$APP" in
             --class="GeminiApp"
             --new-window
             --app=https://gemini.google.com/app
-            --enable-features=WebContentsForceDark
         )
         ;;
     whatsapp)
@@ -68,7 +67,6 @@ case "$APP" in
             --class="WhatsAppApp"
             --new-window
             --app=https://web.whatsapp.com
-            --enable-features=WebContentsForceDark
         )
         ;;
     ytmusic)
@@ -80,12 +78,22 @@ case "$APP" in
             --class="YTMusicApp"
             --new-window
             --app=https://music.youtube.com
-            --enable-features=WebContentsForceDark
+        )
+        ;;
+    calc)
+        WORKSPACE="calc"
+        PROCESS_PATTERN=".*speedcrunch.*"
+        LAUNCH_CMD=(
+            speedcrunch
         )
         ;;
     *)
         echo "Error: Unknown app '$APP'"
-        echo "Supported apps: gemini, whatsapp, ytmusic"
+        echo "Supported apps: \
+                - gemini,  \
+                - whatsapp, \
+                - ytmusic, \
+                - calc"
         exit 1
         ;;
 esac
