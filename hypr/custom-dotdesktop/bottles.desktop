@@ -1,0 +1,9 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Version=1.0
+Terminal=false
+Type=Application
+Name=Bottles
+Exec=nix-shell /home/share/drive0/Bottles/shell.nix --argstr customRunScript "bottles"
+Icon=%CURRENT_DIR%/icons/Bottles.svg
+StartupWMClass=BottlesClass
