@@ -1,4 +1,6 @@
 import { Variable, execAsync } from "astal";
+import Gio from "gi://Gio";
+import GLib from "gi://GLib";
 
 export type NvidiaProcess = {
     pid: number;
@@ -152,6 +154,7 @@ function fmt(x: number | null | undefined, unit = ''): string {
 }
 
 const DEFAULT_INTERVAL_MS = 2000;
+const XML_END_TAG = "</nvidia_smi_log>";
 
 class NvidiaServiceClass {
     readonly data = Variable<NvidiaInfo | null>(null);
@@ -159,7 +162,10 @@ class NvidiaServiceClass {
     readonly error = Variable<string | null>(null);
 
     private intervalMs = DEFAULT_INTERVAL_MS;
-    private timer: number | null = null;
+    // Streaming subprocess state
+    private proc: Gio.Subprocess | null = null;
+    private stdout: Gio.DataInputStream | null = null;
+    private buffer: string = "";
 
     constructor() {
         // Start polling immediately when the service is constructed.
@@ -169,29 +175,19 @@ class NvidiaServiceClass {
     }
 
     setInterval(ms: number) {
-        this.intervalMs = Math.max(500, (ms | 0));
-        this.stop();
-        this.start();
+        const next = Math.max(200, (ms | 0));
+        if (next === this.intervalMs) return;
+        this.intervalMs = next;
+        this.restartStream();
     }
 
     start() {
-        if (this.timer != null) return;
-        const tick = async () => {
-            const info = await fetchInfo();
-            this.data.set(info);
-            this.available.set(info.gpus.length > 0 && !info.error);
-            this.error.set(info.error ?? null);
-        };
-        // immediate then interval
-        tick();
-        this.timer = setInterval(tick, this.intervalMs) as unknown as number;
+        if (this.proc) return;
+        this.startStream();
     }
 
     stop() {
-        if (this.timer != null) {
-            clearInterval(this.timer as unknown as number);
-            this.timer = null;
-        }
+        this.stopStream();
     }
 
     async refresh() {
@@ -231,6 +227,94 @@ class NvidiaServiceClass {
         const nowStr = fmt(pNow, ' W');
         const limStr = pLimit != null ? fmt(pLimit, ' W') : 'N/A';
         return `Power: ${nowStr}${pLimit != null ? ` / ${limStr}` : ''}`;
+    }
+
+    // --- Streaming subprocess handling ---
+    private startStream() {
+        try {
+            const cmd = [
+                "bash", "-lc",
+                `nvidia-smi -q -x -lms ${this.intervalMs}`,
+            ];
+            this.proc = Gio.Subprocess.new(cmd, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE);
+            const out = this.proc.get_stdout_pipe();
+            this.stdout = new Gio.DataInputStream({ base_stream: out as any });
+            this.buffer = "";
+            // Begin read loop
+            this.readLoop();
+            // If process exits unexpectedly, attempt restart
+            this.proc.wait_check_async(null, (_p, res) => {
+                try { (this.proc as Gio.Subprocess).wait_check_finish(res); } catch { }
+                GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
+                    if (!this.proc) return GLib.SOURCE_REMOVE;
+                    // If proc is still set, it means we haven't stopped intentionally
+                    // but wait_check triggers on exit; clear and restart
+                    this.proc = null;
+                    this.stdout = null;
+                    this.startStream();
+                    return GLib.SOURCE_REMOVE;
+                });
+            });
+        } catch (e) {
+            this.error.set(String(e));
+            // Backoff retry
+            GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1500, () => {
+                if (!this.proc) this.startStream();
+                return GLib.SOURCE_REMOVE;
+            });
+        }
+    }
+
+    private stopStream() {
+        try { this.stdout?.close(null); } catch { }
+        this.stdout = null;
+        if (this.proc) {
+            try { this.proc.force_exit(); } catch { }
+        }
+        this.proc = null;
+        this.buffer = "";
+    }
+
+    private restartStream() {
+        this.stopStream();
+        this.startStream();
+    }
+
+    private readLoop() {
+        if (!this.stdout) return;
+        this.stdout.read_line_async(GLib.PRIORITY_DEFAULT, null, (_src, res) => {
+            try {
+                const [lineBytes] = this.stdout!.read_line_finish(res);
+                if (!lineBytes) {
+                    // EOF, let wait_check handler restart if needed
+                    return;
+                }
+                const line = new TextDecoder().decode(lineBytes);
+                this.buffer += line + "\n";
+                this.processBuffer();
+            } catch (e) {
+                this.error.set(String(e));
+            } finally {
+                if (this.stdout) this.readLoop();
+            }
+        });
+    }
+
+    private processBuffer() {
+        let idx: number;
+        while ((idx = this.buffer.indexOf(XML_END_TAG)) !== -1) {
+            const endPos = idx + XML_END_TAG.length;
+            const chunk = this.buffer.slice(0, endPos);
+            this.buffer = this.buffer.slice(endPos);
+            try {
+                const info = parseNvidiaXml(chunk);
+                this.data.set(info);
+                this.available.set(info.gpus.length > 0 && !info.error);
+                this.error.set(info.error ?? null);
+            } catch (e) {
+                this.error.set(`parse error: ${e}`);
+            }
+        }
     }
 }
 
