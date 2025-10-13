@@ -21,6 +21,18 @@ show_help() {
 # Resolve and reuse the AGS config directory once
 WATCH_DIR="$(realpath /home/bishal/.config/ags)"
 
+# Prefer running inside the project's devShell so all Astal libs (notifd, etc.) are available
+RUN_PREFIX=""
+if command -v nix >/dev/null 2>&1; then
+    RUN_PREFIX="nix develop -c"
+fi
+
+# Ensure Gio finds schemas via devShell (flake.nix). Kept here commented as a fallback.
+# NOTIFD_SCHEMA_DIR=$(bash -lc 'echo /nix/store/*-astal-notifd-*/share/gsettings-schemas/astal-notifd-*/glib-2.0/schemas' 2>/dev/null | awk '{print $1}')
+# if [[ -d "$NOTIFD_SCHEMA_DIR" ]]; then
+#     export GSETTINGS_SCHEMA_DIR="${NOTIFD_SCHEMA_DIR}:${GSETTINGS_SCHEMA_DIR:-}"
+# fi
+
 # Check for help flag
 if [[ "$@" == *"--help"* ]]; then
     show_help
@@ -30,7 +42,7 @@ fi
 # Kill existing AGS processes if --kill flag is present
 if [[ "$@" == *"--kill"* ]]; then
     echo "Killing existing AGS processes..."
-    kill $(ps aux | grep ags | grep -v grep | awk '{print $2}') 2>/dev/null || true
+    pkill -x ags 2>/dev/null || true
     sleep 1
 fi
 
@@ -38,17 +50,17 @@ fi
 if [[ "$@" == *"--disown"* ]]; then
     if [[ "$@" == *"--debug"* ]]; then
         echo "Running AGS in debug mode in background..."
-    watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c \'GTK_DEBUG=interactive ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)\' > /dev/null 2>&1 &
+    ${RUN_PREFIX} watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c \'GTK_DEBUG=interactive ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)\' > /dev/null 2>&1 &
     else
         echo "Running AGS in background..."
-    watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c \'ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)\' > /dev/null 2>&1 &
+    ${RUN_PREFIX} watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c \'ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)\' > /dev/null 2>&1 &
     fi
     disown
     echo "AGS is now running in the background. You can safely close this terminal."
 else
     if [[ "$@" == *"--debug"* ]]; then
-    watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c \'GTK_DEBUG=interactive ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)\'
+    ${RUN_PREFIX} watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c \'GTK_DEBUG=interactive ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)\'
     else
-    watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c \'ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)\'
+    ${RUN_PREFIX} watchexec -w "${WATCH_DIR}" --exts js,ts,jsx,tsx,css,scss --ignore 'colors.scss' --restart -- sh -c \'ags run --gtk 4 -d $(realpath /home/bishal/.config/ags)\'
     fi
 fi
