@@ -41,18 +41,30 @@ export function DrawingArea(props: DrawingAreaProps = {}) {
   }
 
   let timerId: number | null = null;
-  if (redrawIntervalSec && redrawIntervalSec > 0) {
+  const startTimer = () => {
+    if (!redrawIntervalSec || redrawIntervalSec <= 0) return;
+    if (timerId) return;
     timerId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, redrawIntervalSec, () => {
       try { area.queue_draw(); } catch { /* ignore */ }
       return true;
     });
-    area.connect("unrealize", () => {
-      if (timerId) {
-        try { GLib.source_remove(timerId); } catch { /* ignore */ }
-        timerId = null;
-      }
-    });
-  }
+  };
+  const stopTimer = () => {
+    if (timerId) {
+      try { GLib.source_remove(timerId); } catch { /* ignore */ }
+      timerId = null;
+    }
+  };
+  // start when widget is mapped (visible), stop when hidden or destroyed
+  area.connect("map", startTimer);
+  area.connect("unmap", stopTimer);
+  area.connect("unrealize", stopTimer);
+  // in case created already mapped, schedule start on idle
+  GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+    // Gtk might map later; safe to start regardless
+    startTimer();
+    return GLib.SOURCE_REMOVE;
+  });
 
   // spread any remaining supported props (if any) via generic setters
   // note: keep minimal to avoid unexpected behavior

@@ -165,7 +165,12 @@ class NvidiaServiceClass {
     // Streaming subprocess state
     private proc: Gio.Subprocess | null = null;
     private stdout: Gio.DataInputStream | null = null;
+    private stderr: Gio.DataInputStream | null = null;
     private buffer: string = "";
+    private cancel: Gio.Cancellable | null = null;
+    private decoder: TextDecoder = new TextDecoder();
+    private lastUpdateMs: number = Date.now();
+    private watchdogId: number | null = null;
 
     constructor() {
         // Start polling immediately when the service is constructed.
@@ -238,20 +243,24 @@ class NvidiaServiceClass {
             ];
             this.proc = Gio.Subprocess.new(cmd, Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE);
             const out = this.proc.get_stdout_pipe();
+            const err = this.proc.get_stderr_pipe();
             this.stdout = new Gio.DataInputStream({ base_stream: out as any });
+            this.stderr = new Gio.DataInputStream({ base_stream: err as any });
+            this.cancel = new Gio.Cancellable();
             this.buffer = "";
             // Begin read loop
             this.readLoop();
+            // Drain stderr to avoid pipe backpressure
+            this.drainStderrLoop();
+            // Start watchdog to ensure updates keep flowing
+            this.startWatchdog();
             // If process exits unexpectedly, attempt restart
             this.proc.wait_check_async(null, (_p, res) => {
-                try { (this.proc as Gio.Subprocess).wait_check_finish(res); } catch { }
-                GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
-                    if (!this.proc) return GLib.SOURCE_REMOVE;
-                    // If proc is still set, it means we haven't stopped intentionally
-                    // but wait_check triggers on exit; clear and restart
-                    this.proc = null;
-                    this.stdout = null;
-                    this.startStream();
+                try { (this.proc as Gio.Subprocess).wait_check_finish(res); } catch { /* ignore */ }
+                // Ensure cleanup then restart with small backoff
+                this.stopStream();
+                GLib.timeout_add(GLib.PRIORITY_DEFAULT, 600, () => {
+                    if (!this.proc) this.startStream();
                     return GLib.SOURCE_REMOVE;
                 });
             });
@@ -266,13 +275,18 @@ class NvidiaServiceClass {
     }
 
     private stopStream() {
-        try { this.stdout?.close(null); } catch { }
+    try { this.cancel?.cancel(); } catch { /* ignore */ }
+        this.cancel = null;
+    try { this.stdout?.close(null); } catch { /* ignore */ }
+    try { this.stderr?.close(null); } catch { /* ignore */ }
         this.stdout = null;
+    this.stderr = null;
         if (this.proc) {
-            try { this.proc.force_exit(); } catch { }
+            try { this.proc.force_exit(); } catch { /* ignore */ }
         }
         this.proc = null;
         this.buffer = "";
+    this.stopWatchdog();
     }
 
     private restartStream() {
@@ -282,16 +296,22 @@ class NvidiaServiceClass {
 
     private readLoop() {
         if (!this.stdout) return;
-        this.stdout.read_line_async(GLib.PRIORITY_DEFAULT, null, (_src, res) => {
+        this.stdout.read_line_async(GLib.PRIORITY_DEFAULT, this.cancel, (_src, res) => {
             try {
                 const [lineBytes] = this.stdout!.read_line_finish(res);
                 if (!lineBytes) {
                     // EOF, let wait_check handler restart if needed
                     return;
                 }
-                const line = new TextDecoder().decode(lineBytes);
+                const line = this.decoder.decode(lineBytes);
                 this.buffer += line + "\n";
                 this.processBuffer();
+                // Guard buffer growth in case of malformed stream
+                const MAX_BUFFER = 5 * 1024 * 1024; // 5MB
+                if (this.buffer.length > MAX_BUFFER) {
+                    // keep last 1MB tail which likely contains newest partial frame
+                    this.buffer = this.buffer.slice(-1 * 1024 * 1024);
+                }
             } catch (e) {
                 this.error.set(String(e));
             } finally {
@@ -307,14 +327,55 @@ class NvidiaServiceClass {
             const chunk = this.buffer.slice(0, endPos);
             this.buffer = this.buffer.slice(endPos);
             try {
+                // Guard against unexpectedly large frames
+                const MAX_CHUNK = 1 * 1024 * 1024; // 1MB
+                if (chunk.length > MAX_CHUNK) {
+                    this.error.set(`nvidia-smi frame too large (${chunk.length} bytes), dropping`);
+                    continue;
+                }
                 const info = parseNvidiaXml(chunk);
                 this.data.set(info);
                 this.available.set(info.gpus.length > 0 && !info.error);
                 this.error.set(info.error ?? null);
+                this.lastUpdateMs = Date.now();
             } catch (e) {
                 this.error.set(`parse error: ${e}`);
             }
         }
+    }
+
+    private startWatchdog() {
+        this.stopWatchdog();
+        const checkSec = Math.max(5, Math.round(this.intervalMs / 1000) * 3);
+        this.watchdogId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, checkSec, () => {
+            const now = Date.now();
+            const staleMs = Math.max(this.intervalMs * 5, 10_000); // 5x interval or 10s
+            if (now - this.lastUpdateMs > staleMs) {
+                // Stream appears stale; restart cleanly
+                this.restartStream();
+            }
+            return true; // keep watchdog running
+        });
+    }
+
+    private stopWatchdog() {
+        if (this.watchdogId) {
+            try { GLib.source_remove(this.watchdogId); } catch { /* ignore */ }
+            this.watchdogId = null;
+        }
+    }
+
+    private drainStderrLoop() {
+        if (!this.stderr) return;
+        this.stderr.read_line_async(GLib.PRIORITY_DEFAULT, this.cancel, (_s, res) => {
+            try {
+                // simply drain; ignore content or log small snippets if needed
+                this.stderr!.read_line_finish(res);
+            } catch { /* ignore */ }
+            finally {
+                if (this.stderr) this.drainStderrLoop();
+            }
+        });
     }
 }
 
