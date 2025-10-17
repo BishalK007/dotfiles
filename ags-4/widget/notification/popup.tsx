@@ -6,7 +6,7 @@ import AstalNotifd from "gi://AstalNotifd";
 import { chainedBinding, mergeBindings, scaleSizeNumber } from "../../utils/utils";
 import { Binding } from "astal";
 import { Scrollable } from "../../custom-widgets/scrollable";
-import { 
+import {
     getUrgencyCssClass,
     getAppIconFallback,
     getUrgencyText,
@@ -16,6 +16,37 @@ import {
 
 
 const notifd = AstalNotifd.get_default() as AstalNotifd.Notifd;
+
+// Global ticking clock (updates ~4x/sec) to drive countdown labels without per-item timers
+let _nowTick = Date.now();
+const _nowTickSubs: Array<(v: number) => void> = [];
+const nowTickState = {
+    get(): number { return _nowTick; },
+    subscribe(cb: (v: number) => void) {
+        _nowTickSubs.push(cb); return () => {
+            const i = _nowTickSubs.indexOf(cb); if (i >= 0) _nowTickSubs.splice(i, 1);
+        };
+    },
+    set(v: number) { _nowTick = v; _nowTickSubs.forEach(fn => fn(_nowTick)); }
+};
+const nowTick = Binding.bind(nowTickState);
+let nowTickTimerId: number | null = null;
+if (nowTickTimerId === null) {
+    nowTickTimerId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 250, () => {
+        (nowTickState as any).set(Date.now());
+        return GLib.SOURCE_CONTINUE;
+    });
+}
+
+const formatCountdown = (ms: number): string => {
+    if (ms <= 0) return "00:00";
+    const totalSec = Math.ceil(ms / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    const mm = m.toString().padStart(2, '0');
+    const ss = s.toString().padStart(2, '0');
+    return `${mm}:${ss}`;
+};
 
 /**
  * Comprehensive Notification Management System
@@ -27,9 +58,11 @@ export default function NotificationPopup() {
     const _pageSubscribers: Array<(v: number) => void> = [];
     const pageState = {
         get(): number { return _pageValue; },
-        subscribe(cb: (v: number) => void) { _pageSubscribers.push(cb); return () => {
-            const i = _pageSubscribers.indexOf(cb); if (i >= 0) _pageSubscribers.splice(i, 1);
-        }; },
+        subscribe(cb: (v: number) => void) {
+            _pageSubscribers.push(cb); return () => {
+                const i = _pageSubscribers.indexOf(cb); if (i >= 0) _pageSubscribers.splice(i, 1);
+            };
+        },
         set(v: number) { _pageValue = v; _pageSubscribers.forEach(fn => fn(_pageValue)); }
     };
     const currentPage = Binding.bind(pageState);
@@ -46,9 +79,11 @@ export default function NotificationPopup() {
     const _clearingSubs: Array<(v: boolean) => void> = [];
     const clearingState = {
         get(): boolean { return _clearing; },
-        subscribe(cb: (v: boolean) => void) { _clearingSubs.push(cb); return () => {
-            const i = _clearingSubs.indexOf(cb); if (i >= 0) _clearingSubs.splice(i, 1);
-        }; },
+        subscribe(cb: (v: boolean) => void) {
+            _clearingSubs.push(cb); return () => {
+                const i = _clearingSubs.indexOf(cb); if (i >= 0) _clearingSubs.splice(i, 1);
+            };
+        },
         set(v: boolean) { _clearing = v; _clearingSubs.forEach(fn => fn(_clearing)); }
     };
     const isClearing = Binding.bind(clearingState);
@@ -58,9 +93,11 @@ export default function NotificationPopup() {
     const _frameSubs: Array<(v: number) => void> = [];
     const frameState = {
         get(): number { return _frame; },
-        subscribe(cb: (v: number) => void) { _frameSubs.push(cb); return () => {
-            const i = _frameSubs.indexOf(cb); if (i >= 0) _frameSubs.splice(i, 1);
-        }; },
+        subscribe(cb: (v: number) => void) {
+            _frameSubs.push(cb); return () => {
+                const i = _frameSubs.indexOf(cb); if (i >= 0) _frameSubs.splice(i, 1);
+            };
+        },
         set(v: number) { _frame = v; _frameSubs.forEach(fn => fn(_frame)); }
     };
     const frameIndex = Binding.bind(frameState);
@@ -95,7 +132,7 @@ export default function NotificationPopup() {
         GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
             const end = Math.min(idx + BATCH, toClear.length);
             for (let i = idx; i < end; i++) {
-                try { toClear[i].dismiss(); } catch {}
+                try { toClear[i].dismiss(); } catch { }
             }
             idx = end;
             if (idx >= toClear.length) {
@@ -334,70 +371,131 @@ function NotificationItem({ notification }: { notification: AstalNotifd.Notifica
             ])}
             child={
                 <box
-                    orientation={Gtk.Orientation.HORIZONTAL}
-                    cssClasses={["notification-item-header"]}
+                    orientation={Gtk.Orientation.VERTICAL}
+                    cssClasses={["notification-item-info"]}
                     spacing={scaleSizeNumber(8)}
                 >
-                    {getAppIcon(notification)}
                     <box
-                        orientation={Gtk.Orientation.VERTICAL}
-                        cssClasses={["notification-content"]}
-                        hexpand={true}
-                        spacing={scaleSizeNumber(2)}
+                        orientation={Gtk.Orientation.HORIZONTAL}
+                        cssClasses={["notification-item-header"]}
+                        spacing={scaleSizeNumber(8)}
                     >
+                        {/* LEFT ICONS BOX */}
                         <box
-                            orientation={Gtk.Orientation.HORIZONTAL}
+                            orientation={Gtk.Orientation.VERTICAL}
+                            cssClasses={["notification-item-icons"]}
                             spacing={scaleSizeNumber(8)}
+                            children={mergeBindings([chainedBinding(notification, ["state"])], (state: AstalNotifd.State) => {
+                                let stateIcon;
+                                switch (state) {
+                                    case AstalNotifd.State.DRAFT:
+                                        stateIcon = <label label="" cssClasses={["notification-state-icon", "notification-state-draft"]} />;
+                                        break;
+                                    case AstalNotifd.State.SENT:
+                                        stateIcon = <label label="" cssClasses={["notification-state-icon", "notification-state-sent"]} />;
+                                        break;
+                                    case AstalNotifd.State.RECEIVED:
+                                        stateIcon = <label label="" cssClasses={["notification-state-icon", "notification-state-received"]} />;
+                                        break;
+                                    default:
+                                        stateIcon = <label label="?" cssClasses={["notification-state-icon", "notification-state-unknown"]} />;
+                                }
+                                return [
+                                    // APP ICON
+                                    getAppIcon(notification),
+                                    // STATE ICON
+                                    stateIcon,
+                                ];
+                            })}
+                        />
+
+                        <box
+                            orientation={Gtk.Orientation.VERTICAL}
+                            cssClasses={["notification-content"]}
+                            hexpand={true}
+                            spacing={scaleSizeNumber(2)}
                         >
+                            <box
+                                orientation={Gtk.Orientation.HORIZONTAL}
+                                spacing={scaleSizeNumber(8)}
+                            >
+                                <label
+                                    label={chainedBinding(notification, ["app_name"]).as((appName: string) => appName || "Unknown App")}
+                                    cssClasses={["notification-app-name"]}
+                                    hexpand={true}
+                                    halign={Gtk.Align.START}
+                                    ellipsize={3}
+                                />
+                                <label
+                                    label={chainedBinding(notification, ["time"]).as((time: number) => formatTime(time))}
+                                    cssClasses={["notification-time"]}
+                                    halign={Gtk.Align.END}
+                                />
+                            </box>
                             <label
-                                label={chainedBinding(notification, ["app_name"]).as((appName: string) => appName || "Unknown App")}
-                                cssClasses={["notification-app-name"]}
-                                hexpand={true}
+                                label={chainedBinding(notification, ["summary"]).as((summary: string) => summary || "")}
+                                cssClasses={["notification-summary"]}
                                 halign={Gtk.Align.START}
                                 ellipsize={3}
+                                maxWidthChars={50}
+                                wrap={false}
                             />
-                            <label
-                                label={chainedBinding(notification, ["time"]).as((time: number) => formatTime(time))}
-                                cssClasses={["notification-time"]}
-                                halign={Gtk.Align.END}
-                            />
+                            {chainedBinding(notification, ["body"]).as((body: string) => body && body.length > 0) && (
+                                <label
+                                    useMarkup={true}
+                                    label={chainedBinding(notification, ["body"]).as((body: string) => sanitizeBodyToGtkMarkup(body))}
+                                    cssClasses={["notification-body"]}
+                                    halign={Gtk.Align.START}
+                                    wrap={true}
+                                    lines={5}
+                                    selectable={true}
+                                    onActivateLink={(_, uri: string) => {
+                                        // Open http/https/file links with default handler
+                                        if (/^(https?:|file:)/i.test(uri)) {
+                                            try { Gio.AppInfo.launch_default_for_uri(uri, null); } catch { }
+                                        }
+                                        return true;
+                                    }}
+                                />
+                            )}
+                            {/* Urgency and Timer: show countdown only if expire_timeout > 0 (to creationTime + expire_timeout) */}
+                            <box
+                                orientation={Gtk.Orientation.HORIZONTAL}
+                                spacing={scaleSizeNumber(8)}
+                            >
+                                {chainedBinding(notification, ["urgency"]).as((urgency: AstalNotifd.Urgency) => urgency !== AstalNotifd.Urgency.NORMAL) && (
+                                    <label
+                                        label={chainedBinding(notification, ["urgency"]).as((urgency: AstalNotifd.Urgency) => getUrgencyText(urgency))}
+                                        cssClasses={chainedBinding(notification, ["urgency"]).as((urgency: AstalNotifd.Urgency) => [
+                                            "notification-urgency-badge",
+                                            getUrgencyCssClass(urgency)
+                                        ])}
+                                        halign={Gtk.Align.START}
+                                    />
+                                )}
+                                <box
+                                    orientation={Gtk.Orientation.HORIZONTAL}
+                                    spacing={scaleSizeNumber(4)}
+                                    cssClasses={["notification-timer-badge"]}
+                                    children={mergeBindings([
+                                        chainedBinding(notification, ["expire_timeout"]),
+                                        chainedBinding(notification, ["time"]),
+                                        nowTick
+                                    ], (et: number, created: number, now: number) => {
+                                        if (typeof et !== 'number' || et <= 0) return [];
+                                        const createdMs = (typeof created === 'number' ? created : 0) * 1000;
+                                        const end = createdMs + et;
+                                        const remaining = Math.max(0, end - now);
+                                        const txt = formatCountdown(remaining);
+                                        return [
+                                            <label label={txt}
+                                                valign={Gtk.Align.CENTER}
+                                                cssClasses={["notification-timer-label"]} />
+                                        ];
+                                    })}
+                                />
+                            </box>
                         </box>
-                        <label
-                            label={chainedBinding(notification, ["summary"]).as((summary: string) => summary || "")}
-                            cssClasses={["notification-summary"]}
-                            halign={Gtk.Align.START}
-                            ellipsize={3}
-                            maxWidthChars={50}
-                            wrap={false}
-                        />
-                        {chainedBinding(notification, ["body"]).as((body: string) => body && body.length > 0) && (
-                            <label
-                                useMarkup={true}
-                                label={chainedBinding(notification, ["body"]).as((body: string) => sanitizeBodyToGtkMarkup(body))}
-                                cssClasses={["notification-body"]}
-                                halign={Gtk.Align.START}
-                                wrap={true}
-                                lines={5}
-                                selectable={true}
-                                onActivateLink={(_, uri: string) => {
-                                    // Open http/https/file links with default handler
-                                    if (/^(https?:|file:)/i.test(uri)) {
-                                        try { Gio.AppInfo.launch_default_for_uri(uri, null); } catch {}
-                                    }
-                                    return true;
-                                }}
-                            />
-                        )}
-                        {chainedBinding(notification, ["urgency"]).as((urgency: AstalNotifd.Urgency) => urgency !== AstalNotifd.Urgency.NORMAL) && (
-                            <label
-                                label={chainedBinding(notification, ["urgency"]).as((urgency: AstalNotifd.Urgency) => getUrgencyText(urgency))}
-                                cssClasses={chainedBinding(notification, ["urgency"]).as((urgency: AstalNotifd.Urgency) => [
-                                    "notification-urgency-badge",
-                                    getUrgencyCssClass(urgency)
-                                ])}
-                                halign={Gtk.Align.START}
-                            />
-                        )}
                     </box>
                     <box
                         orientation={Gtk.Orientation.HORIZONTAL}
@@ -406,35 +504,23 @@ function NotificationItem({ notification }: { notification: AstalNotifd.Notifica
                         valign={Gtk.Align.START}
                         children={mergeBindings(
                             [chainedBinding(notification, ["actions"])],
-                            (actions: any[]) => [
-                                // Notification Actions (up to 2)
-                                ...(actions && actions.length > 0
-                                    ? actions.slice(0, 2).map((action: any) => (
-                                        <button
-                                            cssClasses={["notification-action-button"]}
-                                            onClicked={() => handleActionInvoke(action.id)}
-                                            child={
-                                                <label
-                                                    label={action.label}
-                                                    cssClasses={["notification-action-label"]}
-                                                />
-                                            }
-                                        />
-                                    ))
-                                    : []
-                                ),
-                                // Dismiss Button (always present)
-                                <button
-                                    cssClasses={["notification-dismiss-button"]}
-                                    onClicked={handleDismiss}
-                                    child={
-                                        <label
-                                            label="󰅖"
-                                            cssClasses={["notification-dismiss-icon"]}
-                                        />
-                                    }
-                                />
-                            ]
+                            (actions: any[]) => {
+                                const btns = (actions || []).map((a: any) => (
+                                    <button
+                                        cssClasses={["notification-action-button"]}
+                                        onClicked={() => handleActionInvoke(a.id)}
+                                        child={<label label={String(a.label ?? "")} cssClasses={["notification-action-label"]} />}
+                                    />
+                                ));
+                                btns.push(
+                                    <button
+                                        cssClasses={["notification-dismiss-button"]}
+                                        onClicked={handleDismiss}
+                                        child={<label label="󰅖" cssClasses={["notification-dismiss-icon"]} />}
+                                    />
+                                );
+                                return btns;
+                            }
                         )}
                     />
                 </box>

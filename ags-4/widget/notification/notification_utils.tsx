@@ -3,7 +3,7 @@ import GLib from "gi://GLib";
 import Gio from "gi://Gio";
 import Gtk from "gi://Gtk";
 import Gdk from "gi://Gdk";
-import { getCachedImagePath } from "../../services/NotificationImageCache";
+// Note: image preview is handled via notification.image and is not used for app-icon rendering
 
 /**
  * Check if file exists using GJS
@@ -143,35 +143,41 @@ export const checkImageFile = (iconPath: string): {
         };
     }
 };
-
+ 
 export const getAppIcon = (notification: AstalNotifd.Notification): JSX.Element => {
-    // Prefer cached image if available
-    const cached = getCachedImagePath(notification.id);
-    if (cached && fileExists(cached)) {
-        return (
-            <image
-                file={cached}
-                cssClasses={["notification-app-icon-img"]}
-                valign={Gtk.Align.START}
-            />
-        );
-    }
+    // Do NOT use cached image for app icon; notification.image will be handled elsewhere
 
-    // Check if a valid app icon path is provided.
-    if (notification.app_icon && checkImageFile(notification.app_icon).isImage) {
-        const iconPath = Gio.File.new_for_uri(notification.app_icon).get_path();
-        if (iconPath) {
+    // Try to interpret app_icon as a themed icon name first (let GTK resolve via iconName)
+    try {
+        const iconName = (notification as any).app_icon as string | undefined;
+        if (iconName && !iconName.startsWith("file://")) {
             return (
                 <image
-                    file={iconPath}
+                    iconName={iconName}
                     cssClasses={["notification-app-icon-img"]}
                     valign={Gtk.Align.START}
                 />
             );
         }
+    } catch {}
+
+    // If a file URI was provided as app_icon and is an image, show it directly
+    if ((notification as any).app_icon && checkImageFile((notification as any).app_icon).isImage) {
+        try {
+            const iconPath = Gio.File.new_for_uri((notification as any).app_icon).get_path();
+            if (iconPath) {
+                return (
+                    <image
+                        file={iconPath}
+                        cssClasses={["notification-app-icon-img"]}
+                        valign={Gtk.Align.START}
+                    />
+                );
+            }
+        } catch {}
     }
 
-    // If no valid icon is found, return a generic fallback icon from the theme.
+    // Fallback glyph
     return (
         <label
             label={getAppIconFallback(notification)}
@@ -180,3 +186,4 @@ export const getAppIcon = (notification: AstalNotifd.Notification): JSX.Element 
         />
     );
 };
+ 

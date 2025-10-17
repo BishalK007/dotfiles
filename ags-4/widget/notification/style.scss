@@ -258,7 +258,6 @@ $accent-warn: color.adjust(colors.$secondary-color, $hue: -60deg, $saturation: 1
     font-weight: bold;
     padding: 2px 6px;
     border-radius: 4px;
-    display: inline-block;
 }
 
 .notification-urgency-low {
@@ -444,6 +443,14 @@ $accent-warn: color.adjust(colors.$secondary-color, $hue: -60deg, $saturation: 1
     max-width: 400px;
 }
 
+.notification-osd-timer-label {
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background-color: color-mix(in srgb, colors.$primary-color 90%, colors.$secondary-color 10%);
+}
+
 // Notification OSD Widget
 .osd-notification-widget {
     min-width: 240px;
@@ -511,6 +518,10 @@ $accent-warn: color.adjust(colors.$secondary-color, $hue: -60deg, $saturation: 1
         border-color: color.mix(colors.$secondary-color, $accent-red, $weight: 40%);
         background-color: color.scale(color.mix(colors.$primary-color, $accent-red, $weight: 95%), $alpha: -10%);
     }
+}
+
+.notification-osd-minimize-button {
+    background: unset;
 }
 
 // 
@@ -599,4 +610,12 @@ $accent-warn: color.adjust(colors.$secondary-color, $hue: -60deg, $saturation: 1
 
 .notification-app-icon-label {
     padding: 10px 5px 0 0;
+}
+
+.notification-timer-badge {
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background-color: color-mix(in srgb, colors.$primary-color 90%, colors.$secondary-color 10%);
 }

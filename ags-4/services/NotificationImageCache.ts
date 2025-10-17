@@ -21,40 +21,34 @@ function pathExists(path: string): boolean {
     try { return Gio.File.new_for_path(path).query_exists(null); } catch { return false; }
 }
 
-function extractFirstImgSrc(html?: string | null): string | null {
-    if (!html) return null;
-    const m = html.match(/<img[^>]+src=["']([^"']+)["']/i);
-    return m ? m[1] : null;
-}
-
 /**
- * Cache a temp file:// image referenced by the notification (body <img> or app_icon).
+ * Cache notification.image only.
+ * Accepts either a plain absolute file path or a file:// URI.
  * Returns the cached absolute path if copied, else null.
  */
-export function cacheTempImageForNotification(id: number, body?: string, appIcon?: string): string | null {
+export function cacheImagePathForNotification(id: number, imagePath?: string | null): string | null {
     ensureCacheDir();
+    if (!imagePath) return null;
 
-    const candidates: string[] = [];
-    const bodyImg = extractFirstImgSrc(body || "");
-    if (bodyImg) candidates.push(bodyImg);
-    if (appIcon) candidates.push(appIcon);
+    try {
+        // Normalize to a Gio.File
+        const src = imagePath.startsWith("file://")
+            ? Gio.File.new_for_uri(imagePath)
+            : Gio.File.new_for_path(imagePath);
 
-    for (const uri of candidates) {
-        if (!uri.startsWith("file://")) continue;
-        if (!uriExists(uri)) continue;
-        try {
-            const src = Gio.File.new_for_uri(uri);
-            const base = src.get_basename() || `n${id}.png`;
-            const destPath = GLib.build_filenamev([CACHE_DIR, `${id}-${base}`]);
-            const dest = Gio.File.new_for_path(destPath);
-            src.copy(dest, Gio.FileCopyFlags.OVERWRITE, null, null);
-            cacheMap.set(id, destPath);
-            return destPath;
-        } catch {
-            // try next candidate
-        }
+        // Ensure exists
+        const exists = imagePath.startsWith("file://") ? uriExists(imagePath) : pathExists(imagePath);
+        if (!exists) return null;
+
+        const base = src.get_basename() || `n${id}.img`;
+        const destPath = GLib.build_filenamev([CACHE_DIR, `${id}-${base}`]);
+        const dest = Gio.File.new_for_path(destPath);
+        src.copy(dest, Gio.FileCopyFlags.OVERWRITE, null, null);
+        cacheMap.set(id, destPath);
+        return destPath;
+    } catch {
+        return null;
     }
-    return null;
 }
 
 /** Get cached absolute path for the given notification id, if present and still exists. */

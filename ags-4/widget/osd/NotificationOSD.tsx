@@ -1,11 +1,15 @@
 import { App, Astal, Gdk, Gtk } from "astal/gtk4"
+import GLib from "gi://GLib";
 import { bind, Variable } from "astal"
 
 // Separate OSD Manager for Notifications
 export interface NotificationOSDContent {
     widget: JSX.Element;
-    timeout: number;
+    timeout: number; // ms; negative => no auto-hide
     type: 'notification';
+    id?: number; // notification id for coordination
+    replaced?: boolean; // if true, update content without resetting timer
+    resident?: boolean; // if true, keep after action invoke
 }
 
 class NotificationOSDManagerClass {
@@ -15,7 +19,7 @@ class NotificationOSDManagerClass {
     
     // Shared variable to track when OSD should be hidden
     private hideTimestamp = new Variable<number | null>(null);
-    private hideTimerInterval: any = null;
+    private hideTimerSourceId: number | null = null;
     
     // Track animation state to handle interruptions
     private isAnimating = false;
@@ -24,6 +28,7 @@ class NotificationOSDManagerClass {
     // OSD blocking mechanism
     private isBlocked = false;
     private blockUntilTimestamp: number | null = null;
+    // No default fallback; timeout <= 0 means no auto-hide
 
     constructor() {
         // Start the background timer thread
@@ -61,23 +66,27 @@ class NotificationOSDManagerClass {
     };
 
     startHideTimer = () => {
-        this.hideTimerInterval = setInterval(() => {
-            const hideTime = this.hideTimestamp.get();
-            const currentTime = Date.now();
-            
-            // Check if blocking is active and has expired
-            if (this.isBlocked && this.blockUntilTimestamp && currentTime >= this.blockUntilTimestamp) {
-                this.isBlocked = false;
-                this.blockUntilTimestamp = null;
-            }
-            
-            if (!hideTime || this.isAnimating || this.isBlocked) return;
-            
-            if (currentTime >= hideTime) {
-                this.hideTimestamp.set(null);
-                this.hideOSD();
-            }
-        }, 100);
+        if (this.hideTimerSourceId !== null) return; // already running
+        this.hideTimerSourceId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+            try {
+                const hideTime = this.hideTimestamp.get();
+                const currentTime = Date.now();
+
+                // Check if blocking is active and has expired
+                if (this.isBlocked && this.blockUntilTimestamp && currentTime >= this.blockUntilTimestamp) {
+                    this.isBlocked = false;
+                    this.blockUntilTimestamp = null;
+                }
+
+                if (!hideTime || this.isAnimating || this.isBlocked) return GLib.SOURCE_CONTINUE;
+
+                if (currentTime >= hideTime) {
+                    this.hideTimestamp.set(null);
+                    this.hideOSD();
+                }
+            } catch {}
+            return GLib.SOURCE_CONTINUE;
+        });
     };
 
     showOSD = (content: NotificationOSDContent) => {
@@ -89,9 +98,18 @@ class NotificationOSDManagerClass {
         // Set new content
         this.OSDContent.set(content);
         
-        // Calculate hide timestamp
-        const hideTime = Date.now() + content.timeout;
-        this.hideTimestamp.set(hideTime);
+        // Calculate hide timestamp; if this is a replacement, keep existing deadline
+        if (content.replaced && this.OSDVisible.get()) {
+            // keep current hideTimestamp as-is
+        } else {
+            const t = content.timeout;
+            if (typeof t === 'number' && t > 0) {
+                this.hideTimestamp.set(Date.now() + t);
+            } else {
+                // t <= 0 or invalid -> no auto-hide
+                this.hideTimestamp.set(null);
+            }
+        }
         
         // If not visible, show it
         if (!this.OSDVisible.get()) {

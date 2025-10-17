@@ -1,8 +1,11 @@
 import { Gtk } from "astal/gtk4";
 import Gio from "gi://Gio";
-import {
-    getAppIcon,
-} from "./notification_utils";
+import GLib from "gi://GLib";
+import { Variable, bind } from "astal";
+import { getAppIcon } from "./notification_utils";
+import { NotificationOSDManager } from "../osd/NotificationOSD";
+import { chainedBinding, mergeBindings, scaleSizeNumber } from "../../utils/utils";
+import AstalNotifd from "gi://AstalNotifd";
 
 export interface NotificationOSDProps {
     notification: any; // Using any to avoid AstalNotifd import issues
@@ -20,6 +23,9 @@ export default function NotificationOSD(props: NotificationOSDProps): JSX.Elemen
     const appName = notification.app_name;
     const summary = notification.summary || "";
     const body = notification.body || "";
+    const expireTimeout: number = Number((notification as any).expire_timeout ?? -1);
+    const createdSec: number = Number((notification as any).time ?? 0);
+    const createdMs = createdSec * 1000;
 
     // Allow only anchor links in body, strip other HTML tags
     const sanitizeBodyToGtkMarkup = (html: string): string => {
@@ -43,25 +49,70 @@ export default function NotificationOSD(props: NotificationOSDProps): JSX.Elemen
     const now = new Date();
     const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+    // Countdown support (only for timer notifications)
+    const hasTimer = typeof expireTimeout === 'number' && expireTimeout > 0;
+    const endMs = hasTimer ? (createdMs + expireTimeout) : 0;
+    const tickVar = new Variable(Date.now());
+    if (hasTimer) {
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 250, () => {
+            tickVar.set(Date.now());
+            return GLib.SOURCE_CONTINUE;
+        });
+    }
+
+    const formatCountdown = (ms: number): string => {
+        if (ms <= 0) return "00:00";
+        const totalSec = Math.ceil(ms / 1000);
+        const m = Math.floor(totalSec / 60);
+        const s = totalSec % 60;
+        return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    };
+
     return (
-        <box 
+        <box
             orientation={Gtk.Orientation.HORIZONTAL}
             spacing={12}
             cssClasses={["notification-card"]}
             widthRequest={350}
         >
-            {/* App icon */}
-            {getAppIcon(notification)}
-            
+            {/* LEFT ICONS BOX */}
+            <box
+                orientation={Gtk.Orientation.VERTICAL}
+                cssClasses={["notification-item-icons"]}
+                spacing={scaleSizeNumber(8)}
+                children={mergeBindings([chainedBinding(notification, ["state"])], (state: AstalNotifd.State) => {
+                    let stateIcon;
+                    switch (state) {
+                        case AstalNotifd.State.DRAFT:
+                            stateIcon = <label label="" cssClasses={["notification-state-icon", "notification-state-draft"]} />;
+                            break;
+                        case AstalNotifd.State.SENT:
+                            stateIcon = <label label="" cssClasses={["notification-state-icon", "notification-state-sent"]} />;
+                            break;
+                        case AstalNotifd.State.RECEIVED:
+                            stateIcon = <label label="" cssClasses={["notification-state-icon", "notification-state-received"]} />;
+                            break;
+                        default:
+                            stateIcon = <label label="?" cssClasses={["notification-state-icon", "notification-state-unknown"]} />;
+                    }
+                    return [
+                        // APP ICON
+                        getAppIcon(notification),
+                        // STATE ICON
+                        stateIcon,
+                    ];
+                })}
+            />
+
             {/* Content */}
-            <box 
+            <box
                 orientation={Gtk.Orientation.VERTICAL}
                 spacing={4}
                 cssClasses={["notification-card-content"]}
                 hexpand={true}
             >
                 {/* Header with app name and time */}
-                <box 
+                <box
                     orientation={Gtk.Orientation.HORIZONTAL}
                     cssClasses={["notification-card-header"]}
                     spacing={8}
@@ -76,6 +127,29 @@ export default function NotificationOSD(props: NotificationOSDProps): JSX.Elemen
                         label={timeStr}
                         cssClasses={["notification-card-time"]}
                         halign={Gtk.Align.END}
+                    />
+                    <box
+                        orientation={Gtk.Orientation.HORIZONTAL}
+                        spacing={6}
+                        cssClasses={["notification-osd-timer"]}
+                        visible={hasTimer}
+                        child={
+                            <label
+                                label={bind(tickVar).as((now: number) => formatCountdown(Math.max(0, endMs - now)))}
+                                valign={Gtk.Align.CENTER}
+                                vexpand={false}
+                                cssClasses={["notification-osd-timer-label"]}
+                            />
+                        }
+                    />
+                    {/* Minimize button: hides OSD only */}
+                    <button
+                        cssClasses={["notification-osd-minimize-button"]}
+                        onClicked={() => { try { NotificationOSDManager.hideOSD(); } catch { } }}
+                        halign={Gtk.Align.END}
+                        valign={Gtk.Align.CENTER}
+                        vexpand={false}
+                        child={<label label="-" cssClasses={["notification-osd-minimize-label"]} />}
                     />
                 </box>
 

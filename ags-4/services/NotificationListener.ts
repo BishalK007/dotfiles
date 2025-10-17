@@ -1,7 +1,7 @@
 import AstalNotifd from "gi://AstalNotifd";
 import GLib from "gi://GLib";
 import {
-    cacheTempImageForNotification,
+    cacheImagePathForNotification,
     loadExistingCache,
     pruneCacheForActiveIds,
     removeCachedForId,
@@ -10,10 +10,12 @@ import { NotificationOSDManager } from "../widget/osd/NotificationOSD";
 import NotificationOSD from "../widget/notification/notification_osd";
 
 class NotificationListener {
-    private notifd: AstalNotifd.Notifd;
+    private notifd: any;
+    // Track auto-removal timers per notification id
+    private expiryTimers: Map<number, number> = new Map();
     
     constructor() {
-        this.notifd = AstalNotifd.get_default() as AstalNotifd.Notifd;
+    this.notifd = (AstalNotifd as any).get_default();
         // Load any existing cached files and prune stale ones asynchronously
         loadExistingCache();
         try {
@@ -32,8 +34,8 @@ class NotificationListener {
     }
 
     private init() {
-        // Listen for new notifications
-    this.notifd.connect('notified', (_: any, id: number) => {
+    // Listen for new notifications
+    this.notifd.connect('notified', (_: any, id: number, replaced: boolean) => {
             const notification = this.notifd.get_notification(id);
             
             if (!notification) {
@@ -45,21 +47,66 @@ class NotificationListener {
                 return;
             }
 
-            // Check if notification should be shown as OSD based on urgency or app
-            // Attempt to cache temp file images so they persist (best-effort)
+            // Cache only notification.image (absolute path or file:// URI)
             try {
-                cacheTempImageForNotification(notification.id, notification.body, notification.app_icon);
+                // @ts-ignore - property provided by AstalNotifd
+                cacheImagePathForNotification(notification.id, (notification as any).image);
+            } catch {}
+
+            // Setup/refresh auto-removal timer for list based on expire_timeout
+            try {
+                // Clear any previous timer for this id
+                const old = this.expiryTimers.get(notification.id);
+                const et: number = (notification as any).expire_timeout;
+                // Spec: when > 0 => auto remove from list after et ms
+                //       when 0 => keep in list
+                //       when -1 => keep in list (our policy)
+                if (typeof et === 'number' && et > 0) {
+                    // If this notification was replaced and we already have a timer, don't reset it.
+                    if (replaced === true && typeof old === 'number') {
+                        // keep existing timer
+                    } else {
+                        if (typeof old === 'number') { GLib.source_remove(old); }
+                        const sourceId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, et, () => {
+                        try { (notification as any).dismiss?.(); } catch {}
+                        // Remove from map; the resolved signal will also clear if it fires
+                            const sid = this.expiryTimers.get(id);
+                            if (typeof sid === 'number') this.expiryTimers.delete(id);
+                            return GLib.SOURCE_REMOVE;
+                        });
+                        this.expiryTimers.set(notification.id, sourceId);
+                    }
+                }
             } catch {}
 
             if (this.shouldShowAsOSD(notification)) {
-                this.showNotificationOSD(notification);
+                this.showNotificationOSD(notification, replaced === true);
             }
         });
 
         // Clean cached files when a notification is resolved
         try {
-            this.notifd.connect('resolved', (_: any, resolvedId: number) => {
+            this.notifd.connect('resolved', (_: any, resolvedId: number, reason: any) => {
+                // Clear any pending auto-removal timer for this id
+                try {
+                    const sid = this.expiryTimers.get(resolvedId);
+                    if (typeof sid === 'number') {
+                        GLib.source_remove(sid);
+                        this.expiryTimers.delete(resolvedId);
+                    }
+                } catch {}
                 try { removeCachedForId(resolvedId); } catch {}
+                // If the currently displayed OSD matches, hide it.
+                try {
+                    const content = NotificationOSDManager.OSDContent.get();
+                    if (content && content.type === 'notification' && (content as any).id === resolvedId) {
+                        // Keep resident notifications visible on INVOKED
+                        if ((content as any).resident && reason === (AstalNotifd as any).ClosedReason?.INVOKED) {
+                            return;
+                        }
+                        NotificationOSDManager.hideOSD();
+                    }
+                } catch {}
             });
         } catch {}
     }
@@ -100,23 +147,32 @@ class NotificationListener {
         return notification.urgency === 1; // NORMAL
     }
 
-    private showNotificationOSD(notification: any) {
+    private showNotificationOSD(notification: any, replaced = false) {
         const widget = NotificationOSD({ notification });
-        
-        // Show OSD with timeout based on urgency
-        let timeout = 3000; // Default 3 seconds
-        
-        if (notification.urgency === 2) { // CRITICAL
-            timeout = 5000; // 5 seconds for critical
-        } else if (notification.urgency === 0) { // LOW
-            timeout = 2000; // 2 seconds for low priority
-        }
+
+    // OSD timeout: if expire_timeout > 0, use it; else fallback to default OSD hide
+        const computeTimeout = (): number => {
+            try {
+                const et = (notification as any).expire_timeout;
+        if (typeof et === 'number' && et > 0) return et;
+            } catch {}
+        return 4000; // default OSD auto-hide
+        };
+
+        const timeout = computeTimeout();
 
         NotificationOSDManager.showOSD({
-            widget: NotificationOSD({ notification }),
-            timeout: 4000,
-            type: 'notification'
-        });
+            widget,
+            timeout,
+            type: 'notification',
+            // carry id for Plan 3 resolution handling
+            // @ts-ignore extend content contract with id
+            id: notification.id,
+            replaced,
+            // @ts-ignore resident flag if provided by server hints
+            resident: (notification as any).resident === true,
+            // Replacements currently reuse timer per computed policy above
+        } as any);
     }
 
     // Optional: call this from any UI action that clears all notifications
