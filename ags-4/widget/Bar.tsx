@@ -84,7 +84,7 @@ export default function Bar(gdkmonitor: Gdk.Monitor) {
                 {/* 
                     ************ My Device Widget ************
                 */}
-                <MyDevice />
+                {/* <MyDevice /> */}
                 {/* 
                     ************ Network Widget ************
                 */}

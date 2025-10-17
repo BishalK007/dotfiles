@@ -1,7 +1,10 @@
 import { bind } from "astal/binding";
 import { Gtk } from "astal/gtk4";
+import Gio from "gi://Gio";
+import GLib from "gi://GLib";
 import AstalNotifd from "gi://AstalNotifd";
 import { chainedBinding, mergeBindings, scaleSizeNumber } from "../../utils/utils";
+import { Binding } from "astal";
 import { Scrollable } from "../../custom-widgets/scrollable";
 import { 
     getUrgencyCssClass,
@@ -18,6 +21,58 @@ const notifd = AstalNotifd.get_default() as AstalNotifd.Notifd;
  * Comprehensive Notification Management System
  */
 export default function NotificationPopup() {
+    // Pagination state and helpers
+    const PER_PAGE_NOTIFICATION_COUNT = 25;
+    let _pageValue = 1;
+    const _pageSubscribers: Array<(v: number) => void> = [];
+    const pageState = {
+        get(): number { return _pageValue; },
+        subscribe(cb: (v: number) => void) { _pageSubscribers.push(cb); return () => {
+            const i = _pageSubscribers.indexOf(cb); if (i >= 0) _pageSubscribers.splice(i, 1);
+        }; },
+        set(v: number) { _pageValue = v; _pageSubscribers.forEach(fn => fn(_pageValue)); }
+    };
+    const currentPage = Binding.bind(pageState);
+
+    const setPage = (p: number) => {
+        const total = Math.max(1, Math.ceil((notifd as any).notifications.length / PER_PAGE_NOTIFICATION_COUNT));
+        if (p < 1) p = 1;
+        if (p > total) p = total;
+        (pageState as any).set(p);
+    };
+
+    // Clearing state and spinner animation
+    let _clearing = false;
+    const _clearingSubs: Array<(v: boolean) => void> = [];
+    const clearingState = {
+        get(): boolean { return _clearing; },
+        subscribe(cb: (v: boolean) => void) { _clearingSubs.push(cb); return () => {
+            const i = _clearingSubs.indexOf(cb); if (i >= 0) _clearingSubs.splice(i, 1);
+        }; },
+        set(v: boolean) { _clearing = v; _clearingSubs.forEach(fn => fn(_clearing)); }
+    };
+    const isClearing = Binding.bind(clearingState);
+
+    const spinnerFrames = ["  ", "  ", "  ", "  ", "  ", "  "];
+    let _frame = 0;
+    const _frameSubs: Array<(v: number) => void> = [];
+    const frameState = {
+        get(): number { return _frame; },
+        subscribe(cb: (v: number) => void) { _frameSubs.push(cb); return () => {
+            const i = _frameSubs.indexOf(cb); if (i >= 0) _frameSubs.splice(i, 1);
+        }; },
+        set(v: number) { _frame = v; _frameSubs.forEach(fn => fn(_frame)); }
+    };
+    const frameIndex = Binding.bind(frameState);
+    let spinnerTimeoutId: number | null = null;
+    const startSpinner = () => {
+        if (spinnerTimeoutId !== null) return;
+        spinnerTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 120, () => {
+            if (!_clearing) { spinnerTimeoutId = null; return GLib.SOURCE_REMOVE; }
+            frameState.set((frameState.get() + 1) % spinnerFrames.length);
+            return GLib.SOURCE_CONTINUE;
+        });
+    };
 
     /**
      * Handle Do Not Disturb toggle
@@ -30,9 +85,26 @@ export default function NotificationPopup() {
      * Clear all notifications
      */
     const handleClearAll = () => {
-        const notifications = notifd.notifications;
-        notifications.forEach((notification: AstalNotifd.Notification) => {
-            notification.dismiss();
+        // Snapshot the current list to avoid churn while iterating
+        const toClear: AstalNotifd.Notification[] = [...notifd.notifications];
+        if (toClear.length === 0) return;
+        (clearingState as any).set(true);
+        startSpinner();
+        const BATCH = 50; // tune batch size as needed
+        let idx = 0;
+        GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            const end = Math.min(idx + BATCH, toClear.length);
+            for (let i = idx; i < end; i++) {
+                try { toClear[i].dismiss(); } catch {}
+            }
+            idx = end;
+            if (idx >= toClear.length) {
+                // After clearing, go back to page 1
+                setPage(1);
+                (clearingState as any).set(false);
+                return GLib.SOURCE_REMOVE;
+            }
+            return GLib.SOURCE_CONTINUE;
         });
     };
 
@@ -90,13 +162,13 @@ export default function NotificationPopup() {
                     }
                 />
             </box>
-            {/* Controls Section */}
+            {/* Controls Section (count + clear all) */}
             <box
                 orientation={Gtk.Orientation.HORIZONTAL}
                 cssClasses={["notification-controls"]}
                 spacing={scaleSizeNumber(8)}
-                visible={chainedBinding(notifd, ["notifications"]).as((notifications: AstalNotifd.Notification[]) =>
-                    notifications.length > 0
+                visible={mergeBindings([chainedBinding(notifd, ["notifications"]), isClearing], (notifications: AstalNotifd.Notification[], clearing: boolean) =>
+                    notifications.length > 0 && !clearing
                 )}
             >
                 <label
@@ -112,15 +184,10 @@ export default function NotificationPopup() {
                     cssClasses={["notification-clear-button"]}
                     onClicked={handleClearAll}
                     valign={Gtk.Align.CENTER}
-                    child={
-                        <label
-                            label="󰎟 Clear All"
-                            cssClasses={["notification-clear-label"]}
-                            valign={Gtk.Align.CENTER}
-                        />
-                    }
+                    child={<label label="󰎟 Clear All" cssClasses={["notification-clear-label"]} valign={Gtk.Align.CENTER} />}
                 />
             </box>
+
             {/* Notifications List Section */}
             <box
                 orientation={Gtk.Orientation.VERTICAL}
@@ -134,8 +201,30 @@ export default function NotificationPopup() {
                             orientation={Gtk.Orientation.VERTICAL}
                             cssClasses={["notification-list-container"]}
                             spacing={scaleSizeNumber(4)}
-                            children={chainedBinding(notifd, ["notifications"]).as((notifications: AstalNotifd.Notification[]) => {
-                                if (notifications.length === 0) {
+                            children={mergeBindings([chainedBinding(notifd, ["notifications"]), currentPage, isClearing], (notifications: AstalNotifd.Notification[], page: number, clearing: boolean) => {
+                                if (clearing) {
+                                    return [
+                                        <box
+                                            orientation={Gtk.Orientation.VERTICAL}
+                                            cssClasses={["notification-list-container"]}
+                                            valign={Gtk.Align.CENTER}
+                                            halign={Gtk.Align.CENTER}
+                                            vexpand={true}
+                                            hexpand={true}
+                                            spacing={scaleSizeNumber(8)}
+                                        >
+                                            <label
+                                                label={frameIndex.as((i: number) => spinnerFrames[i])}
+                                                cssClasses={["notification-empty-icon"]}
+                                                halign={Gtk.Align.CENTER}
+                                            />
+                                            <label label="Deletion" cssClasses={["notification-empty-text"]} halign={Gtk.Align.CENTER} />
+                                            <label label="In-Progress" cssClasses={["notification-empty-text"]} halign={Gtk.Align.CENTER} />
+                                        </box>
+                                    ];
+                                }
+                                const list = notifications || [];
+                                if (list.length === 0) {
                                     return [
                                         <box
                                             cssClasses={["notification-empty"]}
@@ -143,20 +232,18 @@ export default function NotificationPopup() {
                                             spacing={scaleSizeNumber(8)}
                                             valign={Gtk.Align.CENTER}
                                         >
-                                            <label
-                                                label="󰂚"
-                                                cssClasses={["notification-empty-icon"]}
-                                            />
-                                            <label
-                                                label="No notifications"
-                                                cssClasses={["notification-empty-text"]}
-                                            />
+                                            <label label="󰂚" cssClasses={["notification-empty-icon"]} />
+                                            <label label="No notifications" cssClasses={["notification-empty-text"]} />
                                         </box>
                                     ];
                                 }
                                 // Sort notifications by time in descending order (newest first)
-                                const sortedNotifications = [...notifications].sort((a, b) => b.time - a.time);
-                                return sortedNotifications.map((notification) => (
+                                const sorted = [...list].sort((a, b) => b.time - a.time);
+                                const total = Math.max(1, Math.ceil(sorted.length / PER_PAGE_NOTIFICATION_COUNT));
+                                const pg = Math.min(Math.max(page || 1, 1), total);
+                                const start = (pg - 1) * PER_PAGE_NOTIFICATION_COUNT;
+                                const end = start + PER_PAGE_NOTIFICATION_COUNT;
+                                return sorted.slice(start, end).map((notification) => (
                                     <NotificationItem notification={notification} />
                                 ));
                             })}
@@ -164,11 +251,65 @@ export default function NotificationPopup() {
                     })
                 }
             />
+
+            {/* Pagination Navigation (visible only when more than one page and not clearing) */}
+            <box
+                orientation={Gtk.Orientation.HORIZONTAL}
+                cssClasses={["notification-controls"]}
+                spacing={scaleSizeNumber(8)}
+                halign={Gtk.Align.CENTER}
+                valign={Gtk.Align.CENTER}
+                visible={mergeBindings([chainedBinding(notifd, ["notifications"]), isClearing], (notifications: AstalNotifd.Notification[], clearing: boolean) => {
+                    const total = Math.ceil((notifications?.length || 0) / PER_PAGE_NOTIFICATION_COUNT);
+                    return total > 1 && !clearing;
+                })}
+            >
+                <button
+                    cssClasses={["notification-clear-button"]}
+                    onClicked={() => setPage(currentPage.get() - 1)}
+                    valign={Gtk.Align.CENTER}
+                    child={<label label="‹" cssClasses={["notification-clear-label"]} valign={Gtk.Align.CENTER} />}
+                />
+                <label
+                    label={mergeBindings([chainedBinding(notifd, ["notifications"]), currentPage], (notifications: AstalNotifd.Notification[], page: number) => {
+                        const total = Math.max(1, Math.ceil((notifications?.length || 0) / PER_PAGE_NOTIFICATION_COUNT));
+                        const pg = Math.min(Math.max(page || 1, 1), total);
+                        return `${pg}/${total}`;
+                    })}
+                    cssClasses={["notification-count-label"]}
+                    valign={Gtk.Align.CENTER}
+                />
+                <button
+                    cssClasses={["notification-clear-button"]}
+                    onClicked={() => setPage(currentPage.get() + 1)}
+                    valign={Gtk.Align.CENTER}
+                    child={<label label="›" cssClasses={["notification-clear-label"]} valign={Gtk.Align.CENTER} />}
+                />
+            </box>
         </box>
     );
 }
 
 function NotificationItem({ notification }: { notification: AstalNotifd.Notification }) {
+
+    // Allow only anchor links in body, strip other HTML tags and auto-link bare URLs
+    const sanitizeBodyToGtkMarkup = (html: string): string => {
+        if (!html) return "";
+        // Remove all tags except <a ...> and </a>
+        let out = html.replace(/<(?!\/?a(\s|>|$))[^>]*>/gi, "");
+        // Normalize anchor tags and keep only href
+        out = out.replace(/<a([^>]*)>/gi, (m, attrs) => {
+            const hrefMatch = attrs.match(/href\s*=\s*("([^"]*)"|'([^']*)'|([^\s>]+))/i);
+            const href = hrefMatch ? (hrefMatch[2] || hrefMatch[3] || hrefMatch[4] || "") : "";
+            const safeHref = href.replace(/"/g, "&quot;");
+            return `<a href="${safeHref}">`;
+        });
+        // Auto-link bare URLs if there are no anchors yet
+        if (!/<a\s/i.test(out)) {
+            out = out.replace(/\b((?:https?|file):\/\/[^\s<]+)\b/gi, '<a href="$1">$1</a>');
+        }
+        return out;
+    };
 
     /**
      * Handle notification dismiss
@@ -231,13 +372,20 @@ function NotificationItem({ notification }: { notification: AstalNotifd.Notifica
                         />
                         {chainedBinding(notification, ["body"]).as((body: string) => body && body.length > 0) && (
                             <label
-                                label={chainedBinding(notification, ["body"]).as((body: string) => body)}
+                                useMarkup={true}
+                                label={chainedBinding(notification, ["body"]).as((body: string) => sanitizeBodyToGtkMarkup(body))}
                                 cssClasses={["notification-body"]}
                                 halign={Gtk.Align.START}
-                                ellipsize={3}
-                                maxWidthChars={60}
                                 wrap={true}
-                                lines={3}
+                                lines={5}
+                                selectable={true}
+                                onActivateLink={(_, uri: string) => {
+                                    // Open http/https/file links with default handler
+                                    if (/^(https?:|file:)/i.test(uri)) {
+                                        try { Gio.AppInfo.launch_default_for_uri(uri, null); } catch {}
+                                    }
+                                    return true;
+                                }}
                             />
                         )}
                         {chainedBinding(notification, ["urgency"]).as((urgency: AstalNotifd.Urgency) => urgency !== AstalNotifd.Urgency.NORMAL) && (

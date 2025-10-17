@@ -59,7 +59,7 @@ export default function Notification() {
             </box>
             <popover
                 cssClasses={["notification-popover"]}
-                autohide={true}
+                autohide={false}
             >
                 <NotificationPopup />
             </popover>

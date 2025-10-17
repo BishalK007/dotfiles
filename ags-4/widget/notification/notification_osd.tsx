@@ -1,4 +1,5 @@
 import { Gtk } from "astal/gtk4";
+import Gio from "gi://Gio";
 import {
     getAppIcon,
 } from "./notification_utils";
@@ -19,6 +20,24 @@ export default function NotificationOSD(props: NotificationOSDProps): JSX.Elemen
     const appName = notification.app_name;
     const summary = notification.summary || "";
     const body = notification.body || "";
+
+    // Allow only anchor links in body, strip other HTML tags
+    const sanitizeBodyToGtkMarkup = (html: string): string => {
+        // Remove all tags except <a ...> and </a>
+        let out = html.replace(/<(?!\/?a(\s|>|$))[^>]*>/gi, "");
+        // Basic cleanup of anchor tags: ensure href remains quoted
+        out = out.replace(/<a([^>]*)>/gi, (m, attrs) => {
+            const hrefMatch = attrs.match(/href\s*=\s*("([^"]*)"|'([^']*)'|([^\s>]+))/i);
+            const href = hrefMatch ? (hrefMatch[2] || hrefMatch[3] || hrefMatch[4] || "") : "";
+            const safeHref = href.replace(/"/g, "&quot;");
+            return `<a href="${safeHref}">`;
+        });
+        // Auto-link bare URLs only if there are no existing <a> tags
+        if (!/<a\s/i.test(out)) {
+            out = out.replace(/\b((?:https?|file):\/\/[^\s<]+)\b/gi, '<a href="$1">$1</a>');
+        }
+        return out;
+    };
 
     // Format time
     const now = new Date();
@@ -72,11 +91,18 @@ export default function NotificationOSD(props: NotificationOSDProps): JSX.Elemen
                 {/* Body (if present) */}
                 {body && (
                     <label
-                        label={truncateText(body, 80)}
+                        // Render limited markup so <a href> links are clickable
+                        useMarkup={true}
+                        label={sanitizeBodyToGtkMarkup(body)}
                         cssClasses={["notification-card-body"]}
                         halign={Gtk.Align.START}
                         wrap={true}
                         lines={3}
+                        selectable={true}
+                        onActivateLink={(_, uri: string) => {
+                            try { Gio.AppInfo.launch_default_for_uri(uri, null); } catch { /* ignore */ }
+                            return true;
+                        }}
                     />
                 )}
             </box>

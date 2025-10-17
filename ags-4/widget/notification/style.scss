@@ -4,7 +4,6 @@
 $accent-red: color.adjust(colors.$secondary-color, $hue: -100deg, $saturation: 20%);
 $accent-green: color.adjust(colors.$secondary-color, $hue: -140deg, $saturation: 15%);
 $accent-warn: color.adjust(colors.$secondary-color, $hue: -60deg, $saturation: 15%);
-
 //
 // ________ Bar Styles ________
 //
@@ -156,20 +155,23 @@ $accent-warn: color.adjust(colors.$secondary-color, $hue: -60deg, $saturation: 1
 .notification-list-section {
     border-radius: 8px;
 }
+
 .notification-scrollable {
     min-height: 500px;
 }
+
 .notification-list-container {
     border-radius: 6px;
-    background: color-mix(in srgb, colors.$secondary-color 3%, transparent 97%);
-    border: 1px solid color-mix(in srgb, colors.$secondary-color 12%, transparent 88%);
-    padding: 12px;
+    padding: 0 12px;
 }
 
 //
 // ________ Empty State ________
 //
 .notification-empty {
+    border-radius: 6px;
+    background: color-mix(in srgb, colors.$secondary-color 3%, transparent 97%);
+    border: 1px solid color-mix(in srgb, colors.$secondary-color 12%, transparent 88%);
     padding: 40px 20px;
 }
 
@@ -362,7 +364,8 @@ $accent-warn: color.adjust(colors.$secondary-color, $hue: -60deg, $saturation: 1
 // ________ Animations ________
 //
 @keyframes pulse-critical {
-    0%, 100% {
+    0%,
+    100% {
         opacity: 1;
         transform: scale(1);
     }
@@ -411,26 +414,20 @@ $accent-warn: color.adjust(colors.$secondary-color, $hue: -60deg, $saturation: 1
         min-width: 360px;
         padding: 14px;
     }
-    
     .notification-header-text {
         font-size: 16px;
     }
-    
     .notification-app-icon {
         font-size: 20px;
     }
-    
     .notification-summary {
         font-size: 14px;
     }
-} 
-
-
+}
 
 //
 // Notification OSD Styles
 //
-
 // Notification OSD Window
 .notification-osd-window {
     background-color: transparent;
@@ -493,7 +490,7 @@ $accent-warn: color.adjust(colors.$secondary-color, $hue: -60deg, $saturation: 1
 // Urgency-based styling
 .osd-notification-urgency-low {
     .osd-notification-icon-large {
-    color: color.mix(colors.$secondary-color, $accent-green, $weight: 30%);
+        color: color.mix(colors.$secondary-color, $accent-green, $weight: 30%);
     }
 }
 
@@ -505,16 +502,14 @@ $accent-warn: color.adjust(colors.$secondary-color, $hue: -60deg, $saturation: 1
 
 .osd-notification-urgency-critical {
     .osd-notification-icon-large {
-    color: color.mix(colors.$secondary-color, $accent-red, $weight: 40%);
+        color: color.mix(colors.$secondary-color, $accent-red, $weight: 40%);
     }
-    
     .osd-notification-summary {
-    color: color.mix(colors.$secondary-color, $accent-red, $weight: 30%);
+        color: color.mix(colors.$secondary-color, $accent-red, $weight: 30%);
     }
-    
     .notification-osd-container {
-    border-color: color.mix(colors.$secondary-color, $accent-red, $weight: 40%);
-    background-color: color.scale(color.mix(colors.$primary-color, $accent-red, $weight: 95%), $alpha: -10%);
+        border-color: color.mix(colors.$secondary-color, $accent-red, $weight: 40%);
+        background-color: color.scale(color.mix(colors.$primary-color, $accent-red, $weight: 95%), $alpha: -10%);
     }
 }
 
@@ -530,7 +525,6 @@ $accent-warn: color.adjust(colors.$secondary-color, $hue: -60deg, $saturation: 1
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     min-width: 320px;
     max-width: 400px;
-
     .notification-card-icon {
         font-size: 24px;
         color: colors.$secondary-color;
@@ -538,54 +532,44 @@ $accent-warn: color.adjust(colors.$secondary-color, $hue: -60deg, $saturation: 1
         min-height: 32px;
         margin-right: 8px;
     }
-
     .notification-card-content {
         min-width: 0; // Allow text to wrap/truncate
     }
-
     .notification-card-header {
         margin-bottom: 4px;
     }
-
     .notification-card-app-name {
         font-weight: bold;
         font-size: 14px;
         color: colors.$secondary-color;
     }
-
     .notification-card-time {
-    font-size: 12px;
-    color: color.scale(colors.$secondary-color, $alpha: -30%);
+        font-size: 12px;
+        color: color.scale(colors.$secondary-color, $alpha: -30%);
     }
-
     .notification-card-summary {
         font-weight: 600;
         font-size: 15px;
         color: colors.$secondary-color;
         margin-bottom: 2px;
     }
-
     .notification-card-body {
-    font-size: 13px;
-    color: color.scale(colors.$secondary-color, $alpha: -20%);
-    line-height: 1.3;
+        font-size: 13px;
+        color: color.scale(colors.$secondary-color, $alpha: -20%);
+        line-height: 1.3;
     }
-
     // Urgency styling
     &.notification-card-urgency-critical {
         border-color: color.mix(colors.$secondary-color, #ff4757, $weight: 60%);
         background: color.mix(colors.$primary-color, #ff4757, $weight: 90%);
-        
         .notification-card-app-name,
         .notification-card-summary {
             color: color.mix(colors.$secondary-color, #ff6b7a, $weight: 60%);
         }
     }
-
     &.notification-card-urgency-low {
         border-color: color.scale(colors.$secondary-color, $alpha: -50%);
         background: color.scale(colors.$primary-color, $alpha: -10%);
-        
         .notification-card-app-name,
         .notification-card-summary {
             color: color.scale(colors.$secondary-color, $alpha: -20%);
@@ -597,13 +581,14 @@ $accent-warn: color.adjust(colors.$secondary-color, $hue: -60deg, $saturation: 1
 .notification-osd-container {
     padding: 8px;
     background: transparent;
-    margin-top: 50px; /* 50px down from the top */
-    margin-right: 8px; /* Small margin from right edge */
+    margin-top: 50px;
+    /* 50px down from the top */
+    margin-right: 8px;
+    /* Small margin from right edge */
 }
 
 // Dynamic notification icon
 // Common in BAR and OSD
-
 .notification-app-icon-label,
 .notification-app-icon-img {
     min-width: 22px;
@@ -611,6 +596,7 @@ $accent-warn: color.adjust(colors.$secondary-color, $hue: -60deg, $saturation: 1
     padding: 10px 0 0 0;
     font-size: 26px;
 }
+
 .notification-app-icon-label {
     padding: 10px 5px 0 0;
 }

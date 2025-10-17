@@ -22,9 +22,23 @@ show_help() {
 WATCH_DIR="$(realpath /home/bishal/.config/ags)"
 
 # Prefer running inside the project's devShell so all Astal libs (notifd, etc.) are available
+# Resolve flake path: prefer current directory if it contains flake.nix, else the directory of this script
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$PWD/flake.nix" ]]; then
+    FLAKE_PATH="${PWD}"
+elif [[ -f "$SCRIPT_DIR/flake.nix" ]]; then
+    FLAKE_PATH="${SCRIPT_DIR}"
+else
+    # Last resort: allow override via AGS_FLAKE_PATH or default to script dir
+    FLAKE_PATH="${AGS_FLAKE_PATH:-$SCRIPT_DIR}"
+fi
+
 RUN_PREFIX=""
-if command -v nix >/dev/null 2>&1; then
-    RUN_PREFIX="nix develop -c"
+# Only enter devShell if not already in one
+if [[ -z "${IN_NIX_SHELL:-}" ]]; then
+    if command -v nix >/dev/null 2>&1; then
+        RUN_PREFIX="nix develop ${FLAKE_PATH} -c"
+    fi
 fi
 
 # Ensure Gio finds schemas via devShell (flake.nix). Kept here commented as a fallback.

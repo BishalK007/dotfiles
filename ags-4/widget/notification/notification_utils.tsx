@@ -3,6 +3,7 @@ import GLib from "gi://GLib";
 import Gio from "gi://Gio";
 import Gtk from "gi://Gtk";
 import Gdk from "gi://Gdk";
+import { getCachedImagePath } from "../../services/NotificationImageCache";
 
 /**
  * Check if file exists using GJS
@@ -144,6 +145,18 @@ export const checkImageFile = (iconPath: string): {
 };
 
 export const getAppIcon = (notification: AstalNotifd.Notification): JSX.Element => {
+    // Prefer cached image if available
+    const cached = getCachedImagePath(notification.id);
+    if (cached && fileExists(cached)) {
+        return (
+            <image
+                file={cached}
+                cssClasses={["notification-app-icon-img"]}
+                valign={Gtk.Align.START}
+            />
+        );
+    }
+
     // Check if a valid app icon path is provided.
     if (notification.app_icon && checkImageFile(notification.app_icon).isImage) {
         const iconPath = Gio.File.new_for_uri(notification.app_icon).get_path();

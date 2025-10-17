@@ -1,4 +1,11 @@
 import AstalNotifd from "gi://AstalNotifd";
+import GLib from "gi://GLib";
+import {
+    cacheTempImageForNotification,
+    loadExistingCache,
+    pruneCacheForActiveIds,
+    removeCachedForId,
+} from "./NotificationImageCache";
 import { NotificationOSDManager } from "../widget/osd/NotificationOSD";
 import NotificationOSD from "../widget/notification/notification_osd";
 
@@ -7,12 +14,26 @@ class NotificationListener {
     
     constructor() {
         this.notifd = AstalNotifd.get_default() as AstalNotifd.Notifd;
+        // Load any existing cached files and prune stale ones asynchronously
+        loadExistingCache();
+        try {
+            GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                try {
+                    const active = Array.isArray((this.notifd as any).notifications)
+                        ? (this.notifd as any).notifications.map((n: any) => n.id)
+                        : [];
+                    pruneCacheForActiveIds(active);
+                } catch {}
+                return GLib.SOURCE_REMOVE;
+            });
+        } catch {}
+
         this.init();
     }
 
     private init() {
         // Listen for new notifications
-        this.notifd.connect('notified', (_: any, id: number) => {
+    this.notifd.connect('notified', (_: any, id: number) => {
             const notification = this.notifd.get_notification(id);
             
             if (!notification) {
@@ -25,10 +46,22 @@ class NotificationListener {
             }
 
             // Check if notification should be shown as OSD based on urgency or app
+            // Attempt to cache temp file images so they persist (best-effort)
+            try {
+                cacheTempImageForNotification(notification.id, notification.body, notification.app_icon);
+            } catch {}
+
             if (this.shouldShowAsOSD(notification)) {
                 this.showNotificationOSD(notification);
             }
         });
+
+        // Clean cached files when a notification is resolved
+        try {
+            this.notifd.connect('resolved', (_: any, resolvedId: number) => {
+                try { removeCachedForId(resolvedId); } catch {}
+            });
+        } catch {}
     }
 
     private shouldShowAsOSD(notification: any): boolean {
@@ -84,6 +117,18 @@ class NotificationListener {
             timeout: 4000,
             type: 'notification'
         });
+    }
+
+    // Optional: call this from any UI action that clears all notifications
+    clearAll() {
+        try {
+            const ids: number[] = Array.isArray((this.notifd as any).notifications)
+                ? (this.notifd as any).notifications.map((n: any) => n.id)
+                : [];
+            for (const id of ids) {
+                try { removeCachedForId(id); } catch {}
+            }
+        } catch {}
     }
 }
 
