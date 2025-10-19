@@ -122,7 +122,16 @@
     background-color: colors.$primary-color;
 }
 
-.systray-popover-systray-item {}
+.systray-popover-systray-item image {
+    transition: all 0.2s ease;
+}
+
+.systray-popover-systray-item image:hover {
+    background: color-mix(in srgb, colors.$secondary-color 30%, transparent 70%);
+    border-radius: 5px;
+    transform: scale(1.1);
+    transform: translate(0, -5px);
+}
 
 .systray-popover-systray-item image {
     -gtk-icon-size: 30px;
@@ -133,8 +142,32 @@
 }
 
 .systray-popover-menu contents {
+    padding: 10px;
     background-color: colors.$primary-color;
     border-radius: 10px;
+    border: 1px solid colors.$secondary-color;
+}
+
+.systray-popover-menu modelbutton {
+    padding: 5px 10px 5px 10px;
+    margin: 5px;
+    border-radius: 5px;
+    transition: all 0.2s ease;
+    background: color-mix(colors.$secondary-color, colors.$primary-color, 0.1);
+}
+
+.systray-popover-menu modelbutton:hover {
+    background: color-mix(in srgb, colors.$secondary-color 30%, transparent 70%);
+    color: colors.$primary-color;
+}
+
+.systray-popover-menu modelbutton label {
+    transition: all 0.2s ease;
+    margin-right: 12px;
+}
+
+.systray-popover-menu modelbutton:hover label {
+    transform: translate(10px, 0);
 }
 
 popover.systray-popover check {

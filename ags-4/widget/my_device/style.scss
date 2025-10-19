@@ -50,12 +50,14 @@
     border: 1px solid colors.$secondary-color;
 }
 
-.nvidia-header-box {
+.nvidia-header-box,
+.asus-header-box {
     padding-bottom: 8px;
     border-bottom: 1px solid color-mix(in srgb, colors.$secondary-color 30%, transparent 70%);
 }
 
-.nvidia-header-text {
+.nvidia-header-text,
+.asus-header-text {
     font-size: 16px;
     font-weight: bold;
     color: colors.$secondary-color;

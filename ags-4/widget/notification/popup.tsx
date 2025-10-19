@@ -477,6 +477,7 @@ function NotificationItem({ notification }: { notification: AstalNotifd.Notifica
                                     orientation={Gtk.Orientation.HORIZONTAL}
                                     spacing={scaleSizeNumber(4)}
                                     cssClasses={["notification-timer-badge"]}
+                                    visible={chainedBinding(notification, ["expire_timeout"]).as((et: number) => typeof et === 'number' && et > 0)}
                                     children={mergeBindings([
                                         chainedBinding(notification, ["expire_timeout"]),
                                         chainedBinding(notification, ["time"]),

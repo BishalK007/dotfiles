@@ -50,8 +50,7 @@ function TrayButton({ item }) {
         if (buttonNum === 1) {
             item.activate?.(0, 0);
         } else if (buttonNum === 3 && popover) {
-            popover.set_pointing_to(null);
-            // popover.set_relative_to(button);
+            popover.set_pointing_to(button.get_allocation()); 
             popover.set_parent(button);
             popover.set_autohide(true);
             popover.popup();

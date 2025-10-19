@@ -139,8 +139,5 @@ App.start({
         
         // Initialize sound service
         soundService;
-
-        // Initialize Nvidia service
-        // NvidiaService;
     },
 })

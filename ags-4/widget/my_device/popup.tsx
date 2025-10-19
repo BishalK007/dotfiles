@@ -204,188 +204,377 @@ function drawPowerGraphForKey(key: string, limitW: number | null | undefined) {
 
 export default function MyDevicePopup() {
     return (
+
         <box
-            orientation={Gtk.Orientation.VERTICAL}
+            orientation={Gtk.Orientation.HORIZONTAL}
             cssClasses={["my-device-popover-container"]}
             valign={Gtk.Align.CENTER}
             halign={Gtk.Align.CENTER}
             spacing={scaleSizeNumber(10)}
         >
-            {/* Nvidia Header */}
-            <box
-                orientation={Gtk.Orientation.HORIZONTAL}
-                valign={Gtk.Align.CENTER}
-                cssClasses={["nvidia-header-box"]}
-                hexpand={true}
-                spacing={scaleSizeNumber(8)}
-                child={<label
-                    label="Nvidia"
-                    cssClasses={["nvidia-header-text"]}
-                    valign={Gtk.Align.CENTER}
-                />}
-            />
-            {/* Nvidia Body */}
             <box
                 orientation={Gtk.Orientation.VERTICAL}
+                cssClasses={["my-device-popover-nvidia-box"]}
                 valign={Gtk.Align.CENTER}
-                cssClasses={["nvidia-body-box"]}
-                hexpand={true}
-                spacing={scaleSizeNumber(8)}
+                halign={Gtk.Align.CENTER}
+                spacing={scaleSizeNumber(10)}
             >
-                {/* Driver: 575.51.02      CUDA: 12.9 */}
+                {/* Nvidia Header */}
                 <box
                     orientation={Gtk.Orientation.HORIZONTAL}
                     valign={Gtk.Align.CENTER}
+                    cssClasses={["nvidia-header-box"]}
                     hexpand={true}
-                    spacing={scaleSizeNumber(4)}
-                    cssClasses={["nvidia-info-box"]}
-                >
-                    <label
-                        label={mergeBindings([
-                            NvidiaService.data,
-                        ], (d) => `Driver: ${d?.driver ?? 'N/A'}`)}
-                        cssClasses={["nvidia-info-label"]}
+                    spacing={scaleSizeNumber(8)}
+                    child={<label
+                        label="Nvidia"
+                        cssClasses={["nvidia-header-text"]}
                         valign={Gtk.Align.CENTER}
-                        halign={Gtk.Align.START}
-                    />
-                    <label
-                        label={mergeBindings([
-                            NvidiaService.data,
-                        ], (d) => `CUDA: ${d?.cuda ?? 'N/A'}`)}
-                        cssClasses={["nvidia-info-label"]}
-                        hexpand={true}
-                        valign={Gtk.Align.CENTER}
-                        halign={Gtk.Align.END}
-                    />
-                </box>
-                {/* GPUs */}
+                    />}
+                />
+                {/* Nvidia Body */}
                 <box
                     orientation={Gtk.Orientation.VERTICAL}
-                    spacing={scaleSizeNumber(4)}
-                    cssClasses={["nvidia-gpu-list-box"]}
-                    children={mergeBindings([
-                        NvidiaService.data,
-                    ], (d) => {
-                        const gpus = d?.gpus ?? [];
-                        return gpus.map((g, i) => (
-                            <box
-                                orientation={Gtk.Orientation.VERTICAL}
-                                valign={Gtk.Align.CENTER}
-                                hexpand={true}
-                                spacing={scaleSizeNumber(4)}
-                                cssClasses={["nvidia-gpu-box"]}
-                                children={[
-                                    // Name
-                                    <label
-                                        label={`${g.name}`}
-                                        cssClasses={["nvidia-gpu-name"]}
-                                        valign={Gtk.Align.CENTER}
-                                        halign={Gtk.Align.START}
-                                    />,
-                                    <box
-                                        orientation={Gtk.Orientation.VERTICAL}
-                                        valign={Gtk.Align.CENTER}
-                                        hexpand={true}
-                                        spacing={scaleSizeNumber(4)}
-                                        cssClasses={["nvidia-gpu-stats-box"]}
-                                        children={[
-                                            // Memory, Temp
-                                            <box
-                                                orientation={Gtk.Orientation.HORIZONTAL}
-                                                valign={Gtk.Align.CENTER}
-                                                hexpand={true}
-                                                spacing={scaleSizeNumber(4)}
-                                                cssClasses={["nvidia-gpu-mem-temp-box"]}
-                                                children={[
+                    valign={Gtk.Align.CENTER}
+                    cssClasses={["nvidia-body-box"]}
+                    hexpand={true}
+                    spacing={scaleSizeNumber(8)}
+                >
+                    {/* Driver: 575.51.02      CUDA: 12.9 */}
+                    <box
+                        orientation={Gtk.Orientation.HORIZONTAL}
+                        valign={Gtk.Align.CENTER}
+                        hexpand={true}
+                        spacing={scaleSizeNumber(4)}
+                        cssClasses={["nvidia-info-box"]}
+                    >
+                        <label
+                            label={mergeBindings([
+                                NvidiaService.data,
+                            ], (d) => `Driver: ${d?.driver ?? 'N/A'}`)}
+                            cssClasses={["nvidia-info-label"]}
+                            valign={Gtk.Align.CENTER}
+                            halign={Gtk.Align.START}
+                        />
+                        <label
+                            label={mergeBindings([
+                                NvidiaService.data,
+                            ], (d) => `CUDA: ${d?.cuda ?? 'N/A'}`)}
+                            cssClasses={["nvidia-info-label"]}
+                            hexpand={true}
+                            valign={Gtk.Align.CENTER}
+                            halign={Gtk.Align.END}
+                        />
+                    </box>
+                    {/* GPUs */}
+                    <box
+                        orientation={Gtk.Orientation.VERTICAL}
+                        spacing={scaleSizeNumber(4)}
+                        cssClasses={["nvidia-gpu-list-box"]}
+                        children={mergeBindings([
+                            NvidiaService.data,
+                        ], (d) => {
+                            const gpus = d?.gpus ?? [];
+                            return gpus.map((g, i) => (
+                                <box
+                                    orientation={Gtk.Orientation.VERTICAL}
+                                    valign={Gtk.Align.CENTER}
+                                    hexpand={true}
+                                    spacing={scaleSizeNumber(4)}
+                                    cssClasses={["nvidia-gpu-box"]}
+                                    children={[
+                                        // Name
+                                        <label
+                                            label={`${g.name}`}
+                                            cssClasses={["nvidia-gpu-name"]}
+                                            valign={Gtk.Align.CENTER}
+                                            halign={Gtk.Align.START}
+                                        />,
+                                        <box
+                                            orientation={Gtk.Orientation.VERTICAL}
+                                            valign={Gtk.Align.CENTER}
+                                            hexpand={true}
+                                            spacing={scaleSizeNumber(4)}
+                                            cssClasses={["nvidia-gpu-stats-box"]}
+                                            children={[
+                                                // Memory, Temp
+                                                <box
+                                                    orientation={Gtk.Orientation.HORIZONTAL}
+                                                    valign={Gtk.Align.CENTER}
+                                                    hexpand={true}
+                                                    spacing={scaleSizeNumber(4)}
+                                                    cssClasses={["nvidia-gpu-mem-temp-box"]}
+                                                    children={[
+                                                        <label
+                                                            label={`MEM: ${g.memUsedMiB != null && g.memTotalMiB != null ? `${g.memUsedMiB}MiB (${g.memUsedPct}%)` : "N/A"}`}
+                                                            cssClasses={["nvidia-gpu-mem-stats"]}
+                                                            valign={Gtk.Align.CENTER}
+                                                            halign={Gtk.Align.START}
+                                                        />,
+                                                        <label
+                                                            label={`TEMP: ${g.tempC != null ? `${g.tempC}°C` : "N/A"}`}
+                                                            cssClasses={["nvidia-gpu-temp-stats"]}
+                                                            hexpand={true}
+                                                            valign={Gtk.Align.CENTER}
+                                                            halign={Gtk.Align.END}
+                                                        />,
+                                                    ]}
+                                                />,
+                                                // Perf
+                                                <label
+                                                    label={`PERF: ${g.pstate != null ? `${g.pstate}` : "N/A"}`}
+                                                    cssClasses={["nvidia-gpu-temp-stats"]}
+                                                    hexpand={true}
+                                                    valign={Gtk.Align.CENTER}
+                                                    halign={Gtk.Align.END}
+                                                />,
+                                                // Power Graph
+                                                <box
+                                                    orientation={Gtk.Orientation.VERTICAL}
+                                                    valign={Gtk.Align.CENTER}
+                                                    hexpand={true}
+                                                    spacing={scaleSizeNumber(4)}
+                                                    cssClasses={["nvidia-gpu-utilisation-box"]}
+                                                >
                                                     <label
-                                                        label={`MEM: ${g.memUsedMiB != null && g.memTotalMiB != null ? `${g.memUsedMiB}MiB (${g.memUsedPct}%)` : "N/A"}`}
-                                                        cssClasses={["nvidia-gpu-mem-stats"]}
+                                                        label={`POWER: ${g.powerInstW ?? g.powerAvgW ?? 'N/A'}${g.powerInstW != null || g.powerAvgW != null ? ' W' : ''}`}
+                                                        cssClasses={["nvidia-gpu-utilisation-label"]}
                                                         valign={Gtk.Align.CENTER}
                                                         halign={Gtk.Align.START}
-                                                    />,
+                                                    />
+                                                    {DrawingArea({
+                                                        cssClasses: ["nvidia-gpu-utilisation-graph"],
+                                                        widthRequest: scaleSizeNumber(200),
+                                                        heightRequest: scaleSizeNumber(60),
+                                                        hexpand: true,
+                                                        vexpand: false,
+                                                        redrawIntervalSec: 2,
+                                                        draw: (cr: any, width: number, height: number, area: any) => {
+                                                            const key = (g as any).uuid || g.name || `gpu-${i}`;
+                                                            const maxLimit = g.powerLimitCurrentW ?? g.powerLimitMaxW ?? g.powerLimitDefaultW ?? null;
+                                                            drawPowerGraphForKey(key, maxLimit)(area, cr, width, height);
+                                                        },
+                                                    })}
+                                                </box>,
+                                                // Utilisation Graph
+                                                <box
+                                                    orientation={Gtk.Orientation.VERTICAL}
+                                                    valign={Gtk.Align.CENTER}
+                                                    hexpand={true}
+                                                    spacing={scaleSizeNumber(4)}
+                                                    cssClasses={["nvidia-gpu-utilisation-box"]}
+                                                >
                                                     <label
-                                                        label={`TEMP: ${g.tempC != null ? `${g.tempC}°C` : "N/A"}`}
-                                                        cssClasses={["nvidia-gpu-temp-stats"]}
-                                                        hexpand={true}
+                                                        label={`UTIL: ${g.util != null ? `${g.util}%` : "N/A"}`}
+                                                        cssClasses={["nvidia-gpu-utilisation-label"]}
                                                         valign={Gtk.Align.CENTER}
-                                                        halign={Gtk.Align.END}
-                                                    />,
-                                                ]}
-                                            />,
-                                            // Perf
-                                            <label
-                                                label={`PERF: ${g.pstate != null ? `${g.pstate}` : "N/A"}`}
-                                                cssClasses={["nvidia-gpu-temp-stats"]}
-                                                hexpand={true}
-                                                valign={Gtk.Align.CENTER}
-                                                halign={Gtk.Align.END}
-                                            />,
-                                            // Power Graph
-                                            <box
-                                                orientation={Gtk.Orientation.VERTICAL}
-                                                valign={Gtk.Align.CENTER}
-                                                hexpand={true}
-                                                spacing={scaleSizeNumber(4)}
-                                                cssClasses={["nvidia-gpu-utilisation-box"]}
-                                            >
-                                                <label
-                                                    label={`POWER: ${g.powerInstW ?? g.powerAvgW ?? 'N/A'}${g.powerInstW != null || g.powerAvgW != null ? ' W' : ''}`}
-                                                    cssClasses={["nvidia-gpu-utilisation-label"]}
-                                                    valign={Gtk.Align.CENTER}
-                                                    halign={Gtk.Align.START}
-                                                />
-                                                {DrawingArea({
-                                                    cssClasses: ["nvidia-gpu-utilisation-graph"],
-                                                    widthRequest: scaleSizeNumber(200),
-                                                    heightRequest: scaleSizeNumber(60),
-                                                    hexpand: true,
-                                                    vexpand: false,
-                                                    redrawIntervalSec: 2,
-                                                    draw: (cr: any, width: number, height: number, area: any) => {
-                                                        const key = (g as any).uuid || g.name || `gpu-${i}`;
-                                                        const maxLimit = g.powerLimitCurrentW ?? g.powerLimitMaxW ?? g.powerLimitDefaultW ?? null;
-                                                        drawPowerGraphForKey(key, maxLimit)(area, cr, width, height);
-                                                    },
-                                                })}
-                                            </box>,
-                                            // Utilisation Graph
-                                            <box
-                                                orientation={Gtk.Orientation.VERTICAL}
-                                                valign={Gtk.Align.CENTER}
-                                                hexpand={true}
-                                                spacing={scaleSizeNumber(4)}
-                                                cssClasses={["nvidia-gpu-utilisation-box"]}
-                                            >
-                                                <label
-                                                    label={`UTIL: ${g.util != null ? `${g.util}%` : "N/A"}`}
-                                                    cssClasses={["nvidia-gpu-utilisation-label"]}
-                                                    valign={Gtk.Align.CENTER}
-                                                    halign={Gtk.Align.START}
-                                                />
-                                                {DrawingArea({
-                                                    cssClasses: ["nvidia-gpu-utilisation-graph"],
-                                                    widthRequest: scaleSizeNumber(200),
-                                                    heightRequest: scaleSizeNumber(60),
-                                                    hexpand: true,
-                                                    vexpand: false,
-                                                    redrawIntervalSec: 2,
-                                                    draw: (cr: any, width: number, height: number, area: any) => {
-                                                        const key = (g as any).uuid || g.name || `gpu-${i}`;
-                                                        // Delegate actual Cairo drawing to our helper
-                                                        drawUtilGraphForKey(key)(area, cr, width, height);
-                                                    },
-                                                })}
-                                            </box>,
-                                        ]}
-                                    />,
-                                ]}
-                            />
-                        ));
-                    })}
-                />
+                                                        halign={Gtk.Align.START}
+                                                    />
+                                                    {DrawingArea({
+                                                        cssClasses: ["nvidia-gpu-utilisation-graph"],
+                                                        widthRequest: scaleSizeNumber(200),
+                                                        heightRequest: scaleSizeNumber(60),
+                                                        hexpand: true,
+                                                        vexpand: false,
+                                                        redrawIntervalSec: 2,
+                                                        draw: (cr: any, width: number, height: number, area: any) => {
+                                                            const key = (g as any).uuid || g.name || `gpu-${i}`;
+                                                            // Delegate actual Cairo drawing to our helper
+                                                            drawUtilGraphForKey(key)(area, cr, width, height);
+                                                        },
+                                                    })}
+                                                </box>,
+                                            ]}
+                                        />,
+                                    ]}
+                                />
+                            ));
+                        })}
+                    />
 
+                </box>
             </box>
-
+            <box
+                orientation={Gtk.Orientation.VERTICAL}
+                cssClasses={["my-device-popover-asus-box"]}
+                valign={Gtk.Align.CENTER}
+                halign={Gtk.Align.CENTER}
+                spacing={scaleSizeNumber(10)}
+            >
+                {/* Asus Header */}
+                <box
+                    orientation={Gtk.Orientation.HORIZONTAL}
+                    valign={Gtk.Align.CENTER}
+                    cssClasses={["asus-header-box"]}
+                    hexpand={true}
+                    spacing={scaleSizeNumber(8)}
+                    child={<label
+                        label="Asus"
+                        cssClasses={["asus-header-text"]}
+                        valign={Gtk.Align.CENTER}
+                    />}
+                />
+                {/* Asus Body */}
+                <box
+                    orientation={Gtk.Orientation.VERTICAL}
+                    valign={Gtk.Align.CENTER}
+                    cssClasses={["nvidia-body-box"]}
+                    hexpand={true}
+                    spacing={scaleSizeNumber(8)}
+                >
+                    {/* Driver: 575.51.02      CUDA: 12.9 */}
+                    <box
+                        orientation={Gtk.Orientation.HORIZONTAL}
+                        valign={Gtk.Align.CENTER}
+                        hexpand={true}
+                        spacing={scaleSizeNumber(4)}
+                        cssClasses={["nvidia-info-box"]}
+                    >
+                        <label
+                            label={mergeBindings([
+                                NvidiaService.data,
+                            ], (d) => `Driver: ${d?.driver ?? 'N/A'}`)}
+                            cssClasses={["nvidia-info-label"]}
+                            valign={Gtk.Align.CENTER}
+                            halign={Gtk.Align.START}
+                        />
+                        <label
+                            label={mergeBindings([
+                                NvidiaService.data,
+                            ], (d) => `CUDA: ${d?.cuda ?? 'N/A'}`)}
+                            cssClasses={["nvidia-info-label"]}
+                            hexpand={true}
+                            valign={Gtk.Align.CENTER}
+                            halign={Gtk.Align.END}
+                        />
+                    </box>
+                    {/* GPUs */}
+                    <box
+                        orientation={Gtk.Orientation.VERTICAL}
+                        spacing={scaleSizeNumber(4)}
+                        cssClasses={["nvidia-gpu-list-box"]}
+                        children={mergeBindings([
+                            NvidiaService.data,
+                        ], (d) => {
+                            const gpus = d?.gpus ?? [];
+                            return gpus.map((g, i) => (
+                                <box
+                                    orientation={Gtk.Orientation.VERTICAL}
+                                    valign={Gtk.Align.CENTER}
+                                    hexpand={true}
+                                    spacing={scaleSizeNumber(4)}
+                                    cssClasses={["nvidia-gpu-box"]}
+                                    children={[
+                                        // Name
+                                        <label
+                                            label={`${g.name}`}
+                                            cssClasses={["nvidia-gpu-name"]}
+                                            valign={Gtk.Align.CENTER}
+                                            halign={Gtk.Align.START}
+                                        />,
+                                        <box
+                                            orientation={Gtk.Orientation.VERTICAL}
+                                            valign={Gtk.Align.CENTER}
+                                            hexpand={true}
+                                            spacing={scaleSizeNumber(4)}
+                                            cssClasses={["nvidia-gpu-stats-box"]}
+                                            children={[
+                                                // Memory, Temp
+                                                <box
+                                                    orientation={Gtk.Orientation.HORIZONTAL}
+                                                    valign={Gtk.Align.CENTER}
+                                                    hexpand={true}
+                                                    spacing={scaleSizeNumber(4)}
+                                                    cssClasses={["nvidia-gpu-mem-temp-box"]}
+                                                    children={[
+                                                        <label
+                                                            label={`MEM: ${g.memUsedMiB != null && g.memTotalMiB != null ? `${g.memUsedMiB}MiB (${g.memUsedPct}%)` : "N/A"}`}
+                                                            cssClasses={["nvidia-gpu-mem-stats"]}
+                                                            valign={Gtk.Align.CENTER}
+                                                            halign={Gtk.Align.START}
+                                                        />,
+                                                        <label
+                                                            label={`TEMP: ${g.tempC != null ? `${g.tempC}°C` : "N/A"}`}
+                                                            cssClasses={["nvidia-gpu-temp-stats"]}
+                                                            hexpand={true}
+                                                            valign={Gtk.Align.CENTER}
+                                                            halign={Gtk.Align.END}
+                                                        />,
+                                                    ]}
+                                                />,
+                                                // Perf
+                                                <label
+                                                    label={`PERF: ${g.pstate != null ? `${g.pstate}` : "N/A"}`}
+                                                    cssClasses={["nvidia-gpu-temp-stats"]}
+                                                    hexpand={true}
+                                                    valign={Gtk.Align.CENTER}
+                                                    halign={Gtk.Align.END}
+                                                />,
+                                                // Power Graph
+                                                <box
+                                                    orientation={Gtk.Orientation.VERTICAL}
+                                                    valign={Gtk.Align.CENTER}
+                                                    hexpand={true}
+                                                    spacing={scaleSizeNumber(4)}
+                                                    cssClasses={["nvidia-gpu-utilisation-box"]}
+                                                >
+                                                    <label
+                                                        label={`POWER: ${g.powerInstW ?? g.powerAvgW ?? 'N/A'}${g.powerInstW != null || g.powerAvgW != null ? ' W' : ''}`}
+                                                        cssClasses={["nvidia-gpu-utilisation-label"]}
+                                                        valign={Gtk.Align.CENTER}
+                                                        halign={Gtk.Align.START}
+                                                    />
+                                                    {DrawingArea({
+                                                        cssClasses: ["nvidia-gpu-utilisation-graph"],
+                                                        widthRequest: scaleSizeNumber(200),
+                                                        heightRequest: scaleSizeNumber(60),
+                                                        hexpand: true,
+                                                        vexpand: false,
+                                                        redrawIntervalSec: 2,
+                                                        draw: (cr: any, width: number, height: number, area: any) => {
+                                                            const key = (g as any).uuid || g.name || `gpu-${i}`;
+                                                            const maxLimit = g.powerLimitCurrentW ?? g.powerLimitMaxW ?? g.powerLimitDefaultW ?? null;
+                                                            drawPowerGraphForKey(key, maxLimit)(area, cr, width, height);
+                                                        },
+                                                    })}
+                                                </box>,
+                                                // Utilisation Graph
+                                                <box
+                                                    orientation={Gtk.Orientation.VERTICAL}
+                                                    valign={Gtk.Align.CENTER}
+                                                    hexpand={true}
+                                                    spacing={scaleSizeNumber(4)}
+                                                    cssClasses={["nvidia-gpu-utilisation-box"]}
+                                                >
+                                                    <label
+                                                        label={`UTIL: ${g.util != null ? `${g.util}%` : "N/A"}`}
+                                                        cssClasses={["nvidia-gpu-utilisation-label"]}
+                                                        valign={Gtk.Align.CENTER}
+                                                        halign={Gtk.Align.START}
+                                                    />
+                                                    {DrawingArea({
+                                                        cssClasses: ["nvidia-gpu-utilisation-graph"],
+                                                        widthRequest: scaleSizeNumber(200),
+                                                        heightRequest: scaleSizeNumber(60),
+                                                        hexpand: true,
+                                                        vexpand: false,
+                                                        redrawIntervalSec: 2,
+                                                        draw: (cr: any, width: number, height: number, area: any) => {
+                                                            const key = (g as any).uuid || g.name || `gpu-${i}`;
+                                                            // Delegate actual Cairo drawing to our helper
+                                                            drawUtilGraphForKey(key)(area, cr, width, height);
+                                                        },
+                                                    })}
+                                                </box>,
+                                            ]}
+                                        />,
+                                    ]}
+                                />
+                            ));
+                        })}
+                    />
+                </box>
+            </box>
         </box>
     );
 }
