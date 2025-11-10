@@ -11,32 +11,49 @@
         min-width: 36px;
         border-color: colors.$secondary-color;
         background: colors.$primary-color;
+        transition: all 0.2s ease;
+    }
+    .sound-and-brightness-box:hover {
+        background: color-mix(
+            in srgb,
+            colors.$primary-color 90%,
+            colors.$secondary-color 10%
+        );
+        transform: scale(1.02);
     }
 
     .sound-and-brightness-icon {
         font-size: 16px;
         color: colors.$secondary-color;
         padding: 0 10px;
-        transition: all 0.2s ease;
     }
 
     .sound-icon {
         margin-left: -5px;
         transition: all 0.2s ease;
     }
-    .sound-icon:hover {
-        transform: scale(1.1);
-    }
     .brightness-icon {
         transition: all 0.2s ease;
-    }
-    .brightness-icon:hover {
-        transform: scale(1.1);
     }
 
     //
     // Popup Styles:: Sound Popup
     //
+    .sound-popup-section-title {
+        color: colors.$secondary-color;
+        background: colors.$primary-color;
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        padding: 8px;
+        border-radius: 18px;
+    }
+    .sound-popup-title {
+        color: colors.$secondary-color;
+        background: colors.$primary-color;
+        font-size: 14px;
+        font-weight: 700;
+    }
     .sound-popover,
     .sound-popover contents,
     .sound-popover arrow {
@@ -78,6 +95,15 @@
     //
     // Popup Styles:: Brightness popup
     //
+    .brightness-popup-section-title {
+        color: colors.$secondary-color;
+        background: colors.$primary-color;
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        padding: 8px;
+        border-radius: 18px;
+    }
     .brightness-popover,
     .brightness-popover contents,
     .brightness-popover arrow {
@@ -91,6 +117,7 @@
         min-width: 220px;
         min-height: 30px;
         background-color: colors.$primary-color;
+        margin-bottom: 6px;
     }
 
     .brightness-popup-icon {
