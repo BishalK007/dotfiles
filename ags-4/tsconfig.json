@@ -1,18 +1,18 @@
 {
-    "$schema": "https://json.schemastore.org/tsconfig",
-    "compilerOptions": {
-        "experimentalDecorators": true,
-        "strict": true,
-        "target": "ES2022",
-        "module": "ES2022",
-        "moduleResolution": "Bundler",
-        // "checkJs": true,
-        // "allowJs": true,
-        "jsx": "react-jsx",
-        "jsxImportSource": "astal/gtk4",
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "strict": true,
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "gtk4-jsx-runtime/*": ["src/gtk4/*"]
     },
-    "include": [
-        "**/*",
-        "src/types.d.ts"
-    ]
+    "jsx": "react-jsx",
+    // "jsxImportSource": "gtk4-jsx-runtime"
+    "jsxImportSource": "astal/gtk4"
+  },
+  "include": ["**/*", "src/types.d.ts"]
 }

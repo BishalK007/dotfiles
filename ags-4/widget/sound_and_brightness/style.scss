@@ -1,263 +1,277 @@
 @use "sass:color";
 @use "../../colors.scss";
+@mixin styles {
+    //
+    //  Bar Styles
+    //
+    .sound-and-brightness-box {
+        border-radius: 80px;
+        border: 1px solid;
+        min-height: 30px;
+        min-width: 36px;
+        border-color: colors.$secondary-color;
+        background: colors.$primary-color;
+    }
 
-// 
-//  Bar Styles
-//
-.sound-and-brightness-box {
-    border-radius: 80px;
-    border: 1px solid;
-    min-height: 30px;
-    min-width: 36px;
-    border-color: colors.$secondary-color;
-    background: colors.$primary-color;
-}
+    .sound-and-brightness-icon {
+        font-size: 16px;
+        color: colors.$secondary-color;
+        padding: 0 10px;
+        transition: all 0.2s ease;
+    }
 
-.sound-and-brightness-icon {
-    font-size: 16px;
-    color: colors.$secondary-color;
-    padding: 0 10px;
-    transition: all 0.2s ease;
-}
+    .sound-icon {
+        margin-left: -5px;
+        transition: all 0.2s ease;
+    }
+    .sound-icon:hover {
+        transform: scale(1.1);
+    }
+    .brightness-icon {
+        transition: all 0.2s ease;
+    }
+    .brightness-icon:hover {
+        transform: scale(1.1);
+    }
 
-.sound-icon {
-    margin-left: -5px;
-    transition: all 0.2s ease;
-}
-.sound-icon:hover {
-    transform: scale(1.1);
-}
-.brightness-icon {
-    transition: all 0.2s ease;
-}
-.brightness-icon:hover {
-    transform: scale(1.1);
-}
+    //
+    // Popup Styles:: Sound Popup
+    //
+    .sound-popover,
+    .sound-popover contents,
+    .sound-popover arrow {
+        all: unset;
+        background: transparent;
+    }
 
-// 
-// Popup Styles:: Sound Popup
-//
-.sound-popover,
-.sound-popover contents,
-.sound-popover arrow {
-    all: unset;
-    background: transparent;
-}
+    .sound-popover-container {
+        padding: 10px;
+        border-radius: 10px;
+        min-width: 220px;
+        min-height: 30px;
+        background-color: colors.$primary-color;
+    }
 
-.sound-popover-container {
-    padding: 10px;
-    border-radius: 10px;
-    min-width: 220px;
-    min-height: 30px;
-    background-color: colors.$primary-color;
-}
+    .sound-popup-sound-icon {
+        color: colors.$secondary-color;
+    }
 
+    .sound-popup-sound-icon-color-red {
+        color: red;
+    }
 
-.sound-popup-sound-icon {
-    color: colors.$secondary-color
-}
+    .sound-popup-slider trough highlight {
+        background-color: colors.$secondary-color;
+        border-radius: 10px;
+        min-height: 8px;
+    }
 
+    .sound-popup-check-placeholder {
+        min-width: 20px;
+    }
 
-.sound-popup-sound-icon-color-red {
-    color: red;
-}
+    .sound-popup-sound-list-container {
+        min-width: 15px;
+        min-height: 20px;
+    }
 
-.sound-popup-slider trough highlight {
-    background-color: colors.$secondary-color;
-    border-radius: 10px;
-    min-height: 8px;
-}
+    //
+    // Popup Styles:: Brightness popup
+    //
+    .brightness-popover,
+    .brightness-popover contents,
+    .brightness-popover arrow {
+        all: unset;
+        background: transparent;
+    }
 
-.sound-popup-check-placeholder {
-    min-width: 20px;
-}
+    .brightness-popover-container {
+        padding: 10px;
+        border-radius: 10px;
+        min-width: 220px;
+        min-height: 30px;
+        background-color: colors.$primary-color;
+    }
 
-.sound-popup-sound-list-container {
-    min-width: 15px;
-    min-height: 20px;
-}
+    .brightness-popup-icon {
+        color: colors.$secondary-color;
+        font-size: 18px;
+        margin-right: 8px;
+    }
 
+    .brightness-popup-slider trough highlight {
+        background-color: colors.$secondary-color;
+        border-radius: 10px;
+        min-height: 8px;
+    }
 
-//
-// Popup Styles:: Brightness popup
-//
-.brightness-popover,
-.brightness-popover contents,
-.brightness-popover arrow {
-    all: unset;
-    background: transparent;
-}
+    .brightness-popup-label {
+        color: colors.$secondary-color;
+        margin-left: 8px;
+        font-size: 14px;
+    }
 
-.brightness-popover-container {
-    padding: 10px;
-    border-radius: 10px;
-    min-width: 220px;
-    min-height: 30px;
-    background-color: colors.$primary-color;
-}
+    //
+    // OSD Styles :: Volume OSD Widget
+    //
 
-.brightness-popup-icon {
-    color: colors.$secondary-color;
-    font-size: 18px;
-    margin-right: 8px;
-}
+    // Volume Widget Styles
+    .osd-volume-widget {
+        min-width: 240px;
+    }
 
-.brightness-popup-slider trough highlight {
-    background-color: colors.$secondary-color;
-    border-radius: 10px;
-    min-height: 8px;
-}
+    .osd-volume-header {
+        margin-bottom: 6px;
+    }
 
-.brightness-popup-label {
-    color: colors.$secondary-color;
-    margin-left: 8px;
-    font-size: 14px;
-}
+    .osd-volume-icon-large {
+        color: colors.$secondary-color;
+        font-size: 28px;
+        min-width: 36px;
+        font-family: "Nerd Font", monospace;
+    }
 
+    .osd-device-name {
+        color: colors.$secondary-color;
+        font-size: 14px;
+        font-weight: 800;
+        opacity: 0.8;
+    }
 
-//
-// OSD Styles :: Volume OSD Widget
-//
+    .osd-volume-progress-container {
+        margin-top: 2px;
+    }
 
-// Volume Widget Styles
-.osd-volume-widget {
-    min-width: 240px;
-}
+    .osd-volume-progress {
+        min-width: 200px;
+        min-height: 8px;
+        border-radius: 4px;
+    }
 
-.osd-volume-header {
-    margin-bottom: 6px;
-}
+    .osd-volume-progress trough {
+        background-color: color.scale(colors.$secondary-color, $alpha: -80%);
+        border-radius: 4px;
+        border: 1px solid color.scale(colors.$secondary-color, $alpha: -70%);
+    }
 
-.osd-volume-icon-large {
-    color: colors.$secondary-color;
-    font-size: 28px;
-    min-width: 36px;
-    font-family: "Nerd Font", monospace;
-}
+    .osd-volume-progress trough .filled {
+        background-color: colors.$secondary-color;
+        border-radius: 3px;
+    }
 
-.osd-device-name {
-    color: colors.$secondary-color;
-    font-size: 14px;
-    font-weight: 800;
-    opacity: 0.8;
-}
+    .osd-volume-progress.osd-volume-overamplified trough .filled {
+        border-color: color.mix(colors.$secondary-color, #ff6600, $weight: 50%);
+        background-color: color.mix(
+            colors.$secondary-color,
+            #ff6600,
+            $weight: 50%
+        );
+    }
+    .osd-volume-progress.osd-volume-overamplified trough {
+        border: 1px solid
+            color.mix(colors.$secondary-color, #ff6600, $weight: 50%);
+    }
 
-.osd-volume-progress-container {
-    margin-top: 2px;
-}
+    .osd-volume-info {
+        margin-top: 6px;
+    }
 
-.osd-volume-progress {
-    min-width: 200px;
-    min-height: 8px;
-    border-radius: 4px;
-}
+    .osd-volume-percentage {
+        color: colors.$secondary-color;
+        font-size: 16px;
+        font-weight: 600;
+    }
 
-.osd-volume-progress trough {
-    background-color: color.scale(colors.$secondary-color, $alpha: -80%);
-    border-radius: 4px;
-    border: 1px solid color.scale(colors.$secondary-color, $alpha: -70%);
-}
+    .osd-volume-percentage.osd-volume-overamplified-text {
+        color: color.mix(colors.$secondary-color, #ff6600, $weight: 50%);
+    }
 
-.osd-volume-progress trough .filled {
-    background-color: colors.$secondary-color;
-    border-radius: 3px;
-}
+    .osd-volume-muted-indicator {
+        color: color.mix(colors.$secondary-color, #ff0000, $weight: 40%);
+        font-size: 11px;
+        font-weight: 700;
+        background-color: color.scale(
+            color.mix(colors.$secondary-color, #ff0000, $weight: 40%),
+            $alpha: -80%
+        );
+        padding: 2px 8px;
+        border-radius: 12px;
+        border: 1px solid
+            color.scale(
+                color.mix(colors.$secondary-color, #ff0000, $weight: 40%),
+                $alpha: -60%
+            );
+    }
 
-.osd-volume-progress.osd-volume-overamplified trough .filled {
-    border-color: color.mix(colors.$secondary-color, #ff6600, $weight: 50%);
-    background-color: color.mix(colors.$secondary-color, #ff6600, $weight: 50%);
-}
-.osd-volume-progress.osd-volume-overamplified trough {
-    border: 1px solid color.mix(colors.$secondary-color, #ff6600, $weight: 50%);
-}
+    .osd-volume-amplified-indicator {
+        color: color.mix(colors.$secondary-color, #ff6600, $weight: 50%);
+        font-size: 11px;
+        font-weight: 700;
+        background-color: color.scale(
+            color.mix(colors.$secondary-color, #ff6600, $weight: 50%),
+            $alpha: -80%
+        );
+        padding: 2px 8px;
+        border-radius: 12px;
+        border: 1px solid
+            color.scale(
+                color.mix(colors.$secondary-color, #ff6600, $weight: 50%),
+                $alpha: -60%
+            );
+    }
 
+    //
+    // OSD Styles :: Brightness OSD Widget
+    //
 
+    // Brightness Widget Styles
+    .osd-brightness-widget {
+        min-width: 240px;
+    }
 
-.osd-volume-info {
-    margin-top: 6px;
-}
+    .osd-brightness-header {
+        margin-bottom: 6px;
+    }
 
-.osd-volume-percentage {
-    color: colors.$secondary-color;
-    font-size: 16px;
-    font-weight: 600;
-}
+    .osd-brightness-icon-large {
+        color: colors.$secondary-color;
+        font-size: 28px;
+        min-width: 36px;
+        font-family: "Nerd Font", monospace;
+    }
 
-.osd-volume-percentage.osd-volume-overamplified-text {
-    color: color.mix(colors.$secondary-color, #ff6600, $weight: 50%);
-}
+    .osd-brightness-name {
+        color: colors.$secondary-color;
+        font-size: 14px;
+        font-weight: 800;
+        opacity: 0.8;
+    }
 
-.osd-volume-muted-indicator {
-    color: color.mix(colors.$secondary-color, #ff0000, $weight: 40%);
-    font-size: 11px;
-    font-weight: 700;
-    background-color: color.scale(color.mix(colors.$secondary-color, #ff0000, $weight: 40%), $alpha: -80%);
-    padding: 2px 8px;
-    border-radius: 12px;
-    border: 1px solid color.scale(color.mix(colors.$secondary-color, #ff0000, $weight: 40%), $alpha: -60%);
-}
+    .osd-brightness-progress-container {
+        margin-top: 2px;
+    }
 
-.osd-volume-amplified-indicator {
-    color: color.mix(colors.$secondary-color, #ff6600, $weight: 50%);
-    font-size: 11px;
-    font-weight: 700;
-    background-color: color.scale(color.mix(colors.$secondary-color, #ff6600, $weight: 50%), $alpha: -80%);
-    padding: 2px 8px;
-    border-radius: 12px;
-    border: 1px solid color.scale(color.mix(colors.$secondary-color, #ff6600, $weight: 50%), $alpha: -60%);
-}
+    .osd-brightness-progress {
+        min-width: 200px;
+        min-height: 8px;
+        border-radius: 4px;
+    }
 
-//
-// OSD Styles :: Brightness OSD Widget
-//
+    .osd-brightness-progress trough {
+        background-color: color.scale(colors.$secondary-color, $alpha: -80%);
+        border-radius: 4px;
+        border: 1px solid color.scale(colors.$secondary-color, $alpha: -70%);
+    }
 
-// Brightness Widget Styles
-.osd-brightness-widget {
-    min-width: 240px;
-}
+    .osd-brightness-progress trough .filled {
+        background-color: colors.$secondary-color;
+        border-radius: 3px;
+    }
 
-.osd-brightness-header {
-    margin-bottom: 6px;
-}
-
-.osd-brightness-icon-large {
-    color: colors.$secondary-color;
-    font-size: 28px;
-    min-width: 36px;
-    font-family: "Nerd Font", monospace;
-}
-
-.osd-brightness-name {
-    color: colors.$secondary-color;
-    font-size: 14px;
-    font-weight: 800;
-    opacity: 0.8;
-}
-
-.osd-brightness-progress-container {
-    margin-top: 2px;
-}
-
-.osd-brightness-progress {
-    min-width: 200px;
-    min-height: 8px;
-    border-radius: 4px;
-}
-
-.osd-brightness-progress trough {
-    background-color: color.scale(colors.$secondary-color, $alpha: -80%);
-    border-radius: 4px;
-    border: 1px solid color.scale(colors.$secondary-color, $alpha: -70%);
-}
-
-.osd-brightness-progress trough .filled {
-    background-color: colors.$secondary-color;
-    border-radius: 3px;
-}
-
-.osd-brightness-percentage {
-    color: colors.$secondary-color;
-    font-size: 16px;
-    font-weight: 600;
-    margin-top: 6px;
+    .osd-brightness-percentage {
+        color: colors.$secondary-color;
+        font-size: 16px;
+        font-weight: 600;
+        margin-top: 6px;
+    }
 }

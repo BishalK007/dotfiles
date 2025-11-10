@@ -1,37 +1,39 @@
-@use '../../colors.scss';
-.workspace {
-    background: colors.$primary-color;
-    border-radius: 18px;
-    color: colors.$secondary-color;
-    min-width: 100px;
-    min-height: 30px;
-    border: 1px solid colors.$secondary-color;
-}
+@use "../../colors.scss";
+@mixin styles {
+    .workspace {
+        background: colors.$primary-color;
+        border-radius: 18px;
+        color: colors.$secondary-color;
+        min-width: 100px;
+        min-height: 30px;
+        border: 1px solid colors.$secondary-color;
+    }
 
-.workspace-back-button-label {
-    font-size: 14px;
-    transform: scale(-1, 1);
-    margin-left: 3px;
-    transition: all 0.2s ease;
-}
+    .workspace-back-button-label {
+        font-size: 14px;
+        transform: scale(-1, 1);
+        margin-left: 3px;
+        transition: all 0.2s ease;
+    }
 
-.workspace-center-label {
-    font-size: 14px;
-    margin: 4px;
-}
-.workspace-button {
-    padding: 0 8px;
-}
-.workspace-front-button-label {
-    font-size: 14px;
-    margin-right: 3px;
-    transition: all 0.2s ease;
-}
+    .workspace-center-label {
+        font-size: 14px;
+        margin: 4px;
+    }
+    .workspace-button {
+        padding: 0 8px;
+    }
+    .workspace-front-button-label {
+        font-size: 14px;
+        margin-right: 3px;
+        transition: all 0.2s ease;
+    }
 
-.workspace-front-button-label:hover {
-    transform: scale(1.1);
-}
+    .workspace-front-button-label:hover {
+        transform: scale(1.1);
+    }
 
-.workspace-back-button-label:hover {
-    transform: scale(-1.1, 1.1);
+    .workspace-back-button-label:hover {
+        transform: scale(-1.1, 1.1);
+    }
 }

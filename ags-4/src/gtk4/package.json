@@ -1,0 +1,10 @@
+{
+  "name": "gtk4-jsx-runtime",
+  "version": "1.0.0",
+  "exports": {
+    ".": "./index.ts",
+    "./jsx-runtime": "./jsx-runtime.ts"
+  },
+  "main": "./index.ts",
+  "types": "./index.ts"
+}

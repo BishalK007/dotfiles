@@ -69,7 +69,7 @@ interface AstalBluetooth.Adapter {
     pairable: boolean;         // Adapter can pair with devices
     address: string;           // Adapter MAC address
     name: string;              // Adapter name
-    
+
     // Methods
     set_powered(powered: boolean): void;
     start_discovery(): void;
@@ -109,18 +109,18 @@ interface AstalBluetooth.Device {
     name: string;              // Device name
     alias: string;             // Device alias
     icon: string;              // Device icon name
-    
+
     // Connection state
     connected: boolean;         // Currently connected
     paired: boolean;           // Device is paired
     trusted: boolean;          // Device is trusted
     blocked: boolean;          // Device is blocked
-    
+
     // Device properties
     batteryLevel: number;      // Battery level (0-100, -1 if unavailable)
     rssi: number;             // Signal strength
     uuids: string[];          // Supported service UUIDs
-    
+
     // Methods
     connect_device(callback?: (result: any) => void): void;
     disconnect_device(callback?: (result: any) => void): void;
@@ -158,7 +158,7 @@ export const getAvailableBluetoothDevices = (): AstalBluetooth.Device[] => {
 // Get connected devices
 export const getConnectedBluetoothDevices = (): string[] => {
     const bluetoothDevices = bluetoothService.get_devices() ?? [];
-    
+
     return bluetoothDevices
         .filter((btDev) => btDev.connected)
         .map((btDev) => btDev.address);
@@ -206,7 +206,7 @@ export const stopDiscovery = (): void => {
 const connectToDevice = (device: AstalBluetooth.Device): void => {
     device.connect_device((result) => {
         if (result) {
-            console.log(`Connected to ${device.name}`);
+            print(`[AstalBluetoothService] Connected to ${device.name}`);
         } else {
             console.error(`Failed to connect to ${device.name}`);
         }
@@ -217,7 +217,7 @@ const connectToDevice = (device: AstalBluetooth.Device): void => {
 const disconnectFromDevice = (device: AstalBluetooth.Device): void => {
     device.disconnect_device((result) => {
         if (result) {
-            console.log(`Disconnected from ${device.name}`);
+            print(`[AstalBluetoothService] Disconnected from ${device.name}`);
         } else {
             console.error(`Failed to disconnect from ${device.name}`);
         }
@@ -285,7 +285,7 @@ bluetoothService.connect('notify::devices', () => {
 // Custom device removal signal
 bluetoothService.connect('device-removed', (service, device) => {
     // Handle device removal
-    console.log(`Device removed: ${device.name}`);
+    print(`[AstalBluetoothService] Device removed: ${device.name}`);
 });
 ```
 
@@ -403,7 +403,7 @@ export const Bluetooth = (): BarBoxChild => {
 ```typescript
 const BluetoothIcon = ({ isPowered }: { isPowered: boolean }): JSX.Element => {
     const iconName = isPowered ? '󰂯' : '󰂲';
-    
+
     return (
         <label
             className={'bar-button-icon bluetooth'}
@@ -415,12 +415,12 @@ const BluetoothIcon = ({ isPowered }: { isPowered: boolean }): JSX.Element => {
 
 ### Bluetooth Label Component
 ```typescript
-const BluetoothLabel = ({ 
-    isPowered, 
-    devices 
-}: { 
-    isPowered: boolean; 
-    devices: AstalBluetooth.Device[] 
+const BluetoothLabel = ({
+    isPowered,
+    devices
+}: {
+    isPowered: boolean;
+    devices: AstalBluetooth.Device[]
 }): JSX.Element => {
     const getLabel = (): string => {
         if (!isPowered) {
@@ -428,7 +428,7 @@ const BluetoothLabel = ({
         }
 
         const connectedDevices = devices.filter(device => device.connected);
-        
+
         if (connectedDevices.length === 0) {
             return 'On';
         }
@@ -512,7 +512,7 @@ const RefreshButton = (): JSX.Element => (
             }
         }}
     >
-        <icon icon={bind(isDiscovering).as((discovering) => 
+        <icon icon={bind(isDiscovering).as((discovering) =>
             discovering ? 'process-stop-symbolic' : 'view-refresh-symbolic'
         )} />
     </button>
@@ -537,10 +537,10 @@ export const BluetoothDevices = (): JSX.Element => {
             }
 
             return availableDevices.map((btDevice) => (
-                <DeviceListItem 
+                <DeviceListItem
                     key={btDevice.address}
-                    btDevice={btDevice} 
-                    connectedDevices={connectedDevices} 
+                    btDevice={btDevice}
+                    connectedDevices={connectedDevices}
                 />
             ));
         },
@@ -560,12 +560,12 @@ export const BluetoothDevices = (): JSX.Element => {
 
 ### Device List Item
 ```typescript
-const DeviceListItem = ({ 
-    btDevice, 
-    connectedDevices 
-}: { 
-    btDevice: AstalBluetooth.Device; 
-    connectedDevices: string[] 
+const DeviceListItem = ({
+    btDevice,
+    connectedDevices
+}: {
+    btDevice: AstalBluetooth.Device;
+    connectedDevices: string[]
 }): JSX.Element => {
     const isConnected = connectedDevices.includes(btDevice.address);
 
@@ -697,16 +697,16 @@ const DeviceStatus = ({ device }: { device: AstalBluetooth.Device }): JSX.Elemen
 };
 
 // Device icon with battery indicator
-const DeviceIcon = ({ 
-    device, 
-    connectedDevices 
-}: { 
-    device: AstalBluetooth.Device; 
-    connectedDevices: string[] 
+const DeviceIcon = ({
+    device,
+    connectedDevices
+}: {
+    device: AstalBluetooth.Device;
+    connectedDevices: string[]
 }): JSX.Element => {
     const isConnected = connectedDevices.includes(device.address);
     const iconName = device.icon || 'bluetooth-symbolic';
-    
+
     return (
         <box className={'menu-item-icon-container'}>
             <icon

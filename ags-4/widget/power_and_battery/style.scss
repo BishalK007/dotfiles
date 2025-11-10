@@ -1,56 +1,61 @@
 @use "../../colors.scss";
-//  Bar Styles
-//
-.power-and-battery-box {
-    border-radius: 80px;
-    border: 1px solid;
-    min-height: 30px;
-    min-width: 36px;
-    border-color: colors.$secondary-color;
-    background: colors.$primary-color;
-    transition: all 0.2s ease;
-}
-.power-and-battery-box:hover {
-    background: color-mix(in srgb, colors.$primary-color 90%, colors.$secondary-color 10%);
-    transform: scale(1.02);
-}
+@mixin styles {
+    //
+    //  Bar Styles
+    //
+    .power-and-battery-box {
+        border-radius: 80px;
+        border: 1px solid;
+        min-height: 30px;
+        min-width: 36px;
+        border-color: colors.$secondary-color;
+        background: colors.$primary-color;
+        transition: all 0.2s ease;
+    }
+    .power-and-battery-box:hover {
+        background: color-mix(
+            in srgb,
+            colors.$primary-color 90%,
+            colors.$secondary-color 10%
+        );
+        transform: scale(1.02);
+    }
 
+    .power-and-battery-icon {
+        min-width: 16px;
+        font-size: 16px;
+        color: colors.$secondary-color;
+        padding: 0 0 0 5px;
+    }
 
-.power-and-battery-icon {
-    min-width: 16px;
-    font-size: 16px;
-    color: colors.$secondary-color;
-    padding: 0 0 0 5px;
-}
+    .power-and-battery-percentage {
+        font-size: 14px;
+        color: colors.$secondary-color;
+        padding-left: 8px;
+        padding-right: 5px;
+    }
 
-
-.power-and-battery-percentage{
-    font-size: 14px;
-    color: colors.$secondary-color;
-    padding-left: 8px;
-    padding-right: 5px;
-}
-
-//
-// Popover Styles:: Power Popover
-//
-.power-profile-popover,
-.power-profile-popover contents,
-.power-profile-popover arrow {
-    all: unset;
-    background: transparent;
-}
-.power-profile-popover-container {
-    padding: 10px;
-    border-radius: 10px;
-    min-width: 180px;
-    min-height: 30px;
-    background-color: colors.$primary-color;
-} 
-.power-profile-top-label{
-    color: colors.$secondary-color;
-    padding-bottom: 10px;
-}
-.power-profile-button{
-    padding-left: 10px;
+    //
+    // Popover Styles:: Power Popover
+    //
+    .power-profile-popover,
+    .power-profile-popover contents,
+    .power-profile-popover arrow {
+        all: unset;
+        background: transparent;
+    }
+    .power-profile-popover-container {
+        padding: 10px;
+        border-radius: 10px;
+        min-width: 180px;
+        min-height: 30px;
+        background-color: colors.$primary-color;
+    }
+    .power-profile-top-label {
+        color: colors.$secondary-color;
+        padding-bottom: 10px;
+    }
+    .power-profile-button {
+        padding-left: 10px;
+    }
 }

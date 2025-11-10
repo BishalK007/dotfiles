@@ -36,7 +36,7 @@ const hyprlandService = AstalHyprland.get_default();
 // Monitor addition handling
 hyprland.connect('monitor-added', () => {
     const { restartCommand } = options.hyprpanel;
-    
+
     if (options.hyprpanel.restartAgs.get()) {
         bash(restartCommand.get());
     }
@@ -71,7 +71,7 @@ hyprlandService.clients: AstalHyprland.Client[]
 // Client tracking example
 Variable.derive([bind(hyprlandService, 'focusedClient')], (client) => {
     if (client) {
-        console.log(`Focused: ${client.title} (${client.class})`);
+        print(`[AstalHyprlandService] Focused: ${client.title} (${client.class})`);
     }
 });
 ```
@@ -168,7 +168,7 @@ hyprlandService.connect('monitor-removed', () => {
 // Workspace switching
 hyprlandService.connect('workspace-changed', (service, workspace) => {
     // Handle workspace change
-    console.log(`Switched to workspace: ${workspace.id}`);
+    print(`[AstalHyprlandService]Switched to workspace: ${workspace.id}`);
 });
 
 // Focus change signals
@@ -253,7 +253,7 @@ interface AstalHyprland.Workspace {
     hasfullscreen: boolean;
     lastwindow: string;
     lastwindowtitle: string;
-    
+
     // Methods
     get_clients(): AstalHyprland.Client[];
 }
@@ -366,7 +366,7 @@ function updateBarVisibilityByWindowCount(): void {
 
         const windowCount = workspace.get_clients().length;
         const shouldHide = windowCount === 1;
-        
+
         setBarVisibility(monitor.id, !shouldHide);
     });
 }
@@ -411,7 +411,7 @@ export async function forMonitors(widget: (monitor: number) => Promise<JSX.Eleme
 export const Bar = async (monitor: number): Promise<JSX.Element> => {
     const gdkMonitorMapper = new GdkMonitorMapper();
     const hyprlandMonitor = gdkMonitorMapper.getHyprlandMonitor(monitor);
-    
+
     // Use hyprlandMonitor for monitor-specific logic
     return (
         <window

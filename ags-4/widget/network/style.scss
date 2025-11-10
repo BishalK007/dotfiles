@@ -1,611 +1,681 @@
-@use '../../colors.scss';
-
-//
-// ________ Bar Widget Styles ________
-//
-.network-box {
-    background: colors.$primary-color;
-    color: colors.$secondary-color;
-    border-radius: 80px;
-    min-height: 30px;
-    min-width: 24px;
-    border: 1px solid colors.$secondary-color;
-    transition: all 0.2s ease;
-}
-
-.network-box:hover {
-    background: color-mix(in srgb, colors.$primary-color 90%, colors.$secondary-color 10%);
-    transform: scale(1.02);
-}
-
-.network-icon {
-    margin-left: 8px;
-    margin-right: 8px;
-    font-size: 17px;
-    color: colors.$secondary-color;
-    transition: color 0.2s ease;
-}
-
-.network-status-label {
-    font-size: 15px;
-    font-weight: 500;
-    padding-right: 8px;
-    padding-top: 1px;
-    color: colors.$secondary-color;
-    transition: color 0.2s ease;
-}
-
-//
-// ________ Popup Container Styles ________
-//
-.network-popover,
-.network-popover contents,
-.network-popover arrow {
-    all: unset;
-    background: transparent;
-}
-
-.network-popover-container {
-    padding: 18px;
-    border-radius: 12px;
-    min-width: 400px;
-    min-height: 50px;
-    background-color: colors.$primary-color;
-    border: 1px solid colors.$secondary-color;
-    box-shadow: 0 8px 32px color-mix(in srgb, colors.$secondary-color 20%, transparent 80%);
-}
-
-//
-// ________ Header Styles ________
-//
-.network-header {
-    color: colors.$secondary-color;
-    padding-bottom: 12px;
-    border-bottom: 1px solid color-mix(in srgb, colors.$secondary-color 25%, transparent 75%);
-    margin-bottom: 8px;
-}
-
-.network-header-icon {
-    font-size: 20px;
-    color: colors.$secondary-color;
-    margin-right: 4px;
-}
-
-.network-header-text {
-    font-size: 18px;
-    font-weight: bold;
-    color: colors.$secondary-color;
-}
-
-.network-connectivity-icon {
-    font-size: 16px;
-    margin-right: 4px;
-}
-
-.network-connectivity-label {
-    font-size: 14px;
-    font-weight: 600;
-    border-radius: 6px;
-    padding: 2px 8px;
-}
-
-.network-connectivity-label.connected {
-    color: #4ade80;
-    background: color-mix(in srgb, #4ade80 15%, transparent 85%);
-}
-
-.network-connectivity-label.limited {
-    color: #fbbf24;
-    background: color-mix(in srgb, #fbbf24 15%, transparent 85%);
-}
-
-.network-connectivity-label.portal {
-    color: #f97316;
-    background: color-mix(in srgb, #f97316 15%, transparent 85%);
-}
-
-.network-connectivity-label.disconnected {
-    color: #ef4444;
-    background: color-mix(in srgb, #ef4444 15%, transparent 85%);
-}
-
-//
-// ________ Section Titles ________
-//
-.network-section-title {
-    font-size: 16px;
-    font-weight: bold;
-    color: colors.$secondary-color;
-    margin-bottom: 6px;
-}
-
-.network-subsection-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: color-mix(in srgb, colors.$secondary-color 85%, transparent 15%);
-    margin-bottom: 4px;
-}
-
-//
-// ________ Wired Network Styles ________
-//
-.network-wired-section {
-    border-radius: 8px;
-    background: color-mix(in srgb, colors.$secondary-color 5%, transparent 95%);
-    padding: 12px;
-    border: 1px solid color-mix(in srgb, colors.$secondary-color 15%, transparent 85%);
-}
-
-.network-wired-item {
-    border-radius: 6px;
-    padding: 8px;
-    background: color-mix(in srgb, colors.$secondary-color 3%, transparent 97%);
-}
-
-.network-wired-icon {
-    font-size: 24px;
-    color: #10b981;
-    margin-right: 4px;
-}
-
-.network-wired-name {
-    font-size: 15px;
-    font-weight: 600;
-    color: colors.$secondary-color;
-    margin-bottom: 2px;
-}
-
-.network-wired-status {
-    font-size: 12px;
-    font-weight: 500;
-    border-radius: 4px;
-    padding: 2px 6px;
-}
-
-.network-wired-status.connected {
-    color: #4ade80;
-    background: color-mix(in srgb, #4ade80 15%, transparent 85%);
-}
-
-.network-wired-status.connecting {
-    color: #3b82f6;
-    background: color-mix(in srgb, #3b82f6 15%, transparent 85%);
-}
-
-.network-wired-status.disconnected {
-    color: #6b7280;
-    background: color-mix(in srgb, #6b7280 15%, transparent 85%);
-}
-
-.network-wired-speed {
-    font-size: 11px;
-    color: color-mix(in srgb, colors.$secondary-color 70%, transparent 30%);
-    font-weight: 500;
-}
-
-.network-internet-icon {
-    font-size: 18px;
-}
-
-.network-internet-icon.connected {
-    color: #4ade80;
-}
-.network-internet-icon.connecting {
-    color: #d3ff51;
-}
-
-.network-internet-icon.disconnected {
-    color: #ef4444;
-}
-
-//
-// ________ WiFi Section Styles ________
-//
-.network-wifi-section {
-    border-radius: 8px;
-    background: color-mix(in srgb, colors.$secondary-color 5%, transparent 95%);
-    padding: 12px;
-    border: 1px solid color-mix(in srgb, colors.$secondary-color 15%, transparent 85%);
-}
-
-.network-wifi-header {
-    margin-bottom: 8px;
-}
-
-.network-wifi-toggle {
-    background: color-mix(in srgb, colors.$secondary-color 10%, transparent 90%);
-    border: 1px solid colors.$secondary-color;
-    border-radius: 6px;
-    padding: 4px 12px;
-    min-width: 50px;
-    transition: all 0.2s ease;
-}
-
-.network-wifi-toggle:hover {
-    background: color-mix(in srgb, colors.$secondary-color 20%, transparent 80%);
-    transform: scale(1.05);
-}
-
-.network-wifi-toggle.enabled {
-    background: color-mix(in srgb, #4ade80 20%, transparent 80%);
-    border-color: #4ade80;
-}
-
-.network-wifi-toggle.disabled {
-    background: color-mix(in srgb, #ef4444 20%, transparent 80%);
-    border-color: #ef4444;
-}
-
-.network-wifi-toggle-label {
-    padding: 2px 6px;
-    font-size: 12px;
-    font-weight: bold;
-    color: colors.$secondary-color;
-}
-
-.network-wifi-controls {
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid color-mix(in srgb, colors.$secondary-color 15%, transparent 85%);
-}
-.network-scan-container {
-    padding: 2px 5px;
-}
-.network-scan-button {
-    background: color-mix(in srgb, colors.$secondary-color 8%, transparent 92%);
-    border: 1px solid color-mix(in srgb, colors.$secondary-color 25%, transparent 75%);
-    border-radius: 6px;
-    padding: 6px 12px;
-    transition: all 0.2s ease;
-}
-
-.network-scan-button:hover {
-    background: color-mix(in srgb, colors.$secondary-color 15%, transparent 85%);
-    transform: scale(1.02);
-}
-
-.network-scan-button.scanning {
-    background: color-mix(in srgb, #3b82f6 20%, transparent 80%);
-    border-color: #3b82f6;
-}
-
-.network-scan-icon {
-    font-size: 16px;
-    color: colors.$secondary-color;
-}
-
-.network-scan-button.scanning .network-scan-icon {
-    color: #3b82f6;
-    animation: spin 2s linear infinite;
-}
-
-.network-scan-label {
-    font-size: 13px;
-    font-weight: 500;
-    color: colors.$secondary-color;
-}
-
-//
-// ________ Current WiFi Connection ________
-//
-.network-current-wifi {
-    margin-bottom: 12px;
-}
-
-.network-wifi-current-item {
-    background: color-mix(in srgb, #3b82f6 8%, transparent 92%);
-    border: 1px solid color-mix(in srgb, #3b82f6 25%, transparent 75%);
-    border-radius: 8px;
-    padding: 10px;
-}
-
-.network-wifi-signal-icon {
-    font-size: 20px;
-    color: #4ade80;
-    margin-right: 4px;
-}
-
-.network-wifi-current-ssid {
-    font-size: 15px;
-    font-weight: 600;
-    color: colors.$secondary-color;
-    margin-bottom: 2px;
-}
-
-.network-wifi-strength {
-    font-size: 11px;
-    color: #4ade80;
-    font-weight: 600;
-    background: color-mix(in srgb, #4ade80 15%, transparent 85%);
-    border-radius: 4px;
-    padding: 1px 4px;
-}
-
-.network-wifi-frequency {
-    font-size: 11px;
-    color: color-mix(in srgb, colors.$secondary-color 70%, transparent 30%);
-    font-weight: 500;
-}
-
-.network-wifi-bandwidth {
-    font-size: 11px;
-    color: color-mix(in srgb, colors.$secondary-color 70%, transparent 30%);
-    font-weight: 500;
-}
-
-.network-wifi-disconnect-button {
-    background: color-mix(in srgb, #ef4444 15%, transparent 85%);
-    border: 1px solid #ef4444;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-}
-
-.network-wifi-disconnect-button:hover {
-    background: color-mix(in srgb, #ef4444 25%, transparent 75%);
-    transform: scale(1.1);
-}
-
-.network-wifi-disconnect-icon {
-    padding: 2px 6px;
-    margin: 1px 3px 0 0;
-    font-size: 14px;
-    color: #ef4444;
-}
-
-//
-// ________ Available Networks List ________
-//
-.network-available-networks {
-    max-height: 300px;
-}
-
-.network-wifi-list-container {
-    max-height: 280px;
-    overflow-y: auto;
-    border-radius: 6px;
-    background: color-mix(in srgb, colors.$secondary-color 3%, transparent 97%);
-    border: 1px solid color-mix(in srgb, colors.$secondary-color 12%, transparent 88%);
-}
-
-.network-wifi-list {
-    padding: 4px;
-}
-
-.network-access-point-item {
-    background: color-mix(in srgb, colors.$secondary-color 4%, transparent 96%);
-    border: 1px solid color-mix(in srgb, colors.$secondary-color 15%, transparent 85%);
-    border-radius: 6px;
-    padding: 8px;
-    margin: 2px 0;
-    transition: all 0.2s ease;
-}
-
-.network-access-point-item:hover {
-    background: color-mix(in srgb, colors.$secondary-color 8%, transparent 92%);
-    border-color: color-mix(in srgb, colors.$secondary-color 25%, transparent 75%);
-    transform: scale(1.02);
-}
-
-.network-ap-signal-icon {
-    font-size: 18px;
-    margin-right: 4px;
-}
-
-.network-ap-signal-icon.strong {
-    color: #4ade80;
-}
-
-.network-ap-signal-icon.good {
-    color: #84cc16;
-}
-
-.network-ap-signal-icon.fair {
-    color: #eab308;
-}
-
-.network-ap-signal-icon.weak {
-    color: #ef4444;
-}
-
-.network-ap-ssid {
-    font-size: 14px;
-    font-weight: 600;
-    color: colors.$secondary-color;
-    margin-bottom: 2px;
-}
-
-.network-ap-strength {
-    font-size: 11px;
-    font-weight: 600;
-    border-radius: 3px;
-    padding: 1px 4px;
-    background: color-mix(in srgb, colors.$secondary-color 12%, transparent 88%);
-    color: color-mix(in srgb, colors.$secondary-color 85%, transparent 15%);
-}
-
-.network-ap-security {
-    font-size: 11px;
-    font-weight: 500;
-    border-radius: 3px;
-    padding: 1px 4px;
-}
-
-.network-ap-security.secured {
-    background: color-mix(in srgb, #f59e0b 15%, transparent 85%);
-    color: #f59e0b;
-}
-
-.network-ap-security.open {
-    background: color-mix(in srgb, #10b981 15%, transparent 85%);
-    color: #10b981;
-}
-
-.network-ap-frequency {
-    font-size: 11px;
-    color: color-mix(in srgb, colors.$secondary-color 65%, transparent 35%);
-    font-weight: 500;
-}
-
-.network-ap-lock-icon {
-    font-size: 16px;
-    margin-right: 6px;
-}
-
-.network-ap-lock-icon.locked {
-    color: #f59e0b;
-}
-
-.network-ap-lock-icon.open {
-    color: #10b981;
-}
-
-.network-ap-connect-button {
-    background: color-mix(in srgb, #3b82f6 15%, transparent 85%);
-    border: 1px solid #3b82f6;
-    border-radius: 6px;
-    padding: 6px;
-    transition: all 0.2s ease;
-}
-
-.network-ap-connect-button:hover {
-    background: color-mix(in srgb, #3b82f6 25%, transparent 75%);
-    transform: scale(1.1);
-}
-
-.network-ap-connect-icon {
-    padding: 0 6px;
-    font-size: 14px;
-    color: #3b82f6;
-}
-
-.network-no-networks {
-    font-size: 13px;
-    color: color-mix(in srgb, colors.$secondary-color 65%, transparent 35%);
-    font-style: italic;
-    padding: 20px;
-    text-align: center;
-}
-
-//
-// ________ Animations ________
-//
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
+@use "../../colors.scss";
+@mixin styles {
+    //
+    // ________ Bar Widget Styles ________
+    //
+    .network-box {
+        background: colors.$primary-color;
+        color: colors.$secondary-color;
+        border-radius: 80px;
+        min-height: 30px;
+        min-width: 24px;
+        border: 1px solid colors.$secondary-color;
+        transition: all 0.2s ease;
     }
-    to {
-        transform: rotate(360deg);
-    }
-}
 
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-        transform: scale(1);
+    .network-box:hover {
+        background: color-mix(
+            in srgb,
+            colors.$primary-color 90%,
+            colors.$secondary-color 10%
+        );
+        transform: scale(1.02);
     }
-    50% {
-        opacity: 0.7;
+
+    .network-icon {
+        margin-left: 8px;
+        margin-right: 8px;
+        font-size: 17px;
+        color: colors.$secondary-color;
+        transition: color 0.2s ease;
+    }
+
+    .network-status-label {
+        font-size: 15px;
+        font-weight: 500;
+        padding-right: 8px;
+        padding-top: 1px;
+        color: colors.$secondary-color;
+        transition: color 0.2s ease;
+    }
+
+    //
+    // ________ Popup Container Styles ________
+    //
+    .network-popover,
+    .network-popover contents,
+    .network-popover arrow {
+        all: unset;
+        background: transparent;
+    }
+
+    .network-popover-container {
+        padding: 18px;
+        border-radius: 12px;
+        min-width: 400px;
+        min-height: 50px;
+        background-color: colors.$primary-color;
+        border: 1px solid colors.$secondary-color;
+        box-shadow: 0 8px 32px
+            color-mix(in srgb, colors.$secondary-color 20%, transparent 80%);
+    }
+
+    //
+    // ________ Header Styles ________
+    //
+    .network-header {
+        color: colors.$secondary-color;
+        padding-bottom: 12px;
+        border-bottom: 1px solid
+            color-mix(in srgb, colors.$secondary-color 25%, transparent 75%);
+        margin-bottom: 8px;
+    }
+
+    .network-header-icon {
+        font-size: 20px;
+        color: colors.$secondary-color;
+        margin-right: 4px;
+    }
+
+    .network-header-text {
+        font-size: 18px;
+        font-weight: bold;
+        color: colors.$secondary-color;
+    }
+
+    .network-connectivity-icon {
+        font-size: 16px;
+        margin-right: 4px;
+    }
+
+    .network-connectivity-label {
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 6px;
+        padding: 2px 8px;
+    }
+
+    .network-connectivity-label.connected {
+        color: #4ade80;
+        background: color-mix(in srgb, #4ade80 15%, transparent 85%);
+    }
+
+    .network-connectivity-label.limited {
+        color: #fbbf24;
+        background: color-mix(in srgb, #fbbf24 15%, transparent 85%);
+    }
+
+    .network-connectivity-label.portal {
+        color: #f97316;
+        background: color-mix(in srgb, #f97316 15%, transparent 85%);
+    }
+
+    .network-connectivity-label.disconnected {
+        color: #ef4444;
+        background: color-mix(in srgb, #ef4444 15%, transparent 85%);
+    }
+
+    //
+    // ________ Section Titles ________
+    //
+    .network-section-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: colors.$secondary-color;
+        margin-bottom: 6px;
+    }
+
+    .network-subsection-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: color-mix(in srgb, colors.$secondary-color 85%, transparent 15%);
+        margin-bottom: 4px;
+    }
+
+    //
+    // ________ Wired Network Styles ________
+    //
+    .network-wired-section {
+        border-radius: 8px;
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 5%,
+            transparent 95%
+        );
+        padding: 12px;
+        border: 1px solid
+            color-mix(in srgb, colors.$secondary-color 15%, transparent 85%);
+    }
+
+    .network-wired-item {
+        border-radius: 6px;
+        padding: 8px;
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 3%,
+            transparent 97%
+        );
+    }
+
+    .network-wired-icon {
+        font-size: 24px;
+        color: #10b981;
+        margin-right: 4px;
+    }
+
+    .network-wired-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: colors.$secondary-color;
+        margin-bottom: 2px;
+    }
+
+    .network-wired-status {
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: 4px;
+        padding: 2px 6px;
+    }
+
+    .network-wired-status.connected {
+        color: #4ade80;
+        background: color-mix(in srgb, #4ade80 15%, transparent 85%);
+    }
+
+    .network-wired-status.connecting {
+        color: #3b82f6;
+        background: color-mix(in srgb, #3b82f6 15%, transparent 85%);
+    }
+
+    .network-wired-status.disconnected {
+        color: #6b7280;
+        background: color-mix(in srgb, #6b7280 15%, transparent 85%);
+    }
+
+    .network-wired-speed {
+        font-size: 11px;
+        color: color-mix(in srgb, colors.$secondary-color 70%, transparent 30%);
+        font-weight: 500;
+    }
+
+    .network-internet-icon {
+        font-size: 18px;
+    }
+
+    .network-internet-icon.connected {
+        color: #4ade80;
+    }
+    .network-internet-icon.connecting {
+        color: #d3ff51;
+    }
+
+    .network-internet-icon.disconnected {
+        color: #ef4444;
+    }
+
+    //
+    // ________ WiFi Section Styles ________
+    //
+    .network-wifi-section {
+        border-radius: 8px;
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 5%,
+            transparent 95%
+        );
+        padding: 12px;
+        border: 1px solid
+            color-mix(in srgb, colors.$secondary-color 15%, transparent 85%);
+    }
+
+    .network-wifi-header {
+        margin-bottom: 8px;
+    }
+
+    .network-wifi-toggle {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 10%,
+            transparent 90%
+        );
+        border: 1px solid colors.$secondary-color;
+        border-radius: 6px;
+        padding: 4px 12px;
+        min-width: 50px;
+        transition: all 0.2s ease;
+    }
+
+    .network-wifi-toggle:hover {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 20%,
+            transparent 80%
+        );
         transform: scale(1.05);
     }
-}
 
-//
-// ________ Scrollbar Styling ________
-//
-.network-wifi-list-container scrollbar {
-    background: color-mix(in srgb, colors.$secondary-color 5%, transparent 95%);
-    border-radius: 4px;
-    width: 8px;
-}
-
-.network-wifi-list-container scrollbar slider {
-    background: color-mix(in srgb, colors.$secondary-color 25%, transparent 75%);
-    border-radius: 4px;
-    min-height: 20px;
-    transition: background 0.2s ease;
-}
-
-.network-wifi-list-container scrollbar slider:hover {
-    background: color-mix(in srgb, colors.$secondary-color 40%, transparent 60%);
-}
-
-//
-// ________ Responsive Design ________
-//
-@media (max-width: 500px) {
-    .network-popover-container {
-        min-width: 350px;
-        padding: 14px;
+    .network-wifi-toggle.enabled {
+        background: color-mix(in srgb, #4ade80 20%, transparent 80%);
+        border-color: #4ade80;
     }
-    
-    .network-header-text {
+
+    .network-wifi-toggle.disabled {
+        background: color-mix(in srgb, #ef4444 20%, transparent 80%);
+        border-color: #ef4444;
+    }
+
+    .network-wifi-toggle-label {
+        padding: 2px 6px;
+        font-size: 12px;
+        font-weight: bold;
+        color: colors.$secondary-color;
+    }
+
+    .network-wifi-controls {
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid
+            color-mix(in srgb, colors.$secondary-color 15%, transparent 85%);
+    }
+    .network-scan-container {
+        padding: 2px 5px;
+    }
+    .network-scan-button {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 8%,
+            transparent 92%
+        );
+        border: 1px solid
+            color-mix(in srgb, colors.$secondary-color 25%, transparent 75%);
+        border-radius: 6px;
+        padding: 6px 12px;
+        transition: all 0.2s ease;
+    }
+
+    .network-scan-button:hover {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 15%,
+            transparent 85%
+        );
+        transform: scale(1.02);
+    }
+
+    .network-scan-button.scanning {
+        background: color-mix(in srgb, #3b82f6 20%, transparent 80%);
+        border-color: #3b82f6;
+    }
+
+    .network-scan-icon {
         font-size: 16px;
+        color: colors.$secondary-color;
     }
-    
-    .network-section-title {
+
+    .network-scan-button.scanning .network-scan-icon {
+        color: #3b82f6;
+        animation: spin 2s linear infinite;
+    }
+
+    .network-scan-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: colors.$secondary-color;
+    }
+
+    //
+    // ________ Current WiFi Connection ________
+    //
+    .network-current-wifi {
+        margin-bottom: 12px;
+    }
+
+    .network-wifi-current-item {
+        background: color-mix(in srgb, #3b82f6 8%, transparent 92%);
+        border: 1px solid color-mix(in srgb, #3b82f6 25%, transparent 75%);
+        border-radius: 8px;
+        padding: 10px;
+    }
+
+    .network-wifi-signal-icon {
+        font-size: 20px;
+        color: #4ade80;
+        margin-right: 4px;
+    }
+
+    .network-wifi-current-ssid {
+        font-size: 15px;
+        font-weight: 600;
+        color: colors.$secondary-color;
+        margin-bottom: 2px;
+    }
+
+    .network-wifi-strength {
+        font-size: 11px;
+        color: #4ade80;
+        font-weight: 600;
+        background: color-mix(in srgb, #4ade80 15%, transparent 85%);
+        border-radius: 4px;
+        padding: 1px 4px;
+    }
+
+    .network-wifi-frequency {
+        font-size: 11px;
+        color: color-mix(in srgb, colors.$secondary-color 70%, transparent 30%);
+        font-weight: 500;
+    }
+
+    .network-wifi-bandwidth {
+        font-size: 11px;
+        color: color-mix(in srgb, colors.$secondary-color 70%, transparent 30%);
+        font-weight: 500;
+    }
+
+    .network-wifi-disconnect-button {
+        background: color-mix(in srgb, #ef4444 15%, transparent 85%);
+        border: 1px solid #ef4444;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .network-wifi-disconnect-button:hover {
+        background: color-mix(in srgb, #ef4444 25%, transparent 75%);
+        transform: scale(1.1);
+    }
+
+    .network-wifi-disconnect-icon {
+        padding: 2px 6px;
+        margin: 1px 3px 0 0;
         font-size: 14px;
+        color: #ef4444;
     }
-}
 
-//
-// ________ State-based Styling ________
-//
-.network-box[data-state="connected"] .network-icon {
-    color: #4ade80;
-}
-
-.network-box[data-state="connecting"] .network-icon {
-    color: #3b82f6;
-    animation: pulse 2s infinite;
-}
-
-.network-box[data-state="disconnected"] .network-icon {
-    color: #ef4444;
-}
-
-.network-box[data-state="limited"] .network-icon {
-    color: #f59e0b;
-}
-
-//
-// ________ Scanning Animation Styles ________
-//
-.network-scanning-container {
-    padding: 20px;
-    min-height: 100px;
-}
-
-.network-scanning-icon {
-    font-size: 32px;
-    color: colors.$secondary-color;
-    margin-bottom: 8px;
-}
-
-.network-scanning-icon.spinning {
-    animation: spin 2s linear infinite;
-}
-
-.network-scanning-text {
-    font-size: 14px;
-    color: colors.$secondary-color;
-    opacity: 0.8;
-    animation: fade 1.5s ease-in-out infinite alternate;
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
+    //
+    // ________ Available Networks List ________
+    //
+    .network-available-networks {
     }
-    to {
-        transform: rotate(360deg);
-    }
-}
 
-@keyframes fade {
-    from {
-        opacity: 0.5;
+    .network-wifi-list-container {
+        border-radius: 6px;
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 3%,
+            transparent 97%
+        );
+        border: 1px solid
+            color-mix(in srgb, colors.$secondary-color 12%, transparent 88%);
     }
-    to {
-        opacity: 1.0;
+
+    .network-wifi-list {
+        padding: 4px;
+    }
+
+    .network-access-point-item {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 4%,
+            transparent 96%
+        );
+        border: 1px solid
+            color-mix(in srgb, colors.$secondary-color 15%, transparent 85%);
+        border-radius: 6px;
+        padding: 8px;
+        margin: 2px 0;
+        transition: all 0.2s ease;
+    }
+
+    .network-access-point-item:hover {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 8%,
+            transparent 92%
+        );
+        border-color: color-mix(
+            in srgb,
+            colors.$secondary-color 25%,
+            transparent 75%
+        );
+        transform: scale(1.02);
+    }
+
+    .network-ap-signal-icon {
+        font-size: 18px;
+        margin-right: 4px;
+    }
+
+    .network-ap-signal-icon.strong {
+        color: #4ade80;
+    }
+
+    .network-ap-signal-icon.good {
+        color: #84cc16;
+    }
+
+    .network-ap-signal-icon.fair {
+        color: #eab308;
+    }
+
+    .network-ap-signal-icon.weak {
+        color: #ef4444;
+    }
+
+    .network-ap-ssid {
+        font-size: 14px;
+        font-weight: 600;
+        color: colors.$secondary-color;
+        margin-bottom: 2px;
+    }
+
+    .network-ap-strength {
+        font-size: 11px;
+        font-weight: 600;
+        border-radius: 3px;
+        padding: 1px 4px;
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 12%,
+            transparent 88%
+        );
+        color: color-mix(in srgb, colors.$secondary-color 85%, transparent 15%);
+    }
+
+    .network-ap-security {
+        font-size: 11px;
+        font-weight: 500;
+        border-radius: 3px;
+        padding: 1px 4px;
+    }
+
+    .network-ap-security.secured {
+        background: color-mix(in srgb, #f59e0b 15%, transparent 85%);
+        color: #f59e0b;
+    }
+
+    .network-ap-security.open {
+        background: color-mix(in srgb, #10b981 15%, transparent 85%);
+        color: #10b981;
+    }
+
+    .network-ap-frequency {
+        font-size: 11px;
+        color: color-mix(in srgb, colors.$secondary-color 65%, transparent 35%);
+        font-weight: 500;
+    }
+
+    .network-ap-lock-icon {
+        font-size: 16px;
+        margin-right: 6px;
+    }
+
+    .network-ap-lock-icon.locked {
+        color: #f59e0b;
+    }
+
+    .network-ap-lock-icon.open {
+        color: #10b981;
+    }
+
+    .network-ap-connect-button {
+        background: color-mix(in srgb, #3b82f6 15%, transparent 85%);
+        border: 1px solid #3b82f6;
+        border-radius: 6px;
+        padding: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .network-ap-connect-button:hover {
+        background: color-mix(in srgb, #3b82f6 25%, transparent 75%);
+        transform: scale(1.1);
+    }
+
+    .network-ap-connect-icon {
+        padding: 0 6px;
+        font-size: 14px;
+        color: #3b82f6;
+    }
+
+    .network-no-networks {
+        font-size: 13px;
+        color: color-mix(in srgb, colors.$secondary-color 65%, transparent 35%);
+        font-style: italic;
+        padding: 20px;
+    }
+
+    //
+    // ________ Animations ________
+    //
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes pulse {
+        0%,
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.7;
+            transform: scale(1.05);
+        }
+    }
+
+    //
+    // ________ Scrollbar Styling ________
+    //
+    .network-wifi-list-container scrollbar {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 5%,
+            transparent 95%
+        );
+        border-radius: 4px;
+        min-width: 8px;
+    }
+
+    .network-wifi-list-container scrollbar slider {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 25%,
+            transparent 75%
+        );
+        border-radius: 4px;
+        min-height: 20px;
+        transition: background 0.2s ease;
+    }
+
+    .network-wifi-list-container scrollbar slider:hover {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 40%,
+            transparent 60%
+        );
+    }
+
+    //
+    // ________ Responsive Design ________
+    //
+    @media (max-width: 500px) {
+        .network-popover-container {
+            min-width: 350px;
+            padding: 14px;
+        }
+
+        .network-header-text {
+            font-size: 16px;
+        }
+
+        .network-section-title {
+            font-size: 14px;
+        }
+    }
+
+    //
+    // ________ State-based Styling ________
+    //
+    .network-box[data-state="connected"] .network-icon {
+        color: #4ade80;
+    }
+
+    .network-box[data-state="connecting"] .network-icon {
+        color: #3b82f6;
+        animation: pulse 2s infinite;
+    }
+
+    .network-box[data-state="disconnected"] .network-icon {
+        color: #ef4444;
+    }
+
+    .network-box[data-state="limited"] .network-icon {
+        color: #f59e0b;
+    }
+
+    //
+    // ________ Scanning Animation Styles ________
+    //
+    .network-scanning-container {
+        padding: 20px;
+        min-height: 100px;
+    }
+
+    .network-scanning-icon {
+        font-size: 32px;
+        color: colors.$secondary-color;
+        margin-bottom: 8px;
+    }
+
+    .network-scanning-icon.spinning {
+        animation: spin 2s linear infinite;
+    }
+
+    .network-scanning-text {
+        font-size: 14px;
+        color: colors.$secondary-color;
+        opacity: 0.8;
+        animation: fade 1.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes fade {
+        from {
+            opacity: 0.5;
+        }
+        to {
+            opacity: 1;
+        }
     }
 }

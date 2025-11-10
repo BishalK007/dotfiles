@@ -1,501 +1,618 @@
-@use '../../colors.scss';
-//
-// ________ Bar Styles ________
-//
-.bluetooth-box {
-    background: colors.$primary-color;
-    color: colors.$secondary-color;
-    border-radius: 80px;
-    min-height: 30px;
-    min-width: 24px;
-    border: 1px solid colors.$secondary-color;
-    transition: all 0.2s ease;
-}
-.bluetooth-box:hover {
-    background: color-mix(in srgb, colors.$primary-color 90%, colors.$secondary-color 10%);
-    transform: scale(1.02);
-}
-
-.bluetooth-icon {
-    margin-left: 8px;
-    margin-right: 8px;
-    font-size: 17px;
-    color: colors.$secondary-color;
-}
-.bluetooth-status-label {
-    font-size: 15px;
-    font-weight: 500;
-    padding-right: 8px;
-    padding-top: 1px;
-}
-
-//
-// ________ Popup Styles ________
-//
-.bluetooth-popover,
-.bluetooth-popover contents,
-.bluetooth-popover arrow {
-    all: unset;
-    background: transparent;
-}
-
-.bluetooth-popover-container {
-    padding: 15px;
-    border-radius: 12px;
-    min-width: 320px;
-    min-height: 40px;
-    background-color: colors.$primary-color;
-    border: 1px solid colors.$secondary-color;
-} 
-
-.bluetooth-header {
-    color: colors.$secondary-color;
-    padding-bottom: 8px;
-    border-bottom: 1px solid color-mix(in srgb, colors.$secondary-color 30%, transparent 70%);
-}
-
-.bluetooth-header-text {
-    font-size: 16px;
-    font-weight: bold;
-    color: colors.$secondary-color;
-}
-
-.bluetooth-toggle-button {
-    background: color-mix(in srgb, colors.$secondary-color 10%, transparent 90%);
-    border: 1px solid colors.$secondary-color;
-    border-radius: 6px;
-    padding: 4px 8px;
-    min-width: 40px;
-    transition: all 0.2s ease;
-}
-
-.bluetooth-toggle-button:hover {
-    background: color-mix(in srgb, colors.$secondary-color 20%, transparent 80%);
-}
-
-.bluetooth-toggle-label {
-    font-size: 14px;
-    font-weight: bold;
-    color: colors.$secondary-color;
-    padding: 6px;
-}
-
-.bluetooth-adapter-status {
-    font-size: 12px;
-    color: color-mix(in srgb, colors.$secondary-color 80%, transparent 20%);
-    padding: 4px 0;
-}
-
-.bluetooth-adapter-label {
-    font-weight: bold;
-}
-
-.bluetooth-scan-controls {
-    padding: 8px 0;
-    border-bottom: 1px solid color-mix(in srgb, colors.$secondary-color 20%, transparent 80%);
-}
-
-.bluetooth-scan-button {
-    background: color-mix(in srgb, colors.$secondary-color 10%, transparent 90%);
-    border: 1px solid colors.$secondary-color;
-    border-radius: 6px;
-    padding: 6px 12px;
-    transition: all 0.2s ease;
-}
-
-.bluetooth-scan-button:hover {
-    background: color-mix(in srgb, colors.$secondary-color 20%, transparent 80%);
-}
-
-.bluetooth-scan-icon {
-    padding-left: 5px;
-    font-size: 18px;
-    color: colors.$secondary-color;
-}
-
-.bluetooth-scan-icon-active {
-    color: color-mix(in srgb, colors.$secondary-color 70%, #4dabf7 30%);
-    animation: pulse 2s infinite;
-}
-
-.bluetooth-scan-icon-inactive {
-    color: color-mix(in srgb, colors.$secondary-color 80%, transparent 20%);
-}
-
-.bluetooth-scan-label {
-    padding-right: 5px;
-    font-size: 14px;
-    color: colors.$secondary-color;
-}
-
-.bluetooth-scan-status {
-    font-size: 11px;
-    color: color-mix(in srgb, colors.$secondary-color 70%, transparent 30%);
-    font-style: italic;
-}
-
-.bluetooth-section-title {
-    font-size: 14px;
-    font-weight: bold;
-    color: colors.$secondary-color;
-    margin-top: 8px;
-    margin-bottom: 4px;
-}
-
-.bluetooth-devices-list {
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.bluetooth-device-item {
-    background: color-mix(in srgb, colors.$secondary-color 5%, transparent 95%);
-    border: 1px solid color-mix(in srgb, colors.$secondary-color 20%, transparent 80%);
-    border-radius: 8px;
-    padding: 8px;
-    margin: 2px 0;
-    transition: all 0.2s ease;
-}
-
-.bluetooth-device-item:hover {
-    background: color-mix(in srgb, colors.$secondary-color 10%, transparent 90%);
-    border-color: color-mix(in srgb, colors.$secondary-color 40%, transparent 60%);
-}
-
-.bluetooth-device-icon {
-    font-size: 18px;
-    color: colors.$secondary-color;
-    min-width: 24px;
-}
-
-// Individual device icon types
-.bluetooth-device-icon-headphones {
-    color: color-mix(in srgb, colors.$secondary-color 90%, #ff6b35 10%);
-}
-
-.bluetooth-device-icon-mouse {
-    color: color-mix(in srgb, colors.$secondary-color 90%, #4dabf7 10%);
-}
-
-.bluetooth-device-icon-keyboard {
-    color: color-mix(in srgb, colors.$secondary-color 90%, #69db7c 10%);
-}
-
-.bluetooth-device-icon-phone {
-    color: color-mix(in srgb, colors.$secondary-color 90%, #fd7e14 10%);
-}
-
-.bluetooth-device-icon-computer {
-    color: color-mix(in srgb, colors.$secondary-color 90%, #495057 10%);
-}
-
-.bluetooth-device-icon-speaker {
-    color: color-mix(in srgb, colors.$secondary-color 90%, #e599f7 10%);
-}
-
-.bluetooth-device-icon-generic {
-    color: colors.$secondary-color;
-}
-
-.bluetooth-device-name {
-    font-size: 13px;
-    font-weight: bold;
-    color: colors.$secondary-color;
-    padding-bottom: 5px;
-}
-
-.bluetooth-device-address {
-    font-size: 11px;
-    color: color-mix(in srgb, colors.$secondary-color 60%, transparent 40%);
-    font-family: monospace;
-}
-
-.bluetooth-device-status {
-    font-size: 11px;
-    color: color-mix(in srgb, colors.$secondary-color 80%, transparent 20%);
-}
-
-.bluetooth-device-status.connected {
-    color: color-mix(in srgb, colors.$secondary-color 70%, #00ff00 30%);
-}
-
-.bluetooth-device-status.disconnected {
-    color: color-mix(in srgb, colors.$secondary-color 60%, colors.$primary-color 40%);
-}
-
-.bluetooth-device-trust {
-    font-size: 10px;
-    color: color-mix(in srgb, colors.$secondary-color 70%, transparent 30%);
-}
-
-.bluetooth-device-trust.trusted {
-    color: color-mix(in srgb, colors.$secondary-color 80%, #00ff00 20%);
-}
-
-.bluetooth-device-trust.not-trusted {
-    color: color-mix(in srgb, colors.$secondary-color 60%, #ff0000 40%);
-}
-
-.bluetooth-device-actions {
-    min-width: 80px;
-}
-
-.bluetooth-device-primary-button,
-.bluetooth-device-trust-button,
-.bluetooth-device-remove-button {
-    background: color-mix(in srgb, colors.$secondary-color 10%, transparent 90%);
-    border: 1px solid color-mix(in srgb, colors.$secondary-color 30%, transparent 70%);
-    border-radius: 4px;
-    padding: 4px 6px;
-    min-width: 24px;
-    min-height: 24px;
-    transition: all 0.2s ease;
-}
-
-.bluetooth-device-primary-button:hover,
-.bluetooth-device-trust-button:hover {
-    background: color-mix(in srgb, colors.$secondary-color 20%, transparent 80%);
-    border-color: colors.$secondary-color;
-
-}
-
-.bluetooth-device-remove-button:hover {
-    background: color-mix(in srgb, colors.$secondary-color 20%, #ff0000 10%);
-    border-color: color-mix(in srgb, colors.$secondary-color 70%, #ff0000 30%);
-}
-
-.bluetooth-device-action-icon {
-    font-size: 18px;
-    color: colors.$secondary-color;
-    min-width: 24px;
-}
-//paddings
-.bluetooth-device-action-icon-disconnect,
-.bluetooth-device-action-icon-connect {
-    font-size: 16px;
-    padding: 0 8px 0 0;
-}
-.bluetooth-device-action-icon-trusted {
-    padding: 0 3px 0 0;
-} 
-
-// Individual action icon types
-.bluetooth-device-action-icon-pair {
-    color: color-mix(in srgb, colors.$secondary-color 80%, #228be6 20%);
-}
-
-.bluetooth-device-action-icon-connect {
-    color: color-mix(in srgb, colors.$secondary-color 80%, #51cf66 20%);
-}
-
-.bluetooth-device-action-icon-disconnect {
-    color: color-mix(in srgb, colors.$secondary-color 80%, #ffd43b 20%);
-}
-
-.bluetooth-device-action-icon-connecting {
-    color: color-mix(in srgb, colors.$secondary-color 80%, #748ffc 20%);
-    animation: pulse 1.5s infinite;
-}
-
-.bluetooth-device-action-icon-trusted {
-    color: color-mix(in srgb, colors.$secondary-color 80%, #51cf66 20%);
-}
-
-.bluetooth-device-action-icon-untrusted {
-    color: color-mix(in srgb, colors.$secondary-color 80%, #ff8787 20%);
-}
-
-.bluetooth-device-action-icon-remove {
-    color: color-mix(in srgb, colors.$secondary-color 70%, #ff6b6b 30%);
-}
-
-// Hover states for action icons
-.bluetooth-device-primary-button:hover .bluetooth-device-action-icon-pair {
-    color: color-mix(in srgb, colors.$secondary-color 60%, #228be6 40%);
-}
-
-.bluetooth-device-primary-button:hover .bluetooth-device-action-icon-connect {
-    color: color-mix(in srgb, colors.$secondary-color 60%, #51cf66 40%);
-}
-
-.bluetooth-device-primary-button:hover .bluetooth-device-action-icon-disconnect {
-    color: color-mix(in srgb, colors.$secondary-color 60%, #ffd43b 40%);
-}
-
-.bluetooth-device-trust-button:hover .bluetooth-device-action-icon-trusted {
-    color: color-mix(in srgb, colors.$secondary-color 60%, #51cf66 40%);
-}
-
-.bluetooth-device-trust-button:hover .bluetooth-device-action-icon-untrusted {
-    color: color-mix(in srgb, colors.$secondary-color 60%, #ff8787 40%);
-}
-
-.bluetooth-device-remove-button:hover .bluetooth-device-action-icon-remove {
-    color: color-mix(in srgb, colors.$secondary-color 50%, #ff6b6b 50%);
-}
-
-.bluetooth-no-devices {
-    font-size: 12px;
-    color: color-mix(in srgb, colors.$secondary-color 60%, transparent 40%);
-    font-style: italic;
-    padding: 16px;
-}
-//
-// ________ Enhanced State Styles ________
-//
-
-.bluetooth-header-icon {
-    font-size: 16px;
-    color: colors.$secondary-color;
-}
-
-.bluetooth-header-icon-main {
-    color: color-mix(in srgb, colors.$secondary-color 90%, #4dabf7 10%);
-}
-
-.bluetooth-toggle-on {
-    background: color-mix(in srgb, colors.$secondary-color 20%, transparent 80%);
-    border-color: colors.$secondary-color;
-}
-
-.bluetooth-toggle-off {
-    background: color-mix(in srgb, colors.$secondary-color 5%, transparent 95%);
-    border-color: color-mix(in srgb, colors.$secondary-color 50%, transparent 50%);
-}
-
-.bluetooth-scanning {
-    background: color-mix(in srgb, colors.$secondary-color 15%, transparent 85%);
-    border-color: colors.$secondary-color;
-    animation: pulse 2s infinite;
-}
-
-.bluetooth-scanning-text {
-    color: colors.$secondary-color;
-    font-weight: bold;
-}
-
-.bluetooth-connecting {
-    background: color-mix(in srgb, colors.$secondary-color 25%, transparent 75%);
-    border-color: colors.$secondary-color;
-    animation: pulse 1.5s infinite;
-}
-
-.bluetooth-connected {
-    background: color-mix(in srgb, colors.$secondary-color 15%, #00ff00 5%);
-    border-color: color-mix(in srgb, colors.$secondary-color 80%, #00ff00 20%);
-}
-
-.bluetooth-disconnected {
-    background: color-mix(in srgb, colors.$secondary-color 8%, transparent 92%);
-    border-color: color-mix(in srgb, colors.$secondary-color 40%, transparent 60%);
-}
-
-.bluetooth-trusted {
-    background: color-mix(in srgb, colors.$secondary-color 12%, #00ff00 3%);
-    border-color: color-mix(in srgb, colors.$secondary-color 70%, #00ff00 30%);
-}
-
-.bluetooth-not-trusted {
-    background: color-mix(in srgb, colors.$secondary-color 12%, #ff0000 3%);
-    border-color: color-mix(in srgb, colors.$secondary-color 70%, #ff0000 30%);
-}
-
-.bluetooth-pairing {
-    background: color-mix(in srgb, colors.$secondary-color 20%, transparent 80%);
-    border-color: colors.$secondary-color;
-    animation: pulse 2s infinite;
-}
-
-.bluetooth-device-status.pairing { 
-    color: color-mix(in srgb, colors.$secondary-color 90%, transparent 10%);
-    font-weight: bold;
-    animation: pulse 2s infinite;
-}
-
-.bluetooth-device-status.connecting {
-    color: color-mix(in srgb, colors.$secondary-color 90%, transparent 10%);
-    font-weight: bold;
-    animation: pulse 1.5s infinite;
-}
-
-// Enhanced device icon states based on device status
-.bluetooth-device-item:has(.bluetooth-device-status.connected) .bluetooth-device-icon {
-    color: color-mix(in srgb, colors.$secondary-color 70%, #51cf66 30%);
-}
-
-.bluetooth-device-item:has(.bluetooth-device-status.disconnected) .bluetooth-device-icon {
-    color: color-mix(in srgb, colors.$secondary-color 60%, transparent 40%);
-}
-
-.bluetooth-device-item:has(.bluetooth-device-trust.trusted) .bluetooth-device-icon {
-    filter: brightness(1.1);
-}
-
-.bluetooth-device-item:has(.bluetooth-device-trust.not-trusted) .bluetooth-device-icon {
-    filter: brightness(0.9);
-}
-
-// Enhanced device icon types with connection states
-.bluetooth-device-item:has(.bluetooth-device-status.connected) .bluetooth-device-icon-headphones {
-    color: color-mix(in srgb, #ff6b35 60%, #51cf66 40%);
-}
-
-.bluetooth-device-item:has(.bluetooth-device-status.connected) .bluetooth-device-icon-mouse {
-    color: color-mix(in srgb, #4dabf7 60%, #51cf66 40%);
-}
-
-.bluetooth-device-item:has(.bluetooth-device-status.connected) .bluetooth-device-icon-keyboard {
-    color: color-mix(in srgb, #69db7c 80%, #51cf66 20%);
-}
-
-.bluetooth-device-item:has(.bluetooth-device-status.connected) .bluetooth-device-icon-phone {
-    color: color-mix(in srgb, #fd7e14 60%, #51cf66 40%);
-}
-
-.bluetooth-device-item:has(.bluetooth-device-status.connected) .bluetooth-device-icon-computer {
-    color: color-mix(in srgb, #495057 60%, #51cf66 40%);
-}
-
-.bluetooth-device-item:has(.bluetooth-device-status.connected) .bluetooth-device-icon-speaker {
-    color: color-mix(in srgb, #e599f7 60%, #51cf66 40%);
-}
-
-// Group selectors for styling all icons of a type together
-// All device icons
-.bluetooth-device-icon[class*="bluetooth-device-icon-"] {
-    transition: color 0.2s ease-in-out, filter 0.2s ease-in-out;
-}
-
-// All action icons
-.bluetooth-device-action-icon[class*="bluetooth-device-action-icon-"] {
-    transition: color 0.2s ease-in-out, transform 0.1s ease-in-out;
-}
-
-// All action buttons hover effect for icons
-.bluetooth-device-primary-button:hover .bluetooth-device-action-icon,
-.bluetooth-device-trust-button:hover .bluetooth-device-action-icon,
-.bluetooth-device-remove-button:hover .bluetooth-device-action-icon {
-    transform: scale(1.1);
-}
-
-// All header icons
-.bluetooth-header-icon[class*="bluetooth-header-icon-"] {
-    transition: color 0.2s ease-in-out;
-}
-
-// All scan icons
-.bluetooth-scan-icon[class*="bluetooth-scan-icon-"] {
-    transition: color 0.2s ease-in-out;
-}
-
-// Keyframe animations
-@keyframes pulse {
-    0% {
-        opacity: 1;
+@use "../../colors.scss";
+
+@mixin styles {
+    //
+    // ________ Bar Styles ________
+    //
+    .bluetooth-box {
+        background: colors.$primary-color;
+        color: colors.$secondary-color;
+        border-radius: 80px;
+        min-height: 30px;
+        min-width: 24px;
+        border: 1px solid colors.$secondary-color;
+        transition: all 0.2s ease;
     }
-    50% {
-        opacity: 0.6;
+    .bluetooth-box:hover {
+        background: color-mix(
+            in srgb,
+            colors.$primary-color 90%,
+            colors.$secondary-color 10%
+        );
+        transform: scale(1.02);
     }
-    100% {
-        opacity: 1;
+
+    .bluetooth-icon {
+        margin-left: 8px;
+        margin-right: 8px;
+        font-size: 17px;
+        color: colors.$secondary-color;
+    }
+    .bluetooth-status-label {
+        font-size: 15px;
+        font-weight: 500;
+        padding-right: 8px;
+        padding-top: 1px;
+    }
+
+    //
+    // ________ Popup Styles ________
+    //
+    .bluetooth-popover,
+    .bluetooth-popover contents,
+    .bluetooth-popover arrow {
+        all: unset;
+        background: transparent;
+    }
+
+    .bluetooth-popover-container {
+        padding: 15px;
+        border-radius: 12px;
+        min-width: 320px;
+        min-height: 40px;
+        background-color: colors.$primary-color;
+        border: 1px solid colors.$secondary-color;
+    }
+
+    .bluetooth-header {
+        color: colors.$secondary-color;
+        padding-bottom: 8px;
+        border-bottom: 1px solid
+            color-mix(in srgb, colors.$secondary-color 30%, transparent 70%);
+    }
+
+    .bluetooth-header-text {
+        font-size: 16px;
+        font-weight: bold;
+        color: colors.$secondary-color;
+    }
+
+    .bluetooth-toggle-button {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 10%,
+            transparent 90%
+        );
+        border: 1px solid colors.$secondary-color;
+        border-radius: 6px;
+        padding: 4px 8px;
+        min-width: 40px;
+        transition: all 0.2s ease;
+    }
+
+    .bluetooth-toggle-button:hover {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 20%,
+            transparent 80%
+        );
+    }
+
+    .bluetooth-toggle-label {
+        font-size: 14px;
+        font-weight: bold;
+        color: colors.$secondary-color;
+        padding: 6px;
+    }
+
+    .bluetooth-adapter-status {
+        font-size: 12px;
+        color: color-mix(in srgb, colors.$secondary-color 80%, transparent 20%);
+        padding: 4px 0;
+    }
+
+    .bluetooth-adapter-label {
+        font-weight: bold;
+    }
+
+    .bluetooth-scan-controls {
+        padding: 8px 0;
+        border-bottom: 1px solid
+            color-mix(in srgb, colors.$secondary-color 20%, transparent 80%);
+    }
+
+    .bluetooth-scan-button {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 10%,
+            transparent 90%
+        );
+        border: 1px solid colors.$secondary-color;
+        border-radius: 6px;
+        padding: 6px 12px;
+        transition: all 0.2s ease;
+    }
+
+    .bluetooth-scan-button:hover {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 20%,
+            transparent 80%
+        );
+    }
+
+    .bluetooth-scan-icon {
+        padding-left: 5px;
+        font-size: 18px;
+        color: colors.$secondary-color;
+    }
+
+    .bluetooth-scan-icon-active {
+        color: color-mix(in srgb, colors.$secondary-color 70%, #4dabf7 30%);
+        animation: pulse 2s infinite;
+    }
+
+    .bluetooth-scan-icon-inactive {
+        color: color-mix(in srgb, colors.$secondary-color 80%, transparent 20%);
+    }
+
+    .bluetooth-scan-label {
+        padding-right: 5px;
+        font-size: 14px;
+        color: colors.$secondary-color;
+    }
+
+    .bluetooth-scan-status {
+        font-size: 11px;
+        color: color-mix(in srgb, colors.$secondary-color 70%, transparent 30%);
+        font-style: italic;
+    }
+
+    .bluetooth-section-title {
+        font-size: 14px;
+        font-weight: bold;
+        color: colors.$secondary-color;
+        margin-top: 8px;
+        margin-bottom: 4px;
+    }
+
+    .bluetooth-devices-list {
+    }
+
+    .bluetooth-device-item {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 5%,
+            transparent 95%
+        );
+        border: 1px solid
+            color-mix(in srgb, colors.$secondary-color 20%, transparent 80%);
+        border-radius: 8px;
+        padding: 8px;
+        margin: 2px 0;
+        transition: all 0.2s ease;
+    }
+
+    .bluetooth-device-item:hover {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 10%,
+            transparent 90%
+        );
+        border-color: color-mix(
+            in srgb,
+            colors.$secondary-color 40%,
+            transparent 60%
+        );
+    }
+
+    .bluetooth-device-icon {
+        font-size: 18px;
+        color: colors.$secondary-color;
+        min-width: 24px;
+    }
+
+    // Individual device icon types
+    .bluetooth-device-icon-headphones {
+        color: color-mix(in srgb, colors.$secondary-color 90%, #ff6b35 10%);
+    }
+
+    .bluetooth-device-icon-mouse {
+        color: color-mix(in srgb, colors.$secondary-color 90%, #4dabf7 10%);
+    }
+
+    .bluetooth-device-icon-keyboard {
+        color: color-mix(in srgb, colors.$secondary-color 90%, #69db7c 10%);
+    }
+
+    .bluetooth-device-icon-phone {
+        color: color-mix(in srgb, colors.$secondary-color 90%, #fd7e14 10%);
+    }
+
+    .bluetooth-device-icon-computer {
+        color: color-mix(in srgb, colors.$secondary-color 90%, #495057 10%);
+    }
+
+    .bluetooth-device-icon-speaker {
+        color: color-mix(in srgb, colors.$secondary-color 90%, #e599f7 10%);
+    }
+
+    .bluetooth-device-icon-generic {
+        color: colors.$secondary-color;
+    }
+
+    .bluetooth-device-name {
+        font-size: 13px;
+        font-weight: bold;
+        color: colors.$secondary-color;
+        padding-bottom: 5px;
+    }
+
+    .bluetooth-device-address {
+        font-size: 11px;
+        color: color-mix(in srgb, colors.$secondary-color 60%, transparent 40%);
+        font-family: monospace;
+    }
+
+    .bluetooth-device-status {
+        font-size: 11px;
+        color: color-mix(in srgb, colors.$secondary-color 80%, transparent 20%);
+    }
+
+    .bluetooth-device-status.connected {
+        color: color-mix(in srgb, colors.$secondary-color 70%, #00ff00 30%);
+    }
+
+    .bluetooth-device-status.disconnected {
+        color: color-mix(
+            in srgb,
+            colors.$secondary-color 60%,
+            colors.$primary-color 40%
+        );
+    }
+
+    .bluetooth-device-trust {
+        font-size: 10px;
+        color: color-mix(in srgb, colors.$secondary-color 70%, transparent 30%);
+    }
+
+    .bluetooth-device-trust.trusted {
+        color: color-mix(in srgb, colors.$secondary-color 80%, #00ff00 20%);
+    }
+
+    .bluetooth-device-trust.not-trusted {
+        color: color-mix(in srgb, colors.$secondary-color 60%, #ff0000 40%);
+    }
+
+    .bluetooth-device-actions {
+        min-width: 80px;
+    }
+
+    .bluetooth-device-primary-button,
+    .bluetooth-device-trust-button,
+    .bluetooth-device-remove-button {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 10%,
+            transparent 90%
+        );
+        border: 1px solid
+            color-mix(in srgb, colors.$secondary-color 30%, transparent 70%);
+        border-radius: 4px;
+        padding: 4px 6px;
+        min-width: 24px;
+        min-height: 24px;
+        transition: all 0.2s ease;
+    }
+
+    .bluetooth-device-primary-button:hover,
+    .bluetooth-device-trust-button:hover {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 20%,
+            transparent 80%
+        );
+        border-color: colors.$secondary-color;
+    }
+
+    .bluetooth-device-remove-button:hover {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 20%,
+            #ff0000 10%
+        );
+        border-color: color-mix(
+            in srgb,
+            colors.$secondary-color 70%,
+            #ff0000 30%
+        );
+    }
+
+    .bluetooth-device-action-icon {
+        font-size: 18px;
+        color: colors.$secondary-color;
+        min-width: 24px;
+    }
+    //paddings
+    .bluetooth-device-action-icon-disconnect,
+    .bluetooth-device-action-icon-connect {
+        font-size: 16px;
+        padding: 0 8px 0 0;
+    }
+    .bluetooth-device-action-icon-trusted {
+        padding: 0 3px 0 0;
+    }
+
+    // Individual action icon types
+    .bluetooth-device-action-icon-pair {
+        color: color-mix(in srgb, colors.$secondary-color 80%, #228be6 20%);
+    }
+
+    .bluetooth-device-action-icon-connect {
+        color: color-mix(in srgb, colors.$secondary-color 80%, #51cf66 20%);
+    }
+
+    .bluetooth-device-action-icon-disconnect {
+        color: color-mix(in srgb, colors.$secondary-color 80%, #ffd43b 20%);
+    }
+
+    .bluetooth-device-action-icon-connecting {
+        color: color-mix(in srgb, colors.$secondary-color 80%, #748ffc 20%);
+        animation: pulse 1.5s infinite;
+    }
+
+    .bluetooth-device-action-icon-trusted {
+        color: color-mix(in srgb, colors.$secondary-color 80%, #51cf66 20%);
+    }
+
+    .bluetooth-device-action-icon-untrusted {
+        color: color-mix(in srgb, colors.$secondary-color 80%, #ff8787 20%);
+    }
+
+    .bluetooth-device-action-icon-remove {
+        color: color-mix(in srgb, colors.$secondary-color 70%, #ff6b6b 30%);
+    }
+
+    // Hover states for action icons
+    .bluetooth-device-primary-button:hover .bluetooth-device-action-icon-pair {
+        color: color-mix(in srgb, colors.$secondary-color 60%, #228be6 40%);
+    }
+
+    .bluetooth-device-primary-button:hover
+        .bluetooth-device-action-icon-connect {
+        color: color-mix(in srgb, colors.$secondary-color 60%, #51cf66 40%);
+    }
+
+    .bluetooth-device-primary-button:hover
+        .bluetooth-device-action-icon-disconnect {
+        color: color-mix(in srgb, colors.$secondary-color 60%, #ffd43b 40%);
+    }
+
+    .bluetooth-device-trust-button:hover .bluetooth-device-action-icon-trusted {
+        color: color-mix(in srgb, colors.$secondary-color 60%, #51cf66 40%);
+    }
+
+    .bluetooth-device-trust-button:hover
+        .bluetooth-device-action-icon-untrusted {
+        color: color-mix(in srgb, colors.$secondary-color 60%, #ff8787 40%);
+    }
+
+    .bluetooth-device-remove-button:hover .bluetooth-device-action-icon-remove {
+        color: color-mix(in srgb, colors.$secondary-color 50%, #ff6b6b 50%);
+    }
+
+    .bluetooth-no-devices {
+        font-size: 12px;
+        color: color-mix(in srgb, colors.$secondary-color 60%, transparent 40%);
+        font-style: italic;
+        padding: 16px;
+    }
+    //
+    // ________ Enhanced State Styles ________
+    //
+
+    .bluetooth-header-icon {
+        font-size: 16px;
+        color: colors.$secondary-color;
+    }
+
+    .bluetooth-header-icon-main {
+        color: color-mix(in srgb, colors.$secondary-color 90%, #4dabf7 10%);
+    }
+
+    .bluetooth-toggle-on {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 20%,
+            transparent 80%
+        );
+        border-color: colors.$secondary-color;
+    }
+
+    .bluetooth-toggle-off {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 5%,
+            transparent 95%
+        );
+        border-color: color-mix(
+            in srgb,
+            colors.$secondary-color 50%,
+            transparent 50%
+        );
+    }
+
+    .bluetooth-scanning {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 15%,
+            transparent 85%
+        );
+        border-color: colors.$secondary-color;
+        animation: pulse 2s infinite;
+    }
+
+    .bluetooth-scanning-text {
+        color: colors.$secondary-color;
+        font-weight: bold;
+    }
+
+    .bluetooth-connecting {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 25%,
+            transparent 75%
+        );
+        border-color: colors.$secondary-color;
+        animation: pulse 1.5s infinite;
+    }
+
+    .bluetooth-connected {
+        background: color-mix(in srgb, colors.$secondary-color 15%, #00ff00 5%);
+        border-color: color-mix(
+            in srgb,
+            colors.$secondary-color 80%,
+            #00ff00 20%
+        );
+    }
+
+    .bluetooth-disconnected {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 8%,
+            transparent 92%
+        );
+        border-color: color-mix(
+            in srgb,
+            colors.$secondary-color 40%,
+            transparent 60%
+        );
+    }
+
+    .bluetooth-trusted {
+        background: color-mix(in srgb, colors.$secondary-color 12%, #00ff00 3%);
+        border-color: color-mix(
+            in srgb,
+            colors.$secondary-color 70%,
+            #00ff00 30%
+        );
+    }
+
+    .bluetooth-not-trusted {
+        background: color-mix(in srgb, colors.$secondary-color 12%, #ff0000 3%);
+        border-color: color-mix(
+            in srgb,
+            colors.$secondary-color 70%,
+            #ff0000 30%
+        );
+    }
+
+    .bluetooth-pairing {
+        background: color-mix(
+            in srgb,
+            colors.$secondary-color 20%,
+            transparent 80%
+        );
+        border-color: colors.$secondary-color;
+        animation: pulse 2s infinite;
+    }
+
+    .bluetooth-device-status.pairing {
+        color: color-mix(in srgb, colors.$secondary-color 90%, transparent 10%);
+        font-weight: bold;
+        animation: pulse 2s infinite;
+    }
+
+    .bluetooth-device-status.connecting {
+        color: color-mix(in srgb, colors.$secondary-color 90%, transparent 10%);
+        font-weight: bold;
+        animation: pulse 1.5s infinite;
+    }
+
+    // Enhanced device icon states based on device status
+    .bluetooth-device-item:has(.bluetooth-device-status.connected)
+        .bluetooth-device-icon {
+        color: color-mix(in srgb, colors.$secondary-color 70%, #51cf66 30%);
+    }
+
+    .bluetooth-device-item:has(.bluetooth-device-status.disconnected)
+        .bluetooth-device-icon {
+        color: color-mix(in srgb, colors.$secondary-color 60%, transparent 40%);
+    }
+
+    .bluetooth-device-item:has(.bluetooth-device-trust.trusted)
+        .bluetooth-device-icon {
+        filter: brightness(1.1);
+    }
+
+    .bluetooth-device-item:has(.bluetooth-device-trust.not-trusted)
+        .bluetooth-device-icon {
+        filter: brightness(0.9);
+    }
+
+    // Enhanced device icon types with connection states
+    .bluetooth-device-item:has(.bluetooth-device-status.connected)
+        .bluetooth-device-icon-headphones {
+        color: color-mix(in srgb, #ff6b35 60%, #51cf66 40%);
+    }
+
+    .bluetooth-device-item:has(.bluetooth-device-status.connected)
+        .bluetooth-device-icon-mouse {
+        color: color-mix(in srgb, #4dabf7 60%, #51cf66 40%);
+    }
+
+    .bluetooth-device-item:has(.bluetooth-device-status.connected)
+        .bluetooth-device-icon-keyboard {
+        color: color-mix(in srgb, #69db7c 80%, #51cf66 20%);
+    }
+
+    .bluetooth-device-item:has(.bluetooth-device-status.connected)
+        .bluetooth-device-icon-phone {
+        color: color-mix(in srgb, #fd7e14 60%, #51cf66 40%);
+    }
+
+    .bluetooth-device-item:has(.bluetooth-device-status.connected)
+        .bluetooth-device-icon-computer {
+        color: color-mix(in srgb, #495057 60%, #51cf66 40%);
+    }
+
+    .bluetooth-device-item:has(.bluetooth-device-status.connected)
+        .bluetooth-device-icon-speaker {
+        color: color-mix(in srgb, #e599f7 60%, #51cf66 40%);
+    }
+
+    // Group selectors for styling all icons of a type together
+    // All device icons
+    .bluetooth-device-icon[class*="bluetooth-device-icon-"] {
+        transition:
+            color 0.2s ease-in-out,
+            filter 0.2s ease-in-out;
+    }
+
+    // All action icons
+    .bluetooth-device-action-icon[class*="bluetooth-device-action-icon-"] {
+        transition:
+            color 0.2s ease-in-out,
+            transform 0.1s ease-in-out;
+    }
+
+    // All action buttons hover effect for icons
+    .bluetooth-device-primary-button:hover .bluetooth-device-action-icon,
+    .bluetooth-device-trust-button:hover .bluetooth-device-action-icon,
+    .bluetooth-device-remove-button:hover .bluetooth-device-action-icon {
+        transform: scale(1.1);
+    }
+
+    // All header icons
+    .bluetooth-header-icon[class*="bluetooth-header-icon-"] {
+        transition: color 0.2s ease-in-out;
+    }
+
+    // All scan icons
+    .bluetooth-scan-icon[class*="bluetooth-scan-icon-"] {
+        transition: color 0.2s ease-in-out;
+    }
+
+    // Keyframe animations
+    @keyframes pulse {
+        0% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.6;
+        }
+        100% {
+            opacity: 1;
+        }
     }
 }

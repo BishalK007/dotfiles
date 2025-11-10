@@ -1,127 +1,156 @@
 @use "../../colors.scss";
 @use "sass:color";
-// Derived accents
-$accent-red: color.adjust(colors.$secondary-color, $hue: -100deg, $saturation: 20%);
-$accent-warn: color.adjust(colors.$secondary-color, $hue: -60deg, $saturation: 15%);
+@mixin styles {
+    // Derived accents
+    $accent-red: color.adjust(
+        colors.$secondary-color,
+        $hue: -100deg,
+        $saturation: 20%
+    );
+    $accent-warn: color.adjust(
+        colors.$secondary-color,
+        $hue: -60deg,
+        $saturation: 15%
+    );
 
-.osd-window {
-    background-color: transparent;
-    border-radius: 0;
-    padding: 0;
-    margin: 0;
-}
-
-.osd-container {
-    background-color: colors.$primary-color-transparent;
-    border: 2px solid rgba(218, 152, 240, 0.3);
-    border-radius: 16px;
-    padding: 16px 20px;
-    margin-bottom: 20px;
-    min-width: 280px;
-}
-
-.osd-container-hidden {
-    background-color: colors.$primary-color;
-    border-radius: 10px;
-    padding: 15px 20px;
-    margin-bottom: 0px;
-    min-width: 200px;
-}
-
-//
-// ________ Battery Warning OSD Specifi Styles ________
-//
-.battery-warning-osd-window {
-    background-color: transparent;
-    border-radius: 0;
-    padding: 0;
-    margin: 0;
-}
-
-.battery-warning-osd-container {
-    border-radius: 12px;
-    padding: 20px 0 0 0;
-    margin: 50px 8px 0 8px; /* Center margin instead of right-only */
-    min-width: 300px;
-    max-width: 400px;
-}
-
-// Battery OSD card styling
-.battery-osd-card {
-    background-color: color.mix(colors.$primary-color, colors.$secondary-color, $weight: 95%);
-    border: 2px solid color.scale(colors.$secondary-color, $alpha: -70%);
-    border-radius: 12px;
-    padding: 16px;
-    margin: 8px;
-    min-height: 80px;
-    opacity: 0.95;
-}
-
-.battery-osd-card.battery-urgency-critical {
-    animation: battery-warning-critical-pulse 2s infinite;
-    border-color: color.mix($accent-red, colors.$secondary-color, $weight: 70%);
-    background-color: color.mix(colors.$primary-color, $accent-red, $weight: 90%);
-}
-
-.battery-osd-card.battery-urgency-normal {
-    border-color: color.mix($accent-warn, colors.$secondary-color, $weight: 70%);
-    background-color: color.mix(colors.$primary-color, $accent-warn, $weight: 95%);
-}
-
-// Battery OSD icon
-.battery-osd-icon {
-    font-size: 32px;
-    color: colors.$secondary-color;
-    margin-right: 8px;
-}
-
-// Battery OSD content area
-.battery-osd-content {
-    flex: 1;
-}
-
-.battery-osd-header {
-    margin-bottom: 4px;
-}
-
-// Battery OSD title
-.battery-osd-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: color.mix(white, colors.$secondary-color, $weight: 80%);
-}
-
-// Battery OSD time
-.battery-osd-time {
-    font-size: 12px;
-    color: color.scale(colors.$secondary-color, $alpha: -70%);
-    opacity: 0.8;
-}
-
-// Battery OSD percentage
-.battery-osd-percentage {
-    font-size: 14px;
-    font-weight: 500;
-    color: colors.$secondary-color;
-    margin-bottom: 4px;
-}
-
-// Battery OSD message
-.battery-osd-message {
-    font-size: 13px;
-    color: color.mix(white, colors.$secondary-color, $weight: 70%);
-    line-height: 1.4;
-}
-
-@keyframes battery-warning-critical-pulse {
-    0%, 100% {
-        opacity: 1;
-        transform: scale(1);
-    box-shadow: 0 6px 25px color.mix($accent-red, colors.$secondary-color, $weight: 60%);
+    .osd-window {
+        background-color: transparent;
+        border-radius: 0;
+        padding: 0;
+        margin: 0;
     }
-    50% {
+
+    .osd-container {
+        background-color: colors.$primary-color;
+        border: 2px solid rgba(218, 152, 240, 0.3);
+        border-radius: 16px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        min-width: 280px;
+    }
+
+    .osd-container-hidden {
+        background-color: colors.$primary-color;
+        border-radius: 10px;
+        padding: 15px 20px;
+        margin-bottom: 0px;
+        min-width: 200px;
+    }
+
+    //
+    // ________ Battery Warning OSD Specifi Styles ________
+    //
+    .battery-warning-osd-window {
+        background-color: transparent;
+        border-radius: 0;
+        padding: 0;
+        margin: 0;
+    }
+
+    .battery-warning-osd-container {
+        border-radius: 12px;
+        padding: 20px 0 0 0;
+        margin: 50px 8px 0 8px; /* Center margin instead of right-only */
+        min-width: 300px;
+    }
+
+    // Battery OSD card styling
+    .battery-osd-card {
+        background-color: color.mix(
+            colors.$primary-color,
+            colors.$secondary-color,
+            $weight: 95%
+        );
+        border: 2px solid color.scale(colors.$secondary-color, $alpha: -70%);
+        border-radius: 12px;
+        padding: 16px;
+        margin: 8px;
+        min-height: 80px;
         opacity: 0.95;
-        transform: scale(1.01);
-    box-shadow: 0 8px 30px color.mix($accent-red, colors.$secondary-color, $weight: 40%);
+    }
+
+    .battery-osd-card.battery-urgency-critical {
+        animation: battery-warning-critical-pulse 2s infinite;
+        border-color: color.mix(
+            $accent-red,
+            colors.$secondary-color,
+            $weight: 70%
+        );
+        background-color: color.mix(
+            colors.$primary-color,
+            $accent-red,
+            $weight: 90%
+        );
+    }
+
+    .battery-osd-card.battery-urgency-normal {
+        border-color: color.mix(
+            $accent-warn,
+            colors.$secondary-color,
+            $weight: 70%
+        );
+        background-color: color.mix(
+            colors.$primary-color,
+            $accent-warn,
+            $weight: 95%
+        );
+    }
+
+    // Battery OSD icon
+    .battery-osd-icon {
+        font-size: 32px;
+        color: colors.$secondary-color;
+        margin-right: 8px;
+    }
+
+    // Battery OSD content area
+
+    .battery-osd-header {
+        margin-bottom: 4px;
+    }
+
+    // Battery OSD title
+    .battery-osd-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: color.mix(white, colors.$secondary-color, $weight: 80%);
+    }
+
+    // Battery OSD time
+    .battery-osd-time {
+        font-size: 12px;
+        color: color.scale(colors.$secondary-color, $alpha: -70%);
+        opacity: 0.8;
+    }
+
+    // Battery OSD percentage
+    .battery-osd-percentage {
+        font-size: 14px;
+        font-weight: 500;
+        color: colors.$secondary-color;
+        margin-bottom: 4px;
+    }
+
+    // Battery OSD message
+    .battery-osd-message {
+        font-size: 13px;
+        color: color.mix(white, colors.$secondary-color, $weight: 70%);
+        line-height: 1.4;
+    }
+
+    @keyframes battery-warning-critical-pulse {
+        0%,
+        100% {
+            opacity: 1;
+            transform: scale(1);
+            box-shadow: 0 6px 25px
+                color.mix($accent-red, colors.$secondary-color, $weight: 60%);
+        }
+        50% {
+            opacity: 0.95;
+            transform: scale(1.01);
+            box-shadow: 0 8px 30px
+                color.mix($accent-red, colors.$secondary-color, $weight: 40%);
+        }
     }
 }

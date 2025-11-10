@@ -1,85 +1,145 @@
-@use '../../colors.scss';
-//
-// ________ Bar Styles ________
-//
-.my-device-box {
-    background: colors.$primary-color;
-    color: colors.$secondary-color;
-    border-radius: 80px;
-    min-height: 30px;
-    min-width: 24px;
-    border: 1px solid colors.$secondary-color;
-    transition: all 0.2s ease;
-}
+@use "../../colors.scss";
+@mixin styles {
+    //
+    // ________ Bar Styles ________
+    //
+    .my-device-box {
+        background: colors.$primary-color;
+        color: colors.$secondary-color;
+        border-radius: 80px;
+        min-height: 30px;
+        min-width: 24px;
+        border: 1px solid colors.$secondary-color;
+        transition: all 0.2s ease;
+    }
 
-.my-device-box:hover {
-    background: color-mix(in srgb, colors.$primary-color 90%, colors.$secondary-color 10%);
-    transform: scale(1.02);
-}
+    .my-device-box:hover {
+        background: color-mix(
+            in srgb,
+            colors.$primary-color 90%,
+            colors.$secondary-color 10%
+        );
+        transform: scale(1.02);
+    }
 
-.my-device-icon {
-    margin-left: 8px;
-    margin-right: 12px;
-    font-size: 17px;
-    color: colors.$secondary-color;
-}
+    .my-device-icon {
+        margin-left: 8px;
+        margin-right: 12px;
+        font-size: 17px;
+        color: colors.$secondary-color;
+    }
 
-.my-device-label {
-    font-size: 15px;
-    font-weight: 500;
-    padding-right: 8px;
-    padding-top: 1px;
-}
+    .my-device-label {
+        font-size: 15px;
+        font-weight: 500;
+        padding-right: 8px;
+        padding-top: 1px;
+    }
 
-//
-// ________ Popup Styles ________
-//
-.my-device-popover,
-.my-device-popover contents,
-.my-device-popover arrow {
-    all: unset;
-    background: transparent;
-}
+    //
+    // ________ Popup Styles ________
+    //
+    .my-device-popover,
+    .my-device-popover contents,
+    .my-device-popover arrow {
+        all: unset;
+        background: transparent;
+    }
 
-.my-device-popover-container {
-    padding: 15px;
-    border-radius: 12px;
-    min-width: 320px;
-    min-height: 40px;
-    background-color: colors.$primary-color;
-    border: 1px solid colors.$secondary-color;
-}
+    .my-device-popover-container {
+        padding: 15px;
+        border-radius: 12px;
+        min-width: 320px;
+        min-height: 40px;
+        background-color: colors.$primary-color;
+        border: 1px solid colors.$secondary-color;
+    }
 
-.nvidia-header-box,
-.asus-header-box {
-    padding-bottom: 8px;
-    border-bottom: 1px solid color-mix(in srgb, colors.$secondary-color 30%, transparent 70%);
-}
+    .nvidia-header-box,
+    .asus-header-box {
+        padding-bottom: 8px;
+        border-bottom: 1px solid
+            color-mix(in srgb, colors.$secondary-color 30%, transparent 70%);
+    }
 
-.nvidia-header-text,
-.asus-header-text {
-    font-size: 16px;
-    font-weight: bold;
-    color: colors.$secondary-color;
-}
+    .nvidia-header-text,
+    .asus-header-text {
+        font-size: 16px;
+        font-weight: bold;
+        color: colors.$secondary-color;
+    }
 
-.nvidia-gpu-stats-box {
-    color: colors.$secondary-color;
-    background: color-mix(in srgb, colors.$primary-color 90%, colors.$secondary-color 10%);
-    padding: 8px 5px;
-    border: 1px solid colors.$secondary-color;
-    border-radius: 12px;
-}
+    .nvidia-gpu-stats-box {
+        color: colors.$secondary-color;
+        background: color-mix(
+            in srgb,
+            colors.$primary-color 90%,
+            colors.$secondary-color 10%
+        );
+        padding: 8px 5px;
+        border: 1px solid colors.$secondary-color;
+        border-radius: 12px;
+    }
 
-.nvidia-gpu-mem-temp-box {
-    padding: 8px 0;
-}
+    .nvidia-gpu-mem-temp-box {
+        padding: 8px 0;
+    }
 
-.nvidia-info-box {
-    padding: 0 0 15px 0;
-}
+    .nvidia-info-box {
+        padding: 0 0 15px 0;
+    }
 
-.nvidia-gpu-utilisation-graph {
-    padding: 8px 5px;
-    min-height: 100px;
+    .nvidia-gpu-utilisation-graph {
+        padding: 8px 5px;
+        min-height: 100px;
+    }
+
+    // Asus profile buttons
+    .asus-prof-btn {
+        background: color-mix(
+            in srgb,
+            colors.$primary-color 92%,
+            colors.$secondary-color 8%
+        );
+        border: 1px solid colors.$secondary-color;
+        border-radius: 10px;
+        padding: 4px 10px;
+    }
+
+    .asus-prof-btn:hover {
+        background: color-mix(
+            in srgb,
+            colors.$primary-color 85%,
+            colors.$secondary-color 15%
+        );
+    }
+
+    .asus-prof-btn.active {
+        background: colors.$secondary-color;
+        color: colors.$primary-color;
+        border-color: colors.$primary-color;
+    }
+
+    .asus-gpu-btn {
+        background: color-mix(
+            in srgb,
+            colors.$primary-color 92%,
+            colors.$secondary-color 8%
+        );
+        border: 1px solid colors.$secondary-color;
+        border-radius: 10px;
+        padding: 4px 10px;
+    }
+    .asus-gpu-btn:hover {
+        background: color-mix(
+            in srgb,
+            colors.$primary-color 85%,
+            colors.$secondary-color 15%
+        );
+    }
+    .asus-gpu-btn.active {
+        background: colors.$secondary-color;
+        color: colors.$primary-color;
+        border-color: colors.$primary-color;
+    }
 }

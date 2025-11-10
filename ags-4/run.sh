@@ -56,7 +56,9 @@ fi
 # Kill existing AGS processes if --kill flag is present
 if [[ "$@" == *"--kill"* ]]; then
     echo "Killing existing AGS processes..."
-    pkill -x ags 2>/dev/null || true
+    pkill -f ags/run.sh 2>/dev/null || true
+    pkill -f dotfiles/ags-4 2>/dev/null || true
+    # pkill -x ags 2>/dev/null || true
     sleep 1
 fi
 

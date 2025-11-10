@@ -1,0 +1,1362 @@
+// import Binding, { bind } from "astal/binding";
+// import { Gtk } from "astal/gtk4";
+// import GLib from "gi://GLib";
+// import {
+//   mergeBindings,
+//   scaleSizeNumber,
+//   chainedBinding,
+// } from "../../utils/utils";
+// // import { DrawingArea } from "../../custom-widgets/drawingarea";
+// import { AsusService } from "../../services/asus";
+// import { NvidiaService } from "../../services/NvidiaService";
+// import { jsx } from "astal/gtk4/jsx-runtime";
+
+// // Reusable graph area using Gtk.DrawingArea
+// type DrawFunc = (area: Gtk.DrawingArea, cr: any, width: number, height: number) => void;
+
+// export const DrawingArea = (props: Gtk.DrawingArea.ConstructorProps) =>
+//   jsx(Gtk.DrawingArea as unknown as typeof Gtk.Widget, props);
+
+// const GraphArea = ({
+//   draw,
+//   intervalMs = 2000,
+//   ...props
+// }: {
+//   draw: DrawFunc;
+//   intervalMs?: number;
+// } & Gtk.DrawingArea.ConstructorProps) =>
+//   (
+//     <DrawingArea
+//       {...props}
+//       setup={(area: Gtk.DrawingArea) => {
+//         try {
+//           area.set_draw_func?.(draw);
+//         } catch {}
+//         let src = 0;
+//         try {
+//           src = GLib.timeout_add(GLib.PRIORITY_DEFAULT, intervalMs, () => {
+//             try {
+//               area.queue_draw?.();
+//             } catch {}
+//             return GLib.SOURCE_CONTINUE;
+//           });
+//         } catch {}
+//         // clean up timer when destroyed/unrealized
+//         const cleanup = () => {
+//           if (src) {
+//             try {
+//               GLib.source_remove(src);
+//             } catch {}
+//             src = 0;
+//           }
+//         };
+//         area.connect?.("unrealize", cleanup);
+//         area.connect?.("destroy", cleanup);
+//       }}
+//     />
+//   );
+
+// // --- GPU Utilisation history (last ~2 minutes @ 2s poll) ---
+// const MAX_UTIL_POINTS = 60; // 60 * 2s = 120s
+// const GPU_UTIL_HISTORY = new Map<string, number[]>();
+// const GPU_POWER_HISTORY = new Map<string, number[]>(); // in Watts
+// let __gpuHistorySubscribed = false;
+// if (!__gpuHistorySubscribed) {
+//   __gpuHistorySubscribed = true;
+//   NvidiaService.data.subscribe((d) => {
+//     const present = new Set<string>();
+//     const gpus = d?.gpus ?? [];
+//     gpus.forEach((g, i) => {
+//       const key = (g as any).uuid || g.name || `gpu-${i}`;
+//       present.add(key);
+//       const util = Math.max(0, Math.min(100, g.util ?? 0));
+//       const arr = GPU_UTIL_HISTORY.get(key) ?? [];
+//       arr.push(util);
+//       if (arr.length > MAX_UTIL_POINTS)
+//         arr.splice(0, arr.length - MAX_UTIL_POINTS);
+//       GPU_UTIL_HISTORY.set(key, arr);
+
+//       const pNow = g.powerInstW ?? g.powerAvgW ?? 0;
+//       const parr = GPU_POWER_HISTORY.get(key) ?? [];
+//       parr.push(Math.max(0, pNow));
+//       if (parr.length > MAX_UTIL_POINTS)
+//         parr.splice(0, parr.length - MAX_UTIL_POINTS);
+//       GPU_POWER_HISTORY.set(key, parr);
+//     });
+//     // prune missing
+//     for (const k of Array.from(GPU_UTIL_HISTORY.keys()))
+//       if (!present.has(k)) GPU_UTIL_HISTORY.delete(k);
+//     for (const k of Array.from(GPU_POWER_HISTORY.keys()))
+//       if (!present.has(k)) GPU_POWER_HISTORY.delete(k);
+//   });
+// }
+
+// function drawUtilGraphForKey(key: string) {
+//   return (area: any, cr: any, width: number, height: number) => {
+//     // derive base color from CSS 'color'
+//     let r = 1,
+//       g = 1,
+//       b = 1;
+//     try {
+//       const sc = area.get_style_context?.();
+//       const rgba = sc?.get_color?.(); // Gdk.RGBA with red/green/blue/alpha in 0..1
+//       if (rgba) {
+//         r = rgba.red ?? r;
+//         g = rgba.green ?? g;
+//         b = rgba.blue ?? b;
+//       }
+//     } catch {}
+//     const data = GPU_UTIL_HISTORY.get(key) ?? [];
+//     // layout margins
+//     const leftMargin = 36; // space for y-axis labels
+//     const rightMargin = 6;
+//     const topMargin = 10;
+//     const bottomMargin = 10;
+//     const plotW = Math.max(1, width - leftMargin - rightMargin);
+//     const plotH = Math.max(1, height - topMargin - bottomMargin);
+
+//     // background (20% of base color)
+//     cr.setSourceRGBA(r, g, b, 0.2);
+//     cr.rectangle(0, 0, width, height);
+//     cr.fill();
+
+//     // y-axis line
+//     cr.setSourceRGBA(r, g, b, 0.7);
+//     cr.setLineWidth(1);
+//     cr.moveTo(leftMargin, topMargin);
+//     cr.lineTo(leftMargin, topMargin + plotH);
+//     cr.stroke();
+
+//     // ticks + labels at 0, 25, 50, 75, 100 %
+//     const ticks = [0, 0.25, 0.5, 0.75, 1];
+//     for (const p of ticks) {
+//       const y = topMargin + (1 - p) * plotH;
+//       // grid line
+//       cr.setSourceRGBA(r, g, b, 0.7);
+//       cr.setLineWidth(1);
+//       cr.moveTo(leftMargin + 0.5, y + 0.5);
+//       cr.lineTo(width - rightMargin - 0.5, y + 0.5);
+//       cr.stroke();
+//       // label
+//       const label = Math.round(p * 100) + " %";
+//       cr.setSourceRGBA(r, g, b, 0.7);
+//       cr.selectFontFace("Sans", 0, 0);
+//       cr.setFontSize(9);
+//       // baseline offset ~3px
+//       cr.moveTo(3, y + 3);
+//       cr.showText(label);
+//     }
+
+//     if (data.length === 0) return;
+
+//     // graph line
+//     // primary line in base color
+//     cr.setSourceRGBA(r, g, b, 1.0);
+//     cr.setLineWidth(2);
+//     const n = data.length;
+//     const step = n > 1 ? plotW / (Math.max(n, MAX_UTIL_POINTS) - 1) : plotW;
+//     const yMin = topMargin + 1;
+//     const yMax = topMargin + plotH - 1;
+//     for (let i = 0; i < n; i++) {
+//       const x = leftMargin + i * step;
+//       const v = Math.max(0, Math.min(100, data[i]));
+//       let y = topMargin + (1 - v / 100) * plotH;
+//       if (y < yMin) y = yMin;
+//       if (y > yMax) y = yMax;
+//       if (i === 0) cr.moveTo(x, y);
+//       else cr.lineTo(x, y);
+//     }
+//     cr.stroke();
+
+//     // current point highlight
+//     const last = data[n - 1] ?? 0;
+//     const x = leftMargin + (n - 1) * step;
+//     let y = topMargin + (1 - last / 100) * plotH;
+//     if (y < yMin) y = yMin;
+//     if (y > yMax) y = yMax;
+//     cr.setSourceRGBA(r, g, b, 1.0);
+//     cr.arc(x, y, 2.5, 0, Math.PI * 2);
+//     cr.fill();
+//   };
+// }
+
+// function drawPowerGraphForKey(key: string, limitW: number | null | undefined) {
+//   return (area: any, cr: any, width: number, height: number) => {
+//     let r = 1,
+//       g = 1,
+//       b = 1;
+//     try {
+//       const sc = area.get_style_context?.();
+//       const rgba = sc?.get_color?.();
+//       if (rgba) {
+//         r = rgba.red ?? r;
+//         g = rgba.green ?? g;
+//         b = rgba.blue ?? b;
+//       }
+//     } catch {}
+//     const data = GPU_POWER_HISTORY.get(key) ?? [];
+//     const leftMargin = 44; // Watts labels can be a bit wider
+//     const rightMargin = 6;
+//     const topMargin = 10;
+//     const bottomMargin = 10;
+//     const plotW = Math.max(1, width - leftMargin - rightMargin);
+//     const plotH = Math.max(1, height - topMargin - bottomMargin);
+
+//     // background (20% base color)
+//     cr.setSourceRGBA(r, g, b, 0.2);
+//     cr.rectangle(0, 0, width, height);
+//     cr.fill();
+
+//     // determine scale limit
+//     const maxData = data.length ? Math.max(...data) : 0;
+//     const limit =
+//       limitW && limitW > 0
+//         ? limitW
+//         : Math.max(100, Math.ceil(maxData / 10) * 10);
+
+//     // y-axis line
+//     cr.setSourceRGBA(r, g, b, 0.7);
+//     cr.setLineWidth(1);
+//     cr.moveTo(leftMargin, topMargin);
+//     cr.lineTo(leftMargin, topMargin + plotH);
+//     cr.stroke();
+
+//     // ticks + labels (0, 25, 50, 75, 100 % of limit)
+//     const ticks = [0, 0.25, 0.5, 0.75, 1];
+//     for (const p of ticks) {
+//       const y = topMargin + (1 - p) * plotH;
+//       // grid
+//       cr.setSourceRGBA(r, g, b, 0.7);
+//       cr.setLineWidth(1);
+//       cr.moveTo(leftMargin + 0.5, y + 0.5);
+//       cr.lineTo(width - rightMargin - 0.5, y + 0.5);
+//       cr.stroke();
+//       // label text
+//       const val = Math.round(p * limit);
+//       const label = `${val} W`;
+//       cr.setSourceRGBA(r, g, b, 0.7);
+//       cr.selectFontFace("Sans", 0, 0);
+//       cr.setFontSize(9);
+//       cr.moveTo(3, y + 3);
+//       cr.showText(label);
+//     }
+
+//     if (data.length === 0) return;
+
+//     // graph line
+//     cr.setSourceRGBA(r, g, b, 1.0);
+//     cr.setLineWidth(2);
+//     const n = data.length;
+//     const step = n > 1 ? plotW / (Math.max(n, MAX_UTIL_POINTS) - 1) : plotW;
+//     const yMin = topMargin + 1;
+//     const yMax = topMargin + plotH - 1;
+//     for (let i = 0; i < n; i++) {
+//       const x = leftMargin + i * step;
+//       const v = Math.max(0, data[i]);
+//       let y = topMargin + (1 - Math.min(1, v / (limit || 1))) * plotH;
+//       if (y < yMin) y = yMin;
+//       if (y > yMax) y = yMax;
+//       if (i === 0) cr.moveTo(x, y);
+//       else cr.lineTo(x, y);
+//     }
+//     cr.stroke();
+
+//     // current point
+//     const last = data[n - 1] ?? 0;
+//     const x = leftMargin + (n - 1) * step;
+//     let y = topMargin + (1 - Math.min(1, last / (limit || 1))) * plotH;
+//     if (y < yMin) y = yMin;
+//     if (y > yMax) y = yMax;
+//     cr.setSourceRGBA(r, g, b, 1.0);
+//     cr.arc(x, y, 2.5, 0, Math.PI * 2);
+//     cr.fill();
+//   };
+// }
+
+// export default function MyDevicePopup() {
+//   return (
+//     <box
+//       orientation={Gtk.Orientation.HORIZONTAL}
+//       cssClasses={["my-device-popover-container"]}
+//       valign={Gtk.Align.CENTER}
+//       halign={Gtk.Align.CENTER}
+//       spacing={scaleSizeNumber(10)}
+//     >
+//       <box
+//         orientation={Gtk.Orientation.VERTICAL}
+//         cssClasses={["my-device-popover-nvidia-box"]}
+//         valign={Gtk.Align.CENTER}
+//         halign={Gtk.Align.CENTER}
+//         spacing={scaleSizeNumber(10)}
+//       >
+//         {/* Nvidia Header */}
+//         <box
+//           orientation={Gtk.Orientation.HORIZONTAL}
+//           valign={Gtk.Align.CENTER}
+//           cssClasses={["nvidia-header-box"]}
+//           hexpand={true}
+//           spacing={scaleSizeNumber(8)}
+//           child={
+//             <label
+//               label="Nvidia"
+//               cssClasses={["nvidia-header-text"]}
+//               valign={Gtk.Align.CENTER}
+//             />
+//           }
+//         />
+//         {/* Nvidia Body */}
+//         <box
+//           orientation={Gtk.Orientation.VERTICAL}
+//           valign={Gtk.Align.CENTER}
+//           cssClasses={["nvidia-body-box"]}
+//           hexpand={true}
+//           spacing={scaleSizeNumber(8)}
+//         >
+//           {/* Driver: 575.51.02      CUDA: 12.9 */}
+//           <box
+//             orientation={Gtk.Orientation.HORIZONTAL}
+//             valign={Gtk.Align.CENTER}
+//             hexpand={true}
+//             spacing={scaleSizeNumber(4)}
+//             cssClasses={["nvidia-info-box"]}
+//           >
+//             <label
+//               label={mergeBindings(
+//                 [NvidiaService.data],
+//                 (d) => `Driver: ${d?.driver ?? "N/A"}`,
+//               )}
+//               cssClasses={["nvidia-info-label"]}
+//               valign={Gtk.Align.CENTER}
+//               halign={Gtk.Align.START}
+//             />
+//             <label
+//               label={mergeBindings(
+//                 [NvidiaService.data],
+//                 (d) => `CUDA: ${d?.cuda ?? "N/A"}`,
+//               )}
+//               cssClasses={["nvidia-info-label"]}
+//               hexpand={true}
+//               valign={Gtk.Align.CENTER}
+//               halign={Gtk.Align.END}
+//             />
+//           </box>
+//           {/* GPUs */}
+//           <box
+//             orientation={Gtk.Orientation.VERTICAL}
+//             spacing={scaleSizeNumber(4)}
+//             cssClasses={["nvidia-gpu-list-box"]}
+//             children={mergeBindings([NvidiaService.data], (d) => {
+//               const gpus = d?.gpus ?? [];
+//               return gpus.map((g, i) => (
+//                 <box
+//                   orientation={Gtk.Orientation.VERTICAL}
+//                   valign={Gtk.Align.CENTER}
+//                   hexpand={true}
+//                   spacing={scaleSizeNumber(4)}
+//                   cssClasses={["nvidia-gpu-box"]}
+//                   children={[
+//                     // Name
+//                     <label
+//                       label={`${g.name}`}
+//                       cssClasses={["nvidia-gpu-name"]}
+//                       valign={Gtk.Align.CENTER}
+//                       halign={Gtk.Align.START}
+//                     />,
+//                     <box
+//                       orientation={Gtk.Orientation.VERTICAL}
+//                       valign={Gtk.Align.CENTER}
+//                       hexpand={true}
+//                       spacing={scaleSizeNumber(4)}
+//                       cssClasses={["nvidia-gpu-stats-box"]}
+//                       children={[
+//                         // Memory, Temp
+//                         <box
+//                           orientation={Gtk.Orientation.HORIZONTAL}
+//                           valign={Gtk.Align.CENTER}
+//                           hexpand={true}
+//                           spacing={scaleSizeNumber(4)}
+//                           cssClasses={["nvidia-gpu-mem-temp-box"]}
+//                           children={[
+//                             <label
+//                               label={`MEM: ${g.memUsedMiB != null && g.memTotalMiB != null ? `${g.memUsedMiB}MiB (${g.memUsedPct}%)` : "N/A"}`}
+//                               cssClasses={["nvidia-gpu-mem-stats"]}
+//                               valign={Gtk.Align.CENTER}
+//                               halign={Gtk.Align.START}
+//                             />,
+//                             <label
+//                               label={`TEMP: ${g.tempC != null ? `${g.tempC}°C` : "N/A"}`}
+//                               cssClasses={["nvidia-gpu-temp-stats"]}
+//                               hexpand={true}
+//                               valign={Gtk.Align.CENTER}
+//                               halign={Gtk.Align.END}
+//                             />,
+//                           ]}
+//                         />,
+//                         // Perf
+//                         <label
+//                           label={`PERF: ${g.pstate != null ? `${g.pstate}` : "N/A"}`}
+//                           cssClasses={["nvidia-gpu-temp-stats"]}
+//                           hexpand={true}
+//                           valign={Gtk.Align.CENTER}
+//                           halign={Gtk.Align.END}
+//                         />,
+//                         // Power Graph
+//                         <box
+//                           orientation={Gtk.Orientation.VERTICAL}
+//                           valign={Gtk.Align.CENTER}
+//                           hexpand={true}
+//                           spacing={scaleSizeNumber(4)}
+//                           cssClasses={["nvidia-gpu-utilisation-box"]}
+//                         >
+//                           <label
+//                             label={`POWER: ${g.powerInstW ?? g.powerAvgW ?? "N/A"}${g.powerInstW != null || g.powerAvgW != null ? " W" : ""}`}
+//                             cssClasses={["nvidia-gpu-utilisation-label"]}
+//                             valign={Gtk.Align.CENTER}
+//                             halign={Gtk.Align.START}
+//                           />
+//                           {(() => {
+//                             const id = (g as any).uuid || g.name || `gpu-${i}`;
+//                             return (
+//                               <GraphArea
+//                                 cssClasses={["nvidia-gpu-utilisation-graph"]}
+//                                 widthRequest={scaleSizeNumber(220)}
+//                                 heightRequest={scaleSizeNumber(90)}
+//                                 intervalMs={2000}
+//                                 draw={drawPowerGraphForKey(id, (g as any).powerLimitW)}
+//                               />
+//                             );
+//                           })()}
+//                         </box>,
+//                         // Utilisation Graph
+//                         <box
+//                           orientation={Gtk.Orientation.VERTICAL}
+//                           valign={Gtk.Align.CENTER}
+//                           hexpand={true}
+//                           spacing={scaleSizeNumber(4)}
+//                           cssClasses={["nvidia-gpu-utilisation-box"]}
+//                         >
+//                           <label
+//                             label={`UTIL: ${g.util != null ? `${g.util}%` : "N/A"}`}
+//                             cssClasses={["nvidia-gpu-utilisation-label"]}
+//                             valign={Gtk.Align.CENTER}
+//                             halign={Gtk.Align.START}
+//                           />
+//                           {(() => {
+//                             const id = (g as any).uuid || g.name || `gpu-${i}`;
+//                             return (
+//                               <GraphArea
+//                                 cssClasses={["nvidia-gpu-utilisation-graph"]}
+//                                 widthRequest={scaleSizeNumber(220)}
+//                                 heightRequest={scaleSizeNumber(90)}
+//                                 intervalMs={2000}
+//                                 draw={drawUtilGraphForKey(id)}
+//                               />
+//                             );
+//                           })()}
+//                         </box>,
+//                       ]} // end children
+//                     />,
+//                   ]} // end children
+//                 />
+//               ));
+//             })}
+//           />
+//         </box>
+//       </box>
+//       <box
+//         orientation={Gtk.Orientation.VERTICAL}
+//         cssClasses={["my-device-popover-asus-box"]}
+//         valign={Gtk.Align.START}
+//         halign={Gtk.Align.CENTER}
+//         spacing={scaleSizeNumber(10)}
+//         vexpand={true}
+//       >
+//         {/* Asus Header */}
+//         <box
+//           orientation={Gtk.Orientation.HORIZONTAL}
+//           valign={Gtk.Align.START}
+//           cssClasses={["asus-header-box"]}
+//           hexpand={true}
+//           spacing={scaleSizeNumber(8)}
+//           child={
+//             <label
+//               label="Asus"
+//               cssClasses={["asus-header-text"]}
+//               valign={Gtk.Align.CENTER}
+//             />
+//           }
+//         />
+//         {/* Asus Body */}
+//         <box
+//           orientation={Gtk.Orientation.VERTICAL}
+//           valign={Gtk.Align.CENTER}
+//           cssClasses={["asus-body-box"]}
+//           hexpand={true}
+//           spacing={scaleSizeNumber(8)}
+//         >
+//           {/* Availability / Status */}
+//           <label
+//             cssClasses={["asus-status-label"]}
+//             halign={Gtk.Align.START}
+//             label={bind(AsusService.data).as((d) => {
+//               if (!d?.available) return "Asus services unavailable";
+//               const parts: string[] = [];
+//               if (d.profile) parts.push(`Profile: ${d.profile}`);
+//               if (d.chargeLimit != null)
+//                 parts.push(`Charge: ${d.chargeLimit}%`);
+//               if (d.fanBoost != null)
+//                 parts.push(`Fan: ${d.fanBoost ? "Boost" : "Normal"}`);
+//               if (d.gpuMode) parts.push(`GPU: ${d.gpuMode}`);
+//               return parts.join("   ") || "Asus services ready";
+//             })}
+//           />
+
+//           {/* Performance Profile buttons */}
+//           <box
+//             orientation={Gtk.Orientation.HORIZONTAL}
+//             spacing={scaleSizeNumber(6)}
+//           >
+//             {["LowPower", "Balanced", "Performance"].map((p) => (
+//               <button
+//                 cssClasses={mergeBindings([AsusService.data], (d) =>
+//                   d?.profile === p
+//                     ? ["asus-prof-btn", "active"]
+//                     : ["asus-prof-btn"],
+//                 )}
+//                 on_clicked={() => {
+//                   try {
+//                     AsusService.setProfile(p as string);
+//                   } catch {}
+//                 }}
+//                 onClicked={() => {
+//                   try {
+//                     AsusService.setProfile(p as string);
+//                   } catch {}
+//                 }}
+//                 child={
+//                   <label
+//                     label={mergeBindings([AsusService.data], (d) =>
+//                       d?.profile === p ? ` ${p}` : p,
+//                     )}
+//                   />
+//                 }
+//               />
+//             ))}
+//           </box>
+
+//           {/* Charge Limit control */}
+//           <box
+//             orientation={Gtk.Orientation.HORIZONTAL}
+//             spacing={scaleSizeNumber(6)}
+//             hexpand={true}
+//           >
+//             <label label="Charge Limit" halign={Gtk.Align.START} />
+//             <slider
+//               hexpand={true}
+//               min={40}
+//               max={100}
+//               step={1}
+//               value={mergeBindings(
+//                 [AsusService.data],
+//                 (d) => d?.chargeLimit ?? 80,
+//               )}
+//               onChangeValue={(self: any) => {
+//                 try {
+//                   AsusService.setChargeLimit(Math.round(self.value));
+//                 } catch {}
+//               }}
+//             />
+//             <label
+//               label={mergeBindings(
+//                 [AsusService.data],
+//                 (d) => `${d?.chargeLimit ?? 80}%`,
+//               )}
+//             />
+//           </box>
+
+//           {/* Fan Boost toggle */}
+//           <box
+//             orientation={Gtk.Orientation.HORIZONTAL}
+//             spacing={scaleSizeNumber(6)}
+//           >
+//             <label label="Fan Boost" />
+//             <button
+//               cssClasses={["asus-fan-btn"]}
+//               on_clicked={() => {
+//                 const cur = AsusService.data.get();
+//                 try {
+//                   AsusService.setFanBoost(!cur?.fanBoost);
+//                 } catch {}
+//               }}
+//               onClicked={() => {
+//                 const cur = AsusService.data.get();
+//                 try {
+//                   AsusService.setFanBoost(!cur?.fanBoost);
+//                 } catch {}
+//               }}
+//               child={
+//                 <label
+//                   label={mergeBindings([AsusService.data], (d) =>
+//                     d?.fanBoost ? "On" : "Off",
+//                   )}
+//                 />
+//               }
+//             />
+//           </box>
+
+//           {/* GPU Mode buttons (supergfxctl) */}
+//           <box
+//             orientation={Gtk.Orientation.HORIZONTAL}
+//             spacing={scaleSizeNumber(6)}
+//           >
+//             {["Integrated", "Hybrid", "NVIDIA", "Compute"].map((m) => (
+//               <button
+//                 cssClasses={["asus-gpu-btn"]}
+//                 on_clicked={() => {
+//                   try {
+//                     AsusService.setGpuMode(m as string);
+//                   } catch {}
+//                 }}
+//                 onClicked={() => {
+//                   try {
+//                     AsusService.setGpuMode(m as string);
+//                   } catch {}
+//                 }}
+//                 child={
+//                   <label
+//                     label={mergeBindings([AsusService.data], (d) =>
+//                       d?.gpuMode === m ? ` ${m}` : m,
+//                     )}
+//                   />
+//                 }
+//               />
+//             ))}
+//           </box>
+
+//           {/* Error line */}
+//           <label
+//             cssClasses={["asus-error-label"]}
+//             visible={mergeBindings([AsusService.data], (d) => !!d?.error)}
+//             label={mergeBindings([AsusService.data], (d) =>
+//               d?.error ? `Error: ${d.error}` : "",
+//             )}
+//           />
+//         </box>
+//       </box>
+//     </box>
+//   );
+// }
+
+// widget/my_device/popup.tsx
+// Uses raw GTK widgets *directly* under Astal's JSX runtime.
+//
+// - DrawingArea: capitalized wrapper that safely handles custom props
+//   (draw, intervalMs, cssClasses) and maps them to real GTK methods/signals.
+// - Everything else stays the same (your services, bindings, etc).
+
+import Binding, { bind } from "astal/binding";
+import { Gtk } from "astal/gtk4";
+import GLib from "gi://GLib";
+import {
+  mergeBindings,
+  scaleSizeNumber,
+  chainedBinding,
+} from "../../utils/utils";
+import { AsusService } from "../../services/asus";
+import { NvidiaService } from "../../services/NvidiaService";
+import { jsx } from "astal/gtk4/jsx-runtime";
+
+// -------- GTK helpers --------
+type DrawFunc = (
+  area: Gtk.DrawingArea,
+  cr: any,
+  width: number,
+  height: number,
+) => void;
+
+type DAProps = Gtk.DrawingArea.ConstructorProps & {
+  draw?: DrawFunc;
+  /** milliseconds between redraws (0 = no timer) */
+  intervalMs?: number;
+  /** convenience: add CSS classes to a raw GTK widget */
+  cssClasses?: string[]; // ["my-class", "accent"]
+  className?: string; // "my-class accent"
+  classList?: string[]; // alias
+  // allow passing user handlers too
+  onRealize?: (w: Gtk.DrawingArea) => void;
+  on_realize?: (w: Gtk.DrawingArea) => void;
+} & Record<string, unknown>;
+
+/** Capitalized component that wraps a real Gtk.DrawingArea */
+export const DrawingArea = ({
+  draw,
+  intervalMs = 0,
+  cssClasses,
+  className,
+  classList,
+  onRealize,
+  on_realize,
+  ...rest
+}: DAProps) => {
+  const handleRealize = (area: Gtk.DrawingArea) => {
+    // 1) CSS classes (GTK doesn't have a "cssClasses" constructor prop)
+    const allClasses: string[] = [
+      ...(Array.isArray(cssClasses) ? cssClasses : []),
+      ...(Array.isArray(classList) ? classList : []),
+      ...(typeof className === "string"
+        ? className.split(/\s+/).filter(Boolean)
+        : []),
+    ];
+    for (const c of allClasses) {
+      try {
+        area.add_css_class?.(c);
+      } catch {}
+    }
+
+    // 2) attach draw function
+    if (draw) {
+      try {
+        area.set_draw_func?.(draw);
+      } catch {}
+    }
+
+    // 3) periodic redraw
+    let src = 0;
+    if (intervalMs > 0) {
+      try {
+        src = GLib.timeout_add(GLib.PRIORITY_DEFAULT, intervalMs, () => {
+          try {
+            area.queue_draw?.();
+          } catch {}
+          return GLib.SOURCE_CONTINUE;
+        });
+      } catch {}
+    }
+
+    // 4) cleanup timers
+    const cleanup = () => {
+      if (src) {
+        try {
+          GLib.source_remove(src);
+        } catch {}
+        src = 0;
+      }
+    };
+    area.connect?.("unrealize", cleanup);
+    area.connect?.("destroy", cleanup);
+
+    // 5) call user-provided realize handlers if any
+    try {
+      onRealize?.(area);
+    } catch {}
+    try {
+      on_realize?.(area);
+    } catch {}
+  };
+
+  // IMPORTANT: do not forward unknown props (like cssClasses) to Gtk
+  return jsx(Gtk.DrawingArea as unknown as typeof Gtk.Widget, {
+    ...rest,
+    onRealize: handleRealize,
+    on_realize: handleRealize,
+  });
+};
+
+// -------- GPU state tracking (unchanged logic, tidied) --------
+const MAX_UTIL_POINTS = 60; // 60 * 2s = 120s
+const GPU_UTIL_HISTORY = new Map<string, number[]>();
+const GPU_POWER_HISTORY = new Map<string, number[]>();
+let __gpuHistorySubscribed = false;
+
+if (!__gpuHistorySubscribed) {
+  __gpuHistorySubscribed = true;
+  NvidiaService.data.subscribe((d) => {
+    const present = new Set<string>();
+    const gpus = d?.gpus ?? [];
+    gpus.forEach((g, i) => {
+      const key = (g as any).uuid || g.name || `gpu-${i}`;
+      present.add(key);
+
+      // util %
+      const util = Math.max(0, Math.min(100, g.util ?? 0));
+      const utilArr = GPU_UTIL_HISTORY.get(key) ?? [];
+      utilArr.push(util);
+      if (utilArr.length > MAX_UTIL_POINTS)
+        utilArr.splice(0, utilArr.length - MAX_UTIL_POINTS);
+      GPU_UTIL_HISTORY.set(key, utilArr);
+
+      // power W
+      const pNow = g.powerInstW ?? g.powerAvgW ?? 0;
+      const pArr = GPU_POWER_HISTORY.get(key) ?? [];
+      pArr.push(Math.max(0, pNow));
+      if (pArr.length > MAX_UTIL_POINTS)
+        pArr.splice(0, pArr.length - MAX_UTIL_POINTS);
+      GPU_POWER_HISTORY.set(key, pArr);
+    });
+
+    // prune
+    for (const k of Array.from(GPU_UTIL_HISTORY.keys()))
+      if (!present.has(k)) GPU_UTIL_HISTORY.delete(k);
+    for (const k of Array.from(GPU_POWER_HISTORY.keys()))
+      if (!present.has(k)) GPU_POWER_HISTORY.delete(k);
+  });
+}
+
+// -------- Drawing helpers --------
+function drawUtilGraphForKey(key: string) {
+  return (area: any, cr: any, width: number, height: number) => {
+    // color from style context
+    let r = 1,
+      g = 1,
+      b = 1;
+    try {
+      const sc = area.get_style_context?.();
+      const rgba = sc?.get_color?.();
+      if (rgba) {
+        r = rgba.red ?? r;
+        g = rgba.green ?? g;
+        b = rgba.blue ?? b;
+      }
+    } catch {}
+
+    const data = GPU_UTIL_HISTORY.get(key) ?? [];
+
+    const leftMargin = 36,
+      rightMargin = 6,
+      topMargin = 10,
+      bottomMargin = 10;
+    const plotW = Math.max(1, width - leftMargin - rightMargin);
+    const plotH = Math.max(1, height - topMargin - bottomMargin);
+
+    // background
+    cr.setSourceRGBA(r, g, b, 0.2);
+    cr.rectangle(0, 0, width, height);
+    cr.fill();
+
+    // y-axis
+    cr.setSourceRGBA(r, g, b, 0.7);
+    cr.setLineWidth(1);
+    cr.moveTo(leftMargin, topMargin);
+    cr.lineTo(leftMargin, topMargin + plotH);
+    cr.stroke();
+
+    // grid + labels
+    const ticks = [0, 0.25, 0.5, 0.75, 1];
+    for (const p of ticks) {
+      const y = topMargin + (1 - p) * plotH;
+      cr.setSourceRGBA(r, g, b, 0.7);
+      cr.setLineWidth(1);
+      cr.moveTo(leftMargin + 0.5, y + 0.5);
+      cr.lineTo(width - rightMargin - 0.5, y + 0.5);
+      cr.stroke();
+      cr.setSourceRGBA(r, g, b, 0.7);
+      cr.selectFontFace("Sans", 0, 0);
+      cr.setFontSize(9);
+      cr.moveTo(3, y + 3);
+      cr.showText(Math.round(p * 100) + " %");
+    }
+
+    if (!data.length) return;
+
+    // line
+    cr.setSourceRGBA(r, g, b, 1.0);
+    cr.setLineWidth(2);
+    const n = data.length;
+    const step = n > 1 ? plotW / (Math.max(n, MAX_UTIL_POINTS) - 1) : plotW;
+    const yMin = topMargin + 1,
+      yMax = topMargin + plotH - 1;
+
+    for (let i = 0; i < n; i++) {
+      const x = leftMargin + i * step;
+      const v = Math.max(0, Math.min(100, data[i]));
+      let y = topMargin + (1 - v / 100) * plotH;
+      if (y < yMin) y = yMin;
+      if (y > yMax) y = yMax;
+      if (i === 0) cr.moveTo(x, y);
+      else cr.lineTo(x, y);
+    }
+    cr.stroke();
+
+    // last point
+    const last = data[n - 1] ?? 0;
+    const x = leftMargin + (n - 1) * step;
+    let y = topMargin + (1 - last / 100) * plotH;
+    if (y < yMin) y = yMin;
+    if (y > yMax) y = yMax;
+    cr.setSourceRGBA(r, g, b, 1.0);
+    cr.arc(x, y, 2.5, 0, Math.PI * 2);
+    cr.fill();
+  };
+}
+
+function drawPowerGraphForKey(key: string, limitW: number | null | undefined) {
+  return (area: any, cr: any, width: number, height: number) => {
+    let r = 1,
+      g = 1,
+      b = 1;
+    try {
+      const sc = area.get_style_context?.();
+      const rgba = sc?.get_color?.();
+      if (rgba) {
+        r = rgba.red ?? r;
+        g = rgba.green ?? g;
+        b = rgba.blue ?? b;
+      }
+    } catch {}
+
+    const data = GPU_POWER_HISTORY.get(key) ?? [];
+
+    const leftMargin = 44,
+      rightMargin = 6,
+      topMargin = 10,
+      bottomMargin = 10;
+    const plotW = Math.max(1, width - leftMargin - rightMargin);
+    const plotH = Math.max(1, height - topMargin - bottomMargin);
+
+    // bg
+    cr.setSourceRGBA(r, g, b, 0.2);
+    cr.rectangle(0, 0, width, height);
+    cr.fill();
+
+    // scale upper bound
+    const maxData = data.length ? Math.max(...data) : 0;
+    const limit =
+      limitW && limitW > 0
+        ? limitW
+        : Math.max(100, Math.ceil(maxData / 10) * 10);
+
+    // y-axis
+    cr.setSourceRGBA(r, g, b, 0.7);
+    cr.setLineWidth(1);
+    cr.moveTo(leftMargin, topMargin);
+    cr.lineTo(leftMargin, topMargin + plotH);
+    cr.stroke();
+
+    // grid + labels
+    const ticks = [0, 0.25, 0.5, 0.75, 1];
+    for (const p of ticks) {
+      const y = topMargin + (1 - p) * plotH;
+      cr.setSourceRGBA(r, g, b, 0.7);
+      cr.setLineWidth(1);
+      cr.moveTo(leftMargin + 0.5, y + 0.5);
+      cr.lineTo(width - rightMargin - 0.5, y + 0.5);
+      cr.stroke();
+
+      const val = Math.round(p * limit);
+      cr.setSourceRGBA(r, g, b, 0.7);
+      cr.selectFontFace("Sans", 0, 0);
+      cr.setFontSize(9);
+      cr.moveTo(3, y + 3);
+      cr.showText(`${val} W`);
+    }
+
+    if (!data.length) return;
+
+    // line
+    cr.setSourceRGBA(r, g, b, 1.0);
+    cr.setLineWidth(2);
+    const n = data.length;
+    const step = n > 1 ? plotW / (Math.max(n, MAX_UTIL_POINTS) - 1) : plotW;
+    const yMin = topMargin + 1,
+      yMax = topMargin + plotH - 1;
+
+    for (let i = 0; i < n; i++) {
+      const x = leftMargin + i * step;
+      const v = Math.max(0, data[i]);
+      let y = topMargin + (1 - Math.min(1, v / (limit || 1))) * plotH;
+      if (y < yMin) y = yMin;
+      if (y > yMax) y = yMax;
+      if (i === 0) cr.moveTo(x, y);
+      else cr.lineTo(x, y);
+    }
+    cr.stroke();
+
+    // last point
+    const last = data[n - 1] ?? 0;
+    const x = leftMargin + (n - 1) * step;
+    let y = topMargin + (1 - Math.min(1, last / (limit || 1))) * plotH;
+    if (y < yMin) y = yMin;
+    if (y > yMax) y = yMax;
+    cr.setSourceRGBA(r, g, b, 1.0);
+    cr.arc(x, y, 2.5, 0, Math.PI * 2);
+    cr.fill();
+  };
+}
+
+// A tiny convenience component for your graphs
+const GraphArea = ({
+  draw,
+  intervalMs = 2000,
+  ...props
+}: {
+  draw: DrawFunc;
+  intervalMs?: number;
+} & Omit<DAProps, "draw" | "intervalMs">) => (
+  <DrawingArea {...props} draw={draw} intervalMs={intervalMs} />
+);
+
+// -------- UI --------
+export default function MyDevicePopup() {
+  return (
+    <box
+      orientation={Gtk.Orientation.HORIZONTAL}
+      cssClasses={["my-device-popover-container"]}
+      valign={Gtk.Align.CENTER}
+      halign={Gtk.Align.CENTER}
+      spacing={scaleSizeNumber(10)}
+    >
+      {/* NVIDIA side */}
+      <box
+        orientation={Gtk.Orientation.VERTICAL}
+        cssClasses={["my-device-popover-nvidia-box"]}
+        valign={Gtk.Align.CENTER}
+        halign={Gtk.Align.CENTER}
+        spacing={scaleSizeNumber(10)}
+      >
+        <box
+          orientation={Gtk.Orientation.HORIZONTAL}
+          valign={Gtk.Align.CENTER}
+          cssClasses={["nvidia-header-box"]}
+          hexpand={true}
+          spacing={scaleSizeNumber(8)}
+          child={
+            <label
+              label="Nvidia"
+              cssClasses={["nvidia-header-text"]}
+              valign={Gtk.Align.CENTER}
+            />
+          }
+        />
+
+        <box
+          orientation={Gtk.Orientation.VERTICAL}
+          valign={Gtk.Align.CENTER}
+          cssClasses={["nvidia-body-box"]}
+          hexpand={true}
+          spacing={scaleSizeNumber(8)}
+        >
+          {/* Driver | CUDA */}
+          <box
+            orientation={Gtk.Orientation.HORIZONTAL}
+            valign={Gtk.Align.CENTER}
+            hexpand={true}
+            spacing={scaleSizeNumber(4)}
+            cssClasses={["nvidia-info-box"]}
+          >
+            <label
+              label={mergeBindings(
+                [NvidiaService.data],
+                (d) => `Driver: ${d?.driver ?? "N/A"}`,
+              )}
+              cssClasses={["nvidia-info-label"]}
+              valign={Gtk.Align.CENTER}
+              halign={Gtk.Align.START}
+            />
+            <label
+              label={mergeBindings(
+                [NvidiaService.data],
+                (d) => `CUDA: ${d?.cuda ?? "N/A"}`,
+              )}
+              cssClasses={["nvidia-info-label"]}
+              hexpand={true}
+              valign={Gtk.Align.CENTER}
+              halign={Gtk.Align.END}
+            />
+          </box>
+
+          {/* GPUs */}
+          <box
+            orientation={Gtk.Orientation.VERTICAL}
+            spacing={scaleSizeNumber(4)}
+            cssClasses={["nvidia-gpu-list-box"]}
+            children={mergeBindings([NvidiaService.data], (d) => {
+              const gpus = d?.gpus ?? [];
+              return gpus.map((g, i) => (
+                <box
+                  orientation={Gtk.Orientation.VERTICAL}
+                  valign={Gtk.Align.CENTER}
+                  hexpand={true}
+                  spacing={scaleSizeNumber(4)}
+                  cssClasses={["nvidia-gpu-box"]}
+                  children={[
+                    <label
+                      label={`${g.name}`}
+                      cssClasses={["nvidia-gpu-name"]}
+                      valign={Gtk.Align.CENTER}
+                      halign={Gtk.Align.START}
+                    />,
+                    <box
+                      orientation={Gtk.Orientation.VERTICAL}
+                      valign={Gtk.Align.CENTER}
+                      hexpand={true}
+                      spacing={scaleSizeNumber(4)}
+                      cssClasses={["nvidia-gpu-stats-box"]}
+                      children={[
+                        // Memory + Temp
+                        <box
+                          orientation={Gtk.Orientation.HORIZONTAL}
+                          valign={Gtk.Align.CENTER}
+                          hexpand={true}
+                          spacing={scaleSizeNumber(4)}
+                          cssClasses={["nvidia-gpu-mem-temp-box"]}
+                          children={[
+                            <label
+                              label={`MEM: ${g.memUsedMiB != null && g.memTotalMiB != null ? `${g.memUsedMiB}MiB (${g.memUsedPct}%)` : "N/A"}`}
+                              cssClasses={["nvidia-gpu-mem-stats"]}
+                              valign={Gtk.Align.CENTER}
+                              halign={Gtk.Align.START}
+                            />,
+                            <label
+                              label={`TEMP: ${g.tempC != null ? `${g.tempC}°C` : "N/A"}`}
+                              cssClasses={["nvidia-gpu-temp-stats"]}
+                              hexpand={true}
+                              valign={Gtk.Align.CENTER}
+                              halign={Gtk.Align.END}
+                            />,
+                          ]}
+                        />,
+
+                        // Perf
+                        <label
+                          label={`PERF: ${g.pstate != null ? `${g.pstate}` : "N/A"}`}
+                          cssClasses={["nvidia-gpu-temp-stats"]}
+                          hexpand={true}
+                          valign={Gtk.Align.CENTER}
+                          halign={Gtk.Align.END}
+                        />,
+
+                        // Power graph
+                        <box
+                          orientation={Gtk.Orientation.VERTICAL}
+                          valign={Gtk.Align.CENTER}
+                          hexpand={true}
+                          spacing={scaleSizeNumber(4)}
+                          cssClasses={["nvidia-gpu-utilisation-box"]}
+                        >
+                          <label
+                            label={`POWER: ${g.powerInstW ?? g.powerAvgW ?? "N/A"}${g.powerInstW != null || g.powerAvgW != null ? " W" : ""}`}
+                            cssClasses={["nvidia-gpu-utilisation-label"]}
+                            valign={Gtk.Align.CENTER}
+                            halign={Gtk.Align.START}
+                          />
+                          {(() => {
+                            const id = (g as any).uuid || g.name || `gpu-${i}`;
+                            return (
+                              <GraphArea
+                                cssClasses={["nvidia-gpu-utilisation-graph"]}
+                                widthRequest={scaleSizeNumber(220)}
+                                heightRequest={scaleSizeNumber(90)}
+                                intervalMs={2000}
+                                draw={drawPowerGraphForKey(
+                                  id,
+                                  (g as any).powerLimitW,
+                                )}
+                              />
+                            );
+                          })()}
+                        </box>,
+
+                        // Util graph
+                        <box
+                          orientation={Gtk.Orientation.VERTICAL}
+                          valign={Gtk.Align.CENTER}
+                          hexpand={true}
+                          spacing={scaleSizeNumber(4)}
+                          cssClasses={["nvidia-gpu-utilisation-box"]}
+                        >
+                          <label
+                            label={`UTIL: ${g.util != null ? `${g.util}%` : "N/A"}`}
+                            cssClasses={["nvidia-gpu-utilisation-label"]}
+                            valign={Gtk.Align.CENTER}
+                            halign={Gtk.Align.START}
+                          />
+                          {(() => {
+                            const id = (g as any).uuid || g.name || `gpu-${i}`;
+                            return (
+                              <GraphArea
+                                cssClasses={["nvidia-gpu-utilisation-graph"]}
+                                widthRequest={scaleSizeNumber(220)}
+                                heightRequest={scaleSizeNumber(90)}
+                                intervalMs={2000}
+                                draw={drawUtilGraphForKey(id)}
+                              />
+                            );
+                          })()}
+                        </box>,
+                      ]}
+                    />,
+                  ]}
+                />
+              ));
+            })}
+          />
+        </box>
+      </box>
+
+      {/* ASUS side (unchanged from your structure, minor cleanup) */}
+      <box
+        orientation={Gtk.Orientation.VERTICAL}
+        cssClasses={["my-device-popover-asus-box"]}
+        valign={Gtk.Align.START}
+        halign={Gtk.Align.CENTER}
+        spacing={scaleSizeNumber(10)}
+        vexpand={true}
+      >
+        <box
+          orientation={Gtk.Orientation.HORIZONTAL}
+          valign={Gtk.Align.START}
+          cssClasses={["asus-header-box"]}
+          hexpand={true}
+          spacing={scaleSizeNumber(8)}
+          child={
+            <label
+              label="Asus"
+              cssClasses={["asus-header-text"]}
+              valign={Gtk.Align.CENTER}
+            />
+          }
+        />
+
+        <box
+          orientation={Gtk.Orientation.VERTICAL}
+          valign={Gtk.Align.CENTER}
+          cssClasses={["asus-body-box"]}
+          hexpand={true}
+          spacing={scaleSizeNumber(8)}
+        >
+          {/* Status */}
+          <label
+            cssClasses={["asus-status-label"]}
+            halign={Gtk.Align.START}
+            label={bind(AsusService.data).as((d) => {
+              if (!d?.available) return "Asus services unavailable";
+              const parts: string[] = [];
+              if (d.profile) parts.push(`Profile: ${d.profile}`);
+              if (d.chargeLimit != null)
+                parts.push(`Charge: ${d.chargeLimit}%`);
+              if (d.fanBoost != null)
+                parts.push(`Fan: ${d.fanBoost ? "Boost" : "Normal"}`);
+              if (d.gpuMode) parts.push(`GPU: ${d.gpuMode}`);
+              return parts.join("   ") || "Asus services ready";
+            })}
+          />
+
+          {/* Profile buttons */}
+          <box
+            orientation={Gtk.Orientation.HORIZONTAL}
+            spacing={scaleSizeNumber(6)}
+          >
+            {["LowPower", "Balanced", "Performance"].map((p) => (
+              <button
+                cssClasses={mergeBindings([AsusService.data], (d) =>
+                  d?.profile === p
+                    ? ["asus-prof-btn", "active"]
+                    : ["asus-prof-btn"],
+                )}
+                onClicked={() => {
+                  try {
+                    AsusService.setProfile(p as string);
+                  } catch {}
+                }}
+                child={
+                  <label
+                    label={mergeBindings([AsusService.data], (d) =>
+                      d?.profile === p ? ` ${p}` : p,
+                    )}
+                  />
+                }
+              />
+            ))}
+          </box>
+
+          {/* Charge limit */}
+          <box
+            orientation={Gtk.Orientation.HORIZONTAL}
+            spacing={scaleSizeNumber(6)}
+            hexpand={true}
+          >
+            <label label="Charge Limit" halign={Gtk.Align.START} />
+            <slider
+              hexpand={true}
+              min={40}
+              max={100}
+              step={1}
+              value={mergeBindings(
+                [AsusService.data],
+                (d) => d?.chargeLimit ?? 80,
+              )}
+              onChangeValue={(self: any) => {
+                try {
+                  AsusService.setChargeLimit(Math.round(self.value));
+                } catch {}
+              }}
+            />
+            <label
+              label={mergeBindings(
+                [AsusService.data],
+                (d) => `${d?.chargeLimit ?? 80}%`,
+              )}
+            />
+          </box>
+
+          {/* Fan Boost */}
+          <box
+            orientation={Gtk.Orientation.HORIZONTAL}
+            spacing={scaleSizeNumber(6)}
+          >
+            <label label="Fan Boost" />
+            <button
+              cssClasses={["asus-fan-btn"]}
+              onClicked={() => {
+                const cur = AsusService.data.get();
+                try {
+                  AsusService.setFanBoost(!cur?.fanBoost);
+                } catch {}
+              }}
+              child={
+                <label
+                  label={mergeBindings([AsusService.data], (d) =>
+                    d?.fanBoost ? "On" : "Off",
+                  )}
+                />
+              }
+            />
+          </box>
+
+          {/* GPU Mode */}
+          <box
+            orientation={Gtk.Orientation.HORIZONTAL}
+            spacing={scaleSizeNumber(6)}
+          >
+            {["Integrated", "Hybrid", "NVIDIA", "Compute"].map((m) => (
+              <button
+                cssClasses={["asus-gpu-btn"]}
+                onClicked={() => {
+                  try {
+                    AsusService.setGpuMode(m as string);
+                  } catch {}
+                }}
+                child={
+                  <label
+                    label={mergeBindings([AsusService.data], (d) =>
+                      d?.gpuMode === m ? ` ${m}` : m,
+                    )}
+                  />
+                }
+              />
+            ))}
+          </box>
+
+          {/* Error */}
+          <label
+            cssClasses={["asus-error-label"]}
+            visible={mergeBindings([AsusService.data], (d) => !!d?.error)}
+            label={mergeBindings([AsusService.data], (d) =>
+              d?.error ? `Error: ${d.error}` : "",
+            )}
+          />
+        </box>
+      </box>
+    </box>
+  );
+}

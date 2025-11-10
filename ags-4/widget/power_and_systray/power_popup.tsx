@@ -15,7 +15,8 @@ async function handleRestartButtonClick() {
     await execAsync(["reboot"]);
 }
 async function handleLockButtonClick() {
-    await execAsync(["loginctl", "lock-session"]);
+    // await execAsync(["loginctl", "lock-session"]);
+    await execAsync(["hyprlock"]);
 }
 
 export default function PowerPopup() {

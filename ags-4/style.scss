@@ -1,25 +1,32 @@
 // // https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-3-24/gtk/theme/Adwaita/_colors-public.scss
-@use 'colors.scss';
-@use './widget/workspace/style.scss' as workspaceStyle;
-@use './widget/clock/style.scss' as clockStyle;
-@use './widget/calendar/style.scss' as calendarStyle;
-@use './widget/cpu/style.scss' as cpuStyle;
-@use './widget/memory/style.scss' as memoryStyle;
-@use './widget/bluetooth/style.scss' as bluetoothStyle;
-@use './widget/my_device/style.scss' as myDeviceStyle;
-@use './widget/network/style.scss' as networkStyle;
-@use './widget/notification/style.scss' as notificationStyle;
-@use './widget/power_and_battery/style.scss' as powerAndBatteryStyle;
-@use './widget/sound_and_brightness/style.scss' as soundAndBrightnessStyle;
-@use './widget/power_and_systray/style.scss' as powerAndSystrayStyle;
-@use './widget/osd/style.scss' as osdStyle;
+@use "colors.scss";
+@use "./widget/workspace/style.scss" as workspaceStyle;
+@use "./widget/clock/style.scss" as clockStyle;
+@use "./widget/calendar/style.scss" as calendarStyle;
+@use "./widget/cpu/style.scss" as cpuStyle;
+@use "./widget/memory/style.scss" as memoryStyle;
+@use "./widget/bluetooth/style.scss" as bluetoothStyle;
+@use "./widget/my_device/style.scss" as myDeviceStyle;
+@use "./widget/network/style.scss" as networkStyle;
+@use "./widget/notification/style.scss" as notificationStyle;
+@use "./widget/power_and_battery/style.scss" as powerAndBatteryStyle;
+@use "./widget/sound_and_brightness/style.scss" as soundAndBrightnessStyle;
+@use "./widget/power_and_systray/style.scss" as powerAndSystrayStyle;
+@use "./widget/osd/style.scss" as osdStyle;
+
+/* Includes outside window.bar are for OSD */
+@include osdStyle.styles;
+@include soundAndBrightnessStyle.styles;
+@include notificationStyle.styles;
+
+/* Includes inside window.Bar is for Bar childs */
 window.Bar {
     background: none;
     background: transparent;
     padding: 0px;
     margin: 0px;
     font-size: 16px;
-    >centerbox {
+    > centerbox {
         background: transparent;
         border-radius: 10px;
         margin: 3px;
@@ -46,11 +53,29 @@ window.Bar {
         transition: all 0.2s ease;
     }
     .home-button:hover {
-        background: color-mix(in srgb, colors.$primary-color 90%, colors.$secondary-color 10%);
+        background: color-mix(
+            in srgb,
+            colors.$primary-color 90%,
+            colors.$secondary-color 10%
+        );
         transform: scale(1.02);
     }
     .home-button-label {
         font-size: 14px;
         margin-right: 6px;
     }
+
+    // Include all widget styles inside window.Bar for higher specificity
+    @include workspaceStyle.styles;
+    @include clockStyle.styles;
+    @include calendarStyle.styles;
+    @include cpuStyle.styles;
+    @include memoryStyle.styles;
+    @include bluetoothStyle.styles;
+    @include myDeviceStyle.styles;
+    @include networkStyle.styles;
+    @include notificationStyle.styles;
+    @include powerAndBatteryStyle.styles;
+    @include soundAndBrightnessStyle.styles;
+    @include powerAndSystrayStyle.styles;
 }

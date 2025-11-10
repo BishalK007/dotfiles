@@ -1,6 +1,8 @@
 {
     "name": "astal-shell",
     "dependencies": {
-        "astal": "/nix/store/lyibsxcfsgajh6bkvz13z2s4ll1d1iqm-astal-gjs/share/astal/gjs"
+        "astal": "/nix/store/lyibsxcfsgajh6bkvz13z2s4ll1d1iqm-astal-gjs/share/astal/gjs",
+        "gnim": "^1.8.2",
+        "signale": "^1.4.0"
     }
 }
